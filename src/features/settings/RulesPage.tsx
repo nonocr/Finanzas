@@ -1,6 +1,6 @@
-import clsx from 'clsx';
 import { Trash2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import { CategoryGrid } from '../../components/CategoryGrid';
 import { useToast } from '../../components/Toast';
 import { Button, CategoryIcon, EmptyState, Screen, Section } from '../../components/ui';
 import { useCategories, useDeleteMerchantRule, useMerchantRules, useSaveMerchantRule } from '../../lib/queries';
@@ -35,27 +35,12 @@ export function RulesPage() {
       <Section header="Nueva regla">
         <div className="p-4">
           <FormGroup>
-            <FormRow label="Si el comercio contiene" last>
+            <FormRow label="Comercio" last>
               <TextInput value={pattern} onChange={(e) => setPattern(e.target.value)} placeholder="AUTOMERCADO" />
             </FormRow>
           </FormGroup>
-          <div className="-mx-4 mt-3 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none]">
-            {expenseCats.map((c) => (
-              <button
-                key={c.id}
-                type="button"
-                aria-pressed={c.id === categoryId}
-                onClick={() => setCategoryId(c.id)}
-                className={clsx(
-                  'press flex min-h-11 shrink-0 items-center gap-2 rounded-full py-1.5 pr-4 pl-2 text-subhead font-semibold',
-                  c.id === categoryId ? 'bg-label text-black' : 'bg-card-2',
-                )}
-              >
-                <CategoryIcon icon={c.icon} color={c.color} size={24} />
-                {c.name}
-              </button>
-            ))}
-          </div>
+          <p className="mt-4 mb-2 px-1 text-footnote font-semibold text-label-2 uppercase">Asignar a</p>
+          <CategoryGrid categories={expenseCats} selected={categoryId} onSelect={setCategoryId} />
           <Button className="mt-4 w-full" disabled={!pattern.trim() || !categoryId || save.isPending} onClick={add}>
             Guardar regla
           </Button>

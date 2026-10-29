@@ -2,8 +2,9 @@ import clsx from 'clsx';
 import { ArrowRight, ChevronDown, Smartphone } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { AmountInput } from '../../components/AmountInput';
+import { CategoryGrid } from '../../components/CategoryGrid';
 import { Segmented } from '../../components/motion';
-import { ACCOUNT_ICONS, colorOf, iconOf } from '../../components/palette';
+import { ACCOUNT_ICONS } from '../../components/palette';
 import { Sheet } from '../../components/Sheet';
 import { useToast } from '../../components/Toast';
 import { Button } from '../../components/ui';
@@ -182,37 +183,7 @@ export function TransactionSheet({
 
       {!isTransfer && (
         <Group label="Categoría">
-          <div className="grid grid-cols-4 gap-x-1 gap-y-3">
-            {cats.map((c) => {
-              const Icon = iconOf(c.icon);
-              const on = c.id === categoryId;
-              return (
-                <button
-                  key={c.id}
-                  type="button"
-                  aria-pressed={on}
-                  onClick={() => setCategoryId(on ? null : c.id)}
-                  className="press flex min-h-11 flex-col items-center gap-1.5 rounded-[12px] py-1.5"
-                >
-                  <span
-                    className={clsx(
-                      'grid size-12 place-items-center rounded-[14px] text-white transition-[box-shadow,opacity] duration-150',
-                      categoryId && !on && 'opacity-45',
-                    )}
-                    style={{
-                      background: colorOf(c.color),
-                      boxShadow: on ? '0 0 0 2px var(--color-card), 0 0 0 4px var(--color-label)' : undefined,
-                    }}
-                  >
-                    <Icon size={24} strokeWidth={2} />
-                  </span>
-                  <span className={clsx('w-full truncate px-0.5 text-center text-caption', on ? 'font-semibold text-label' : 'text-label-2')}>
-                    {c.name}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
+          <CategoryGrid categories={cats} selected={categoryId} onSelect={setCategoryId} />
         </Group>
       )}
 
