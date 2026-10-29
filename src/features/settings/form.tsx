@@ -1,27 +1,47 @@
 import clsx from 'clsx';
 import type { ComponentProps, ReactNode } from 'react';
 
-/** Grupo de campos de formulario estilo iOS dentro de una hoja. */
-export function FormGroup({ children, footer }: { children: ReactNode; footer?: ReactNode }) {
+/** Encabezado de grupo de formulario estilo iOS (nota en mayúsculas, alineada con el texto de las filas). */
+export function FormHeader({ children }: { children: ReactNode }) {
+  return <p className="mb-2 px-4 text-footnote font-semibold text-label-2 uppercase">{children}</p>;
+}
+
+/**
+ * Grupo de campos de formulario estilo iOS dentro de una hoja. Entre grupos hay 24px; el pie va pegado a su
+ * grupo (8px) para que se lea como parte de él y no del siguiente.
+ */
+export function FormGroup({
+  children,
+  header,
+  footer,
+  className,
+}: {
+  children: ReactNode;
+  header?: ReactNode;
+  footer?: ReactNode;
+  className?: string;
+}) {
   return (
-    <div className="mt-4 first:mt-0">
+    <div className={clsx('mt-6 first:mt-0', className)}>
+      {header && <FormHeader>{header}</FormHeader>}
       <div className="overflow-hidden rounded-[12px] bg-card-2">{children}</div>
-      {footer && <p className="mt-1.5 px-4 text-footnote text-label-2">{footer}</p>}
+      {footer && <div className="mt-2 space-y-1.5 px-4 text-footnote text-pretty text-label-2">{footer}</div>}
     </div>
   );
 }
 
+/** Fila con etiqueta a la izquierda y valor a la derecha; una etiqueta larga se parte en dos líneas antes que apretar el campo. */
 export function FormRow({ label, children, last }: { label: string; children: ReactNode; last?: boolean }) {
   return (
     <label className="flex min-h-11 items-center pl-4">
       <span
         className={clsx(
-          'flex min-h-11 flex-1 items-center gap-4 pr-4',
+          'flex min-h-11 flex-1 items-center gap-4 py-2.5 pr-4',
           !last && 'shadow-[inset_0_-0.5px_0_var(--color-sep)]',
         )}
       >
-        <span className="shrink-0 text-body">{label}</span>
-        <span className="flex min-w-0 flex-1 justify-end">{children}</span>
+        <span className="min-w-0 text-body">{label}</span>
+        <span className="flex min-w-24 flex-1 justify-end">{children}</span>
       </span>
     </label>
   );
