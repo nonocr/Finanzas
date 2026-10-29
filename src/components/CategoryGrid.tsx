@@ -13,7 +13,7 @@ export function CategoryGrid({
   onSelect: (id: string | null) => void;
 }) {
   return (
-    <div className="grid grid-cols-4 gap-x-1 gap-y-3">
+    <div className="grid grid-cols-4 gap-x-1 gap-y-2">
       {categories.map((c) => {
         const Icon = iconOf(c.icon);
         const on = c.id === selected;
@@ -23,11 +23,11 @@ export function CategoryGrid({
             type="button"
             aria-pressed={on}
             onClick={() => onSelect(on ? null : c.id)}
-            className="press flex min-h-11 flex-col items-center gap-1.5 rounded-[12px] py-1.5"
+            className="press flex min-h-11 flex-col items-center gap-1 rounded-[12px] py-1"
           >
             <span
               className={clsx(
-                'grid size-12 place-items-center rounded-[14px] text-white transition-[box-shadow,opacity] duration-150',
+                'grid size-10 place-items-center rounded-[11px] text-white transition-[box-shadow,opacity] duration-150',
                 selected && !on && 'opacity-45',
               )}
               style={{
@@ -35,7 +35,7 @@ export function CategoryGrid({
                 boxShadow: on ? '0 0 0 2px var(--color-card), 0 0 0 4px var(--color-label)' : undefined,
               }}
             >
-              <Icon size={24} strokeWidth={2} />
+              <Icon size={20} strokeWidth={2} />
             </span>
             <span className={clsx('w-full truncate px-0.5 text-center text-caption', on ? 'font-semibold text-label' : 'text-label-2')}>
               {c.name}

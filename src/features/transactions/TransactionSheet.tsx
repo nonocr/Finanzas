@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { ArrowRight, ChevronDown, Smartphone } from 'lucide-react';
+import { ArrowRight, Smartphone } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { AmountInput } from '../../components/AmountInput';
 import { CategoryGrid } from '../../components/CategoryGrid';
@@ -62,8 +62,6 @@ export function TransactionSheet({
   const [note, setNote] = useState(tx?.note ?? '');
   const [date, setDate] = useState(isoDate(tx ? crDayOf(tx.occurred_at) : crDay()));
   const [remember, setRemember] = useState(pending && Boolean(tx?.merchant));
-  // Lo opcional (comercio, fecha, nota) queda plegado al registrar algo nuevo.
-  const [details, setDetails] = useState(Boolean(tx));
 
   const account = accounts.find((a) => a.id === accountId) ?? accounts[0];
   const cats = useMemo(
@@ -201,56 +199,42 @@ export function TransactionSheet({
         </Group>
       )}
 
-      {!details ? (
-        <button
-          type="button"
-          onClick={() => setDetails(true)}
-          className="mt-5 flex min-h-11 w-full items-center justify-between rounded-[12px] bg-card-2 px-4 text-body"
-        >
-          <span>
-            <span className="text-label">Hoy</span>
-            <span className="text-label-2"> · Agregar comercio o nota</span>
-          </span>
-          <ChevronDown size={18} strokeWidth={2.25} className="text-label-3" />
-        </button>
-      ) : (
-        <div className="mt-5 overflow-hidden rounded-[12px] bg-card-2">
-          <Field label={isTransfer ? 'Descripción' : type === 'ingreso' ? 'Origen' : 'Comercio'}>
-            <input
-              value={merchant}
-              onChange={(e) => setMerchant(e.target.value)}
-              placeholder={isTransfer ? 'Pago de tarjeta' : type === 'ingreso' ? 'Salario' : 'Automercado'}
-              className="w-full bg-transparent text-right text-body outline-none placeholder:text-label-3"
-              autoComplete="off"
-            />
-          </Field>
-          <Field label="Fecha">
-            {/* Pastilla de fecha al estilo iOS; el input nativo queda encima, transparente, para abrir el selector. */}
-            <span className="relative inline-flex">
-              <span className="rounded-[8px] bg-card-3 px-3 py-1.5 text-body">
-                {date === today ? 'Hoy' : pillDate.format(new Date(date + 'T00:00:00Z'))}
-              </span>
-              <input
-                type="date"
-                value={date}
-                max={today}
-                onChange={(e) => e.target.value && setDate(e.target.value)}
-                aria-label="Fecha"
-                className="absolute inset-0 opacity-0 [color-scheme:dark] [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:size-full"
-              />
+      <div className="mt-5 overflow-hidden rounded-[12px] bg-card-2">
+        <Field label={isTransfer ? 'Descripción' : type === 'ingreso' ? 'Origen' : 'Comercio'}>
+          <input
+            value={merchant}
+            onChange={(e) => setMerchant(e.target.value)}
+            placeholder={isTransfer ? 'Pago de tarjeta' : type === 'ingreso' ? 'Salario' : 'Automercado'}
+            className="w-full bg-transparent text-right text-body outline-none placeholder:text-label-3"
+            autoComplete="off"
+          />
+        </Field>
+        <Field label="Fecha">
+          {/* Pastilla de fecha al estilo iOS; el input nativo queda encima, transparente, para abrir el selector. */}
+          <span className="relative inline-flex">
+            <span className="rounded-[8px] bg-card-3 px-3 py-1.5 text-body">
+              {date === today ? 'Hoy' : pillDate.format(new Date(date + 'T00:00:00Z'))}
             </span>
-          </Field>
-          <Field label="Nota" last>
             <input
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              placeholder="Opcional"
-              className="w-full bg-transparent text-right text-body outline-none placeholder:text-label-3"
-              autoComplete="off"
+              type="date"
+              value={date}
+              max={today}
+              onChange={(e) => e.target.value && setDate(e.target.value)}
+              aria-label="Fecha"
+              className="absolute inset-0 opacity-0 [color-scheme:dark] [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:size-full"
             />
-          </Field>
-        </div>
-      )}
+          </span>
+        </Field>
+        <Field label="Nota" last>
+          <input
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            placeholder="Opcional"
+            className="w-full bg-transparent text-right text-body outline-none placeholder:text-label-3"
+            autoComplete="off"
+          />
+        </Field>
+      </div>
 
       {pending && tx?.merchant && (
         <label className="mt-3 flex min-h-11 items-center justify-between gap-3 rounded-[12px] bg-card-2 px-4 py-2.5">
