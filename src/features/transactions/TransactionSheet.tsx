@@ -144,6 +144,7 @@ export function TransactionSheet({
     <Sheet
       open={open}
       onClose={onClose}
+      swipeToClose
       title={title}
       leading={
         <button type="button" className="min-h-11 text-body text-blue" onClick={onClose}>

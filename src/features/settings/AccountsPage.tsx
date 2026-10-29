@@ -1,3 +1,4 @@
+import clsx from 'clsx';
 import { ChevronDown } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { ACCOUNT_ICONS } from '../../components/palette';
@@ -9,7 +10,7 @@ import { formatCRC } from '../../lib/money';
 import { useAccounts, useBalances, useSaveAccount } from '../../lib/queries';
 import { ACCOUNT_TYPE_LABEL, type Account, type AccountType } from '../../lib/types';
 import { BackLink } from './MorePage';
-import { ColonesInput, DayInput, FormGroup, FormRow, TextInput } from './form';
+import { ColonesInput, DayInput, FormGroup, FormHeader, FormRow, TextInput } from './form';
 
 const TYPE_COLOR: Record<AccountType, string> = {
   efectivo: 'var(--color-green)',
@@ -192,6 +193,7 @@ function AccountSheet({
     <Sheet
       open={open}
       onClose={onClose}
+      dismissible={false}
       title={initial.id ? 'Editar cuenta' : 'Nueva cuenta'}
       leading={
         <button type="button" className="min-h-11 text-body text-blue" onClick={onClose}>
@@ -209,28 +211,51 @@ function AccountSheet({
         </button>
       }
     >
-      <div className="mb-4 flex flex-wrap gap-2">
-        {KIND_OPTIONS.map((k) => (
-          <button
-            key={k.type}
-            type="button"
-            aria-pressed={k.type === type}
-            onClick={() => set({ type: k.type })}
-            className={
-              'press min-h-11 rounded-full px-4 text-subhead font-semibold ' +
-              (k.type === type ? 'bg-label text-black' : 'bg-card-2 text-label')
-            }
-          >
-            {k.label}
-          </button>
-        ))}
+      {/* Selector de tipo: una fila de cinco mosaicos con el mismo ícono y color que en la lista de cuentas. */}
+      <FormHeader>Tipo</FormHeader>
+      <div className="grid grid-cols-5 gap-1.5">
+        {KIND_OPTIONS.map((k) => {
+          const on = k.type === type;
+          return (
+            <button
+              key={k.type}
+              type="button"
+              aria-pressed={on}
+              aria-label={k.label}
+              onClick={() => set({ type: k.type })}
+              className={clsx(
+                'press flex min-w-0 flex-col items-center gap-2 rounded-[12px] px-0.5 pt-3 pb-2.5 text-footnote font-semibold',
+                on ? 'bg-label text-black' : 'bg-card-2 text-label-2',
+              )}
+            >
+              <IconTile icon={ACCOUNT_ICONS[k.type]} color={TYPE_COLOR[k.type]} size={32} />
+              <span className="max-w-full truncate">{ACCOUNT_TYPE_LABEL[k.type]}</span>
+            </button>
+          );
+        })}
       </div>
 
       <FormGroup
         footer={
-          isCard
-            ? 'Con los últimos 4 dígitos la distingues de tus otras tarjetas, y los pagos de Wallet llegan a la correcta. El nombre es opcional.'
-            : undefined
+          <>
+            {sameName ? (
+              <p className="text-red">Ya tienes una cuenta llamada «{sameName.name}». Ponle otro nombre.</p>
+            ) : sameLast4 ? (
+              <p className="text-orange">
+                «{sameLast4.name}» también termina en {sameLast4.last4}. Ponles nombres distintos para no confundirlas.
+              </p>
+            ) : (
+              <p>
+                Se guardará como <span className="font-semibold text-label">{name}</span>.
+              </p>
+            )}
+            {isCard && (
+              <p>
+                Con los últimos 4 dígitos la distingues de tus otras tarjetas, y los pagos de Wallet llegan a la correcta. El
+                nombre es opcional.
+              </p>
+            )}
+          </>
         }
       >
         {isCard && (
@@ -255,29 +280,21 @@ function AccountSheet({
         </FormRow>
       </FormGroup>
 
-      {sameName ? (
-        <p className="mt-2 px-1 text-footnote text-red">Ya tienes una cuenta llamada «{sameName.name}». Ponle otro nombre.</p>
-      ) : sameLast4 ? (
-        <p className="mt-2 px-1 text-footnote text-orange">
-          «{sameLast4.name}» también termina en {sameLast4.last4}. Ponles nombres distintos para no confundirlas.
-        </p>
-      ) : (
-        <p className="mt-2 px-1 text-footnote text-label-2">
-          Se guardará como <span className="font-semibold text-label">{name}</span>.
-        </p>
-      )}
-
       {!details ? (
-        <button
-          type="button"
-          onClick={() => setDetails(true)}
-          className="mt-4 flex min-h-11 w-full items-center justify-between rounded-[12px] bg-card-2 px-4 text-body"
-        >
-          <span className="text-label-2">
-            {type === 'credito' ? 'Deuda, límite y fechas de pago (opcional)' : 'Saldo actual (opcional)'}
-          </span>
-          <ChevronDown size={18} strokeWidth={2.25} className="text-label-3" />
-        </button>
+        <FormGroup>
+          <button
+            type="button"
+            aria-expanded={false}
+            onClick={() => setDetails(true)}
+            className="flex min-h-11 w-full items-center gap-3 px-4 py-2.5 text-left transition-colors active:bg-card-3"
+          >
+            <span className="min-w-0 flex-1 truncate text-body">
+              {type === 'credito' ? 'Deuda, límite y fechas' : 'Saldo actual'}
+            </span>
+            <span className="shrink-0 text-body text-label-3">Opcional</span>
+            <ChevronDown size={18} strokeWidth={2.25} className="shrink-0 text-label-3" />
+          </button>
+        </FormGroup>
       ) : (
         <>
           <FormGroup
@@ -318,7 +335,7 @@ function AccountSheet({
       )}
 
       {initial.id && (
-        <Button variant="destructive" className="mt-6 w-full" onClick={archive}>
+        <Button variant="destructive" className="mt-8 w-full" onClick={archive}>
           Archivar cuenta
         </Button>
       )}
