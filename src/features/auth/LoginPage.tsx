@@ -1,33 +1,39 @@
 import { Wallet } from 'lucide-react';
 import { useState } from 'react';
+import { Segmented } from '../../components/motion';
 import { Button } from '../../components/ui';
 import { supabase } from '../../lib/supabase';
 
-// Código de 6 dígitos por correo: en un iPhone el enlace mágico abriría Safari
-// y no la app instalada, así que la sesión quedaría en el lugar equivocado.
+// Correo + contraseña: funciona dentro de la PWA instalada sin depender de enlaces por correo
+// (en iPhone un enlace abriría Safari y la sesión quedaría fuera de la app).
+type Mode = 'entrar' | 'crear';
+
+const MESSAGES: Record<string, string> = {
+  invalid_credentials: 'Correo o contraseña incorrectos.',
+  user_already_exists: 'Ya existe una cuenta con ese correo. Entra con tu contraseña.',
+  weak_password: 'La contraseña es muy débil; usa al menos 8 caracteres.',
+  signup_disabled: 'El registro está cerrado. Entra con tu cuenta.',
+  email_not_confirmed: 'Falta confirmar el correo. Revisa tu bandeja de entrada.',
+};
+
 export function LoginPage() {
+  const [mode, setMode] = useState<Mode>('entrar');
   const [email, setEmail] = useState('');
-  const [code, setCode] = useState('');
-  const [step, setStep] = useState<'email' | 'code'>('email');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  const sendCode = async () => {
+  const submit = async () => {
     setBusy(true);
     setError(null);
-    const { error } = await supabase.auth.signInWithOtp({ email: email.trim(), options: { shouldCreateUser: true } });
+    const creds = { email: email.trim(), password };
+    const { error } =
+      mode === 'entrar' ? await supabase.auth.signInWithPassword(creds) : await supabase.auth.signUp(creds);
     setBusy(false);
-    if (error) setError('No pudimos enviar el código. Revisa el correo e inténtalo de nuevo.');
-    else setStep('code');
+    if (error) setError(MESSAGES[error.code ?? ''] ?? 'No se pudo entrar. Revisa tu conexión e inténtalo de nuevo.');
   };
 
-  const verify = async () => {
-    setBusy(true);
-    setError(null);
-    const { error } = await supabase.auth.verifyOtp({ email: email.trim(), token: code, type: 'email' });
-    setBusy(false);
-    if (error) setError('El código no es válido o ya venció. Pide uno nuevo.');
-  };
+  const valid = email.includes('@') && password.length >= (mode === 'crear' ? 8 : 1);
 
   return (
     <main className="mx-auto flex min-h-dvh max-w-sm flex-col justify-center px-6 pt-[var(--safe-top)] pb-[var(--safe-bottom)]">
@@ -36,18 +42,30 @@ export function LoginPage() {
       </div>
       <h1 className="text-large-title font-bold">Finanzas</h1>
       <p className="mt-1 text-body text-label-2">
-        {step === 'email' ? 'Entra con tu correo; te enviamos un código.' : `Escribe el código que enviamos a ${email}.`}
+        {mode === 'entrar' ? 'Entra para ver tus gastos.' : 'Crea tu cuenta; solo se hace una vez.'}
       </p>
 
-      <form
+      <Segmented
         className="mt-8"
+        options={[
+          { value: 'entrar', label: 'Entrar' },
+          { value: 'crear', label: 'Crear cuenta' },
+        ]}
+        value={mode}
+        onChange={(m) => {
+          setMode(m);
+          setError(null);
+        }}
+      />
+
+      <form
+        className="mt-4"
         onSubmit={(e) => {
           e.preventDefault();
-          if (step === 'email') void sendCode();
-          else void verify();
+          if (valid) void submit();
         }}
       >
-        {step === 'email' ? (
+        <div className="overflow-hidden rounded-[12px] bg-card">
           <input
             type="email"
             inputMode="email"
@@ -55,33 +73,26 @@ export function LoginPage() {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="tu@correo.com"
-            className="min-h-[50px] w-full rounded-[12px] bg-card px-4 text-body outline-none placeholder:text-label-3"
+            placeholder="Correo"
+            aria-label="Correo"
+            className="min-h-[50px] w-full bg-transparent px-4 text-body outline-none placeholder:text-label-3"
           />
-        ) : (
+          <div className="ml-4 h-px bg-sep" />
           <input
-            inputMode="numeric"
-            autoComplete="one-time-code"
+            type="password"
+            autoComplete={mode === 'entrar' ? 'current-password' : 'new-password'}
             required
-            value={code}
-            onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-            placeholder="000000"
-            className="tnum min-h-[50px] w-full rounded-[12px] bg-card px-4 text-center text-title2 tracking-[0.3em] outline-none placeholder:text-label-3"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder={mode === 'crear' ? 'Contraseña (mínimo 8)' : 'Contraseña'}
+            aria-label="Contraseña"
+            className="min-h-[50px] w-full bg-transparent px-4 text-body outline-none placeholder:text-label-3"
           />
-        )}
+        </div>
         {error && <p className="mt-3 text-subhead text-red">{error}</p>}
-        <Button
-          type="submit"
-          className="mt-4 w-full"
-          disabled={busy || (step === 'email' ? !email.includes('@') : code.length !== 6)}
-        >
-          {step === 'email' ? 'Enviar código' : 'Entrar'}
+        <Button type="submit" className="mt-4 w-full" disabled={busy || !valid}>
+          {mode === 'entrar' ? 'Entrar' : 'Crear cuenta'}
         </Button>
-        {step === 'code' && (
-          <Button variant="plain" className="mt-2 w-full" onClick={() => setStep('email')}>
-            Usar otro correo
-          </Button>
-        )}
       </form>
     </main>
   );

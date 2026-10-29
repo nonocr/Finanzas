@@ -25,7 +25,8 @@ En esta máquina (Windows), git no está en el PATH de PowerShell. Antepón `$en
 - **Dinero:** siempre enteros en **céntimos**, de punta a punta. Formatea con `formatCRC` (`src/lib/money.ts`), que usa punto de miles y el signo menos U+2212. El parser `parseAmountToCents` vive en `supabase/functions/_shared/money.ts` porque lo comparten la app y la Edge Function.
 - **Fechas:** se agrupan en hora de Costa Rica (UTC−6) con `src/lib/dates.ts`. Un "día" es un `Date` a medianoche UTC; `crDayStartInstant` lo convierte al instante real. La semana va de lunes a domingo, con las iniciales L M K J V S D.
 - **Backend:** `supabase/migrations/` contiene tablas, RLS (`user_id = auth.uid()`), las vistas `account_balances` y `budget_progress`, y un trigger que crea categorías y efectivo para cada usuario nuevo. `supabase/functions/wallet-ingest` es el webhook del Atajo de iOS: autentica con un token personal hasheado y se despliega con `--no-verify-jwt`.
-- **Login:** código OTP de 6 dígitos por correo, no enlace mágico, porque en iPhone el enlace abriría Safari y no la PWA instalada.
+- **Login:** correo y contraseña. No se usa enlace mágico porque en iPhone abriría Safari y no la PWA instalada. No se usa código OTP porque el plan gratis no permite editar la plantilla del correo. La confirmación de correo es automática; cuando la dueña cree su cuenta, el registro se cierra (`disable_signup`).
+- **Proyecto Supabase:** `qdrkbocandltwfvofngt` («Finanzas»), en una cuenta distinta a la de los proyectos de trabajo. **No uses el login global de la CLI**: está en la cuenta de trabajo. Usa el token de `supabase/.env.cli` (git lo ignora): `$env:SUPABASE_ACCESS_TOKEN=...` más `--project-ref`. Las migraciones se aplicaron con la Management API (`POST /v1/projects/{ref}/database/query`) y se registraron en `supabase_migrations.schema_migrations`.
 
 ## Diseño
 

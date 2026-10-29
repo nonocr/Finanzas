@@ -20,11 +20,7 @@ En el celular, misma red: `npx vite --host` y abre `http://<ip-de-tu-pc>:5173`. 
 1. Crea un proyecto gratis en [supabase.com](https://supabase.com).
 2. **Base de datos:** en *SQL Editor* pega y ejecuta `supabase/migrations/20261029000000_init.sql`.
    Si prefieres la CLI: `npx supabase login`, `npx supabase link --project-ref <ref>` y luego `npx supabase db push`.
-3. **Inicio de sesión con código:** en *Authentication → Email Templates → Magic Link*, cambia el cuerpo para que incluya el código:
-   ```html
-   <h2>Tu código</h2><p>{{ .Token }}</p>
-   ```
-   La app pide un código de 6 dígitos en vez de un enlace porque, en iPhone, el enlace abriría Safari y no la app instalada.
+3. **Inicio de sesión:** es con correo y contraseña. En *Authentication → Sign In / Providers* activa la confirmación automática del correo para crear la cuenta. Cuando la tengas, desactiva *Allow new users to sign up* para que nadie más se pueda registrar.
 4. **Variables:** copia `.env.example` como `.env.local` y llena `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` (Project Settings → API).
 5. **Función de Wallet:** `npx supabase functions deploy wallet-ingest --no-verify-jwt`.
 

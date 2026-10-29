@@ -19,6 +19,7 @@ dist-ssr
 .impeccable/decision/
 .impeccable/config.local.json
 supabase/.temp
+supabase/.env.cli
 
 # Claude Code: config personal y binarios que las skills descargan solas
 .claude/settings.local.json
