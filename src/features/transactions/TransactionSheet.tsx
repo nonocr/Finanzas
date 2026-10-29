@@ -1,13 +1,13 @@
 import clsx from 'clsx';
-import { ArrowRight, Delete, Smartphone } from 'lucide-react';
+import { ArrowRight, ChevronDown, Smartphone } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import { AmountInput } from '../../components/AmountInput';
 import { Segmented } from '../../components/motion';
 import { ACCOUNT_ICONS, colorOf, iconOf } from '../../components/palette';
 import { Sheet } from '../../components/Sheet';
 import { useToast } from '../../components/Toast';
 import { Button } from '../../components/ui';
 import { crDay, crDayOf, crDayStartInstant, isoDate } from '../../lib/dates';
-import { formatCRC } from '../../lib/money';
 import {
   useAccounts,
   useCategories,
@@ -15,7 +15,7 @@ import {
   useSaveMerchantRule,
   useSaveTransaction,
 } from '../../lib/queries';
-import type { Transaction, TxType } from '../../lib/types';
+import type { Account, Transaction, TxType } from '../../lib/types';
 
 const LAST_ACCOUNT_KEY = 'finanzas-last-account';
 const pillDate = new Intl.DateTimeFormat('es-CR', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
@@ -30,7 +30,7 @@ const readLastAccount = () => {
 const TYPE_OPTIONS: { value: TxType; label: string }[] = [
   { value: 'gasto', label: 'Gasto' },
   { value: 'ingreso', label: 'Ingreso' },
-  { value: 'transferencia', label: 'Transferencia' },
+  { value: 'transferencia', label: 'Entre cuentas' },
 ];
 
 export function TransactionSheet({
@@ -61,8 +61,8 @@ export function TransactionSheet({
   const [note, setNote] = useState(tx?.note ?? '');
   const [date, setDate] = useState(isoDate(tx ? crDayOf(tx.occurred_at) : crDay()));
   const [remember, setRemember] = useState(pending && Boolean(tx?.merchant));
-  // Al editar el monto ya existe: el teclado aparece solo si se toca el monto.
-  const [showPad, setShowPad] = useState(!tx);
+  // Lo opcional (comercio, fecha, nota) queda plegado al registrar algo nuevo.
+  const [details, setDetails] = useState(Boolean(tx));
 
   const account = accounts.find((a) => a.id === accountId) ?? accounts[0];
   const cats = useMemo(
@@ -72,23 +72,15 @@ export function TransactionSheet({
   const cents = Number(colones || '0') * 100;
   const isTransfer = type === 'transferencia';
   const destination = accounts.find((a) => a.id === toAccountId);
+  const today = isoDate(crDay());
   const valid =
     cents > 0 &&
     account &&
     (isTransfer ? destination && destination.id !== account.id : true) &&
     (!pending || categoryId);
 
-  const press = (key: string) => {
-    if (key === 'del') return setColones((v) => v.slice(0, -1));
-    setColones((v) => {
-      const next = (v + key).replace(/^0+/, '');
-      return next.length > 10 ? v : next;
-    });
-  };
-
   const submit = async () => {
     if (!valid || !account) return;
-    const today = isoDate(crDay());
     const occurred_at =
       tx && isoDate(crDayOf(tx.occurred_at)) === date
         ? tx.occurred_at
@@ -115,7 +107,17 @@ export function TransactionSheet({
     } catch {
       // preferencia opcional
     }
-    toast(tx ? (pending ? 'Pago confirmado' : 'Cambios guardados') : type === 'ingreso' ? 'Ingreso guardado' : 'Gasto guardado');
+    toast(
+      tx
+        ? pending
+          ? 'Pago confirmado'
+          : 'Cambios guardados'
+        : type === 'ingreso'
+          ? 'Ingreso guardado'
+          : isTransfer
+            ? 'Movimiento guardado'
+            : 'Gasto guardado',
+    );
     onClose();
   };
 
@@ -126,7 +128,15 @@ export function TransactionSheet({
     onClose();
   };
 
-  const title = pending ? 'Revisar pago' : tx ? 'Editar' : type === 'ingreso' ? 'Nuevo ingreso' : type === 'transferencia' ? 'Transferencia' : 'Nuevo gasto';
+  const title = pending
+    ? 'Revisar pago'
+    : tx
+      ? 'Editar'
+      : type === 'ingreso'
+        ? 'Nuevo ingreso'
+        : isTransfer
+          ? 'Entre cuentas'
+          : 'Nuevo gasto';
 
   return (
     <Sheet
@@ -141,7 +151,7 @@ export function TransactionSheet({
       trailing={
         <button
           type="button"
-          className="min-h-11 text-body font-semibold text-blue disabled:text-label-3"
+          className="press min-h-9 rounded-full bg-blue px-4 text-body font-semibold text-white disabled:bg-fill disabled:text-label-3"
           disabled={!valid || save.isPending}
           onClick={submit}
         >
@@ -159,116 +169,117 @@ export function TransactionSheet({
       )}
 
       {!tx && <Segmented options={TYPE_OPTIONS} value={type} onChange={setType} />}
+      {isTransfer && (
+        <p className="mt-2 px-1 text-footnote text-label-2">
+          Para mover plata entre tus cuentas: pagar la tarjeta, sacar efectivo del cajero o pasar a ahorros. No cuenta como gasto ni
+          como ingreso.
+        </p>
+      )}
 
-      <button
-        type="button"
-        onClick={() => setShowPad(true)}
-        disabled={showPad}
-        aria-label={showPad ? undefined : 'Cambiar monto'}
-        className={clsx(
-          'tnum mt-5 block w-full text-center text-[52px] leading-[60px] font-bold tracking-[-0.02em]',
-          cents === 0 && 'text-label-3',
-          type === 'ingreso' && cents > 0 && 'text-green',
-        )}
-        aria-live="polite"
-      >
-        {formatCRC(cents)}
-      </button>
-      {!showPad && <p className="text-center text-footnote text-label-2">Toca el monto para cambiarlo</p>}
-
-      <div className={clsx('mt-4 grid grid-cols-3 gap-2', !showPad && 'hidden')} aria-label="Teclado numérico">
-        {['1', '2', '3', '4', '5', '6', '7', '8', '9', '000', '0', 'del'].map((k) => (
-          <button
-            key={k}
-            type="button"
-            onClick={() => press(k)}
-            aria-label={k === 'del' ? 'Borrar' : k}
-            className="press grid h-12 place-items-center rounded-[10px] bg-card-2 text-title3 font-medium active:bg-card-3"
-          >
-            {k === 'del' ? <Delete size={22} strokeWidth={2} /> : k}
-          </button>
-        ))}
+      <div className="mt-5">
+        <AmountInput value={colones} onChange={setColones} autoFocus={!tx} tone={type === 'ingreso' ? 'ingreso' : undefined} />
       </div>
 
       {!isTransfer && (
-        <Picker label="Categoría">
-          {cats.map((c) => {
-            const Icon = iconOf(c.icon);
-            const on = c.id === categoryId;
-            return (
-              <Chip key={c.id} on={on} onClick={() => setCategoryId(on ? null : c.id)}>
-                <span className="grid size-6 place-items-center rounded-[7px] text-white" style={{ background: colorOf(c.color) }}>
-                  <Icon size={15} strokeWidth={2.25} />
-                </span>
-                {c.name}
-              </Chip>
-            );
-          })}
-        </Picker>
-      )}
-
-      <Picker label={isTransfer ? 'Desde' : type === 'ingreso' ? 'Entra a' : 'Pagado con'}>
-        {accounts.map((a) => {
-          const Icon = ACCOUNT_ICONS[a.type];
-          return (
-            <Chip key={a.id} on={a.id === account?.id} onClick={() => setAccountId(a.id)}>
-              <Icon size={18} strokeWidth={2} className="text-label-2" />
-              {a.name}
-            </Chip>
-          );
-        })}
-      </Picker>
-
-      {isTransfer && (
-        <Picker label="Hacia" icon={<ArrowRight size={14} strokeWidth={2.25} />}>
-          {accounts
-            .filter((a) => a.id !== account?.id)
-            .map((a) => {
-              const Icon = ACCOUNT_ICONS[a.type];
+        <Group label="Categoría">
+          <div className="grid grid-cols-4 gap-x-1 gap-y-3">
+            {cats.map((c) => {
+              const Icon = iconOf(c.icon);
+              const on = c.id === categoryId;
               return (
-                <Chip key={a.id} on={a.id === toAccountId} onClick={() => setToAccountId(a.id)}>
-                  <Icon size={18} strokeWidth={2} className="text-label-2" />
-                  {a.name}
-                </Chip>
+                <button
+                  key={c.id}
+                  type="button"
+                  aria-pressed={on}
+                  onClick={() => setCategoryId(on ? null : c.id)}
+                  className="press flex min-h-11 flex-col items-center gap-1.5 rounded-[12px] py-1.5"
+                >
+                  <span
+                    className={clsx(
+                      'grid size-12 place-items-center rounded-[14px] text-white transition-[box-shadow,opacity] duration-150',
+                      categoryId && !on && 'opacity-45',
+                    )}
+                    style={{
+                      background: colorOf(c.color),
+                      boxShadow: on ? '0 0 0 2px var(--color-card), 0 0 0 4px var(--color-label)' : undefined,
+                    }}
+                  >
+                    <Icon size={24} strokeWidth={2} />
+                  </span>
+                  <span className={clsx('w-full truncate px-0.5 text-center text-caption', on ? 'font-semibold text-label' : 'text-label-2')}>
+                    {c.name}
+                  </span>
+                </button>
               );
             })}
-        </Picker>
+          </div>
+        </Group>
       )}
 
-      <div className="mt-5 overflow-hidden rounded-[12px] bg-card-2">
-        <Field label={isTransfer ? 'Descripción' : type === 'ingreso' ? 'Origen' : 'Comercio'}>
-          <input
-            value={merchant}
-            onChange={(e) => setMerchant(e.target.value)}
-            placeholder={isTransfer ? 'Pago de tarjeta' : type === 'ingreso' ? 'Salario' : 'Automercado'}
-            className="w-full bg-transparent text-right text-body outline-none placeholder:text-label-3"
-            autoComplete="off"
+      <Group label={isTransfer ? 'Desde' : type === 'ingreso' ? 'Entra a' : 'Pagado con'}>
+        <AccountChips accounts={accounts} selected={account?.id} onSelect={setAccountId} />
+      </Group>
+
+      {isTransfer && (
+        <Group label="Hacia" icon={<ArrowRight size={14} strokeWidth={2.25} />}>
+          <AccountChips
+            accounts={accounts.filter((a) => a.id !== account?.id)}
+            selected={toAccountId ?? undefined}
+            onSelect={setToAccountId}
           />
-        </Field>
-        <Field label="Fecha">
-          {/* Pastilla de fecha al estilo iOS; el input nativo queda encima, transparente, para abrir el selector. */}
-          <span className="relative inline-flex">
-            <span className="rounded-[8px] bg-card-3 px-3 py-1.5 text-body">{pillDate.format(new Date(date + 'T00:00:00Z'))}</span>
-            <input
-              type="date"
-              value={date}
-              max={isoDate(crDay())}
-              onChange={(e) => e.target.value && setDate(e.target.value)}
-              aria-label="Fecha"
-              className="absolute inset-0 opacity-0 [color-scheme:dark] [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:size-full"
-            />
+        </Group>
+      )}
+
+      {!details ? (
+        <button
+          type="button"
+          onClick={() => setDetails(true)}
+          className="mt-5 flex min-h-11 w-full items-center justify-between rounded-[12px] bg-card-2 px-4 text-body"
+        >
+          <span>
+            <span className="text-label">Hoy</span>
+            <span className="text-label-2"> · Agregar comercio o nota</span>
           </span>
-        </Field>
-        <Field label="Nota" last>
-          <input
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            placeholder="Opcional"
-            className="w-full bg-transparent text-right text-body outline-none placeholder:text-label-3"
-            autoComplete="off"
-          />
-        </Field>
-      </div>
+          <ChevronDown size={18} strokeWidth={2.25} className="text-label-3" />
+        </button>
+      ) : (
+        <div className="mt-5 overflow-hidden rounded-[12px] bg-card-2">
+          <Field label={isTransfer ? 'Descripción' : type === 'ingreso' ? 'Origen' : 'Comercio'}>
+            <input
+              value={merchant}
+              onChange={(e) => setMerchant(e.target.value)}
+              placeholder={isTransfer ? 'Pago de tarjeta' : type === 'ingreso' ? 'Salario' : 'Automercado'}
+              className="w-full bg-transparent text-right text-body outline-none placeholder:text-label-3"
+              autoComplete="off"
+            />
+          </Field>
+          <Field label="Fecha">
+            {/* Pastilla de fecha al estilo iOS; el input nativo queda encima, transparente, para abrir el selector. */}
+            <span className="relative inline-flex">
+              <span className="rounded-[8px] bg-card-3 px-3 py-1.5 text-body">
+                {date === today ? 'Hoy' : pillDate.format(new Date(date + 'T00:00:00Z'))}
+              </span>
+              <input
+                type="date"
+                value={date}
+                max={today}
+                onChange={(e) => e.target.value && setDate(e.target.value)}
+                aria-label="Fecha"
+                className="absolute inset-0 opacity-0 [color-scheme:dark] [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:size-full"
+              />
+            </span>
+          </Field>
+          <Field label="Nota" last>
+            <input
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder="Opcional"
+              className="w-full bg-transparent text-right text-body outline-none placeholder:text-label-3"
+              autoComplete="off"
+            />
+          </Field>
+        </div>
+      )}
 
       {pending && tx?.merchant && (
         <label className="mt-3 flex min-h-11 items-center justify-between gap-3 rounded-[12px] bg-card-2 px-4 py-2.5">
@@ -288,31 +299,50 @@ export function TransactionSheet({
   );
 }
 
-function Picker({ label, icon, children }: { label: string; icon?: React.ReactNode; children: React.ReactNode }) {
+function Group({ label, icon, children }: { label: string; icon?: React.ReactNode; children: React.ReactNode }) {
   return (
     <div className="mt-5">
       <p className="mb-2 flex items-center gap-1 px-1 text-footnote font-semibold text-label-2 uppercase">
         {label}
         {icon}
       </p>
-      <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none]">{children}</div>
+      {children}
     </div>
   );
 }
 
-function Chip({ on, onClick, children }: { on: boolean; onClick: () => void; children: React.ReactNode }) {
+function AccountChips({
+  accounts,
+  selected,
+  onSelect,
+}: {
+  accounts: Account[];
+  selected?: string;
+  onSelect: (id: string) => void;
+}) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={on}
-      className={clsx(
-        'press flex min-h-11 shrink-0 items-center gap-2 rounded-full py-1.5 pr-4 pl-2 text-subhead font-semibold whitespace-nowrap',
-        on ? 'bg-label text-black [&_svg.text-label-2]:text-black/60' : 'bg-card-2 text-label',
-      )}
-    >
-      {children}
-    </button>
+    <div className="flex flex-wrap gap-2">
+      {accounts.map((a) => {
+        const Icon = ACCOUNT_ICONS[a.type];
+        const on = a.id === selected;
+        return (
+          <button
+            key={a.id}
+            type="button"
+            onClick={() => onSelect(a.id)}
+            aria-pressed={on}
+            className={clsx(
+              'press flex min-h-11 items-center gap-2 rounded-full py-1.5 pr-4 pl-3 text-subhead font-semibold',
+              on ? 'bg-label text-black' : 'bg-card-2 text-label',
+            )}
+          >
+            <Icon size={18} strokeWidth={2} className={on ? 'text-black/60' : 'text-label-2'} />
+            {a.name}
+            {a.last4 && <span className={on ? 'text-black/50' : 'text-label-3'}>•{a.last4}</span>}
+          </button>
+        );
+      })}
+    </div>
   );
 }
 

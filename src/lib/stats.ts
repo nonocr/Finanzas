@@ -122,6 +122,29 @@ export function topMerchants(txs: Transaction[], limit = 5): MerchantTotal[] {
   return [...acc.values()].sort((a, b) => b.amount - a.amount).slice(0, limit);
 }
 
+export interface TotalBudget {
+  /** Límite que rige el mes; null si no hay ningún presupuesto. */
+  limit: number | null;
+  /** Total definido a mano (fila con category_id null), si existe. */
+  manual: number | null;
+  /** Suma de los presupuestos por categoría. */
+  sum: number;
+  /** 'manual': manda el total definido; 'suma': no hay total, se usa la suma; 'ajustado': la suma superó al total. */
+  source: 'manual' | 'suma' | 'ajustado' | null;
+}
+
+/**
+ * El total del mes se adapta a las categorías: sin total definido es la suma de las categorías,
+ * y si las categorías suman más que el total definido, el total sube hasta esa suma.
+ */
+export function totalBudget(budgets: { category_id: string | null; amount: number }[]): TotalBudget {
+  const manual = budgets.find((b) => b.category_id === null)?.amount ?? null;
+  const sum = budgets.filter((b) => b.category_id !== null).reduce((s, b) => s + b.amount, 0);
+  if (manual === null) return { limit: sum > 0 ? sum : null, manual, sum, source: sum > 0 ? 'suma' : null };
+  if (sum > manual) return { limit: sum, manual, sum, source: 'ajustado' };
+  return { limit: manual, manual, sum, source: 'manual' };
+}
+
 /** Cambio relativo contra el periodo anterior; null si antes no hubo gasto. */
 export function changeVs(current: number, previous: number): number | null {
   return previous > 0 ? (current - previous) / previous : null;

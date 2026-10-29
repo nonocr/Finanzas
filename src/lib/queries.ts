@@ -55,6 +55,14 @@ export function useSaveCategory() {
   return useMutation({ mutationFn: (cat: Partial<Category>) => api.saveCategory(cat), onSuccess });
 }
 
+export const useArchivedCategories = () =>
+  useQuery({ queryKey: ['categories', 'archived'], queryFn: api.listArchivedCategories });
+
+export function useDeleteCategory() {
+  const onSuccess = useInvalidate([['categories'], ...MONEY_KEYS, ['budgets'], ['merchant_rules']]);
+  return useMutation({ mutationFn: api.deleteCategory, onSuccess });
+}
+
 export function useSaveBudget() {
   const onSuccess = useInvalidate([['budgets'], ['budget_progress']]);
   return useMutation({ mutationFn: api.saveBudget, onSuccess });

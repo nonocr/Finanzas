@@ -6,7 +6,7 @@ import { AnimatedAmount } from '../../components/motion';
 import { hexOf } from '../../components/palette';
 import { useToast } from '../../components/Toast';
 import { budgetTone, Button, CategoryIcon, ProgressBar, Screen, Section } from '../../components/ui';
-import { addMonths, crDay, isoDate, monthName, startOfMonth } from '../../lib/dates';
+import { addMonths, crDay, isoDate, monthName, monthRange, startOfMonth } from '../../lib/dates';
 import { formatCRC } from '../../lib/money';
 import {
   useBudgetProgress,
@@ -15,7 +15,9 @@ import {
   useCopyBudgets,
   useDeleteBudget,
   useSaveBudget,
+  useTransactions,
 } from '../../lib/queries';
+import { totalBudget, totals } from '../../lib/stats';
 import type { Category } from '../../lib/types';
 
 type Editing = { categoryId: string | null; name: string; cents: number; budgetId?: string; key: number } | null;
@@ -33,7 +35,9 @@ export function BudgetsPage() {
   const [editing, setEditing] = useState<Editing>(null);
   const [open, setOpen] = useState(false);
 
-  const total = progress.find((p) => p.category_id === null);
+  const { data: monthTxs = [] } = useTransactions(monthRange(month));
+  const total = totalBudget(budgets);
+  const spent = totals(monthTxs).gastos;
   const byCat = useMemo(() => new Map(progress.filter((p) => p.category_id).map((p) => [p.category_id!, p])), [progress]);
   const expenseCats = categories.filter((c) => c.kind === 'gasto' && !c.parent_id);
   const withBudget = expenseCats.filter((c) => byCat.has(c.id));
@@ -43,11 +47,12 @@ export function BudgetsPage() {
     return p.spent / p.limit_amount >= 0.8;
   });
   const prevMonth = addMonths(month, -1);
-  const sumCategories = withBudget.reduce((s, c) => s + byCat.get(c.id)!.limit_amount, 0);
 
   const edit = (categoryId: string | null, name: string) => {
     const b = budgets.find((x) => x.category_id === categoryId);
-    setEditing((prev) => ({ categoryId, name, cents: b?.amount ?? 0, budgetId: b?.id, key: (prev?.key ?? 0) + 1 }));
+    // El total sin definir arranca desde la suma de categorías, que es lo que se está mostrando.
+    const cents = b?.amount ?? (categoryId === null ? total.sum : 0);
+    setEditing((prev) => ({ categoryId, name, cents, budgetId: b?.id, key: (prev?.key ?? 0) + 1 }));
     setOpen(true);
   };
 
@@ -76,19 +81,24 @@ export function BudgetsPage() {
 
       <button type="button" onClick={() => edit(null, 'Total del mes')} className="press mt-4 block w-full rounded-card bg-card p-4 text-left">
         <p className="text-subhead font-semibold text-label-2">Total del mes</p>
-        {total ? (
+        {total.limit ? (
           <>
             <p className="mt-1 flex items-baseline gap-2">
-              <AnimatedAmount cents={total.spent} className="text-title1 font-bold" />
-              <span className="tnum text-subhead text-label-2">de {formatCRC(total.limit_amount)}</span>
+              <AnimatedAmount cents={spent} className="text-title1 font-bold" />
+              <span className="tnum text-subhead text-label-2">de {formatCRC(total.limit)}</span>
             </p>
             <div className="mt-3">
-              <ProgressBar value={total.spent / total.limit_amount} />
+              <ProgressBar value={spent / total.limit} />
             </div>
-            <p className={'tnum mt-2 text-subhead font-semibold ' + budgetTone(total.spent / total.limit_amount)}>
-              {total.spent > total.limit_amount
-                ? `Te pasaste ${formatCRC(total.spent - total.limit_amount)}`
-                : `Quedan ${formatCRC(total.limit_amount - total.spent)}`}
+            <p className={'tnum mt-2 text-subhead font-semibold ' + budgetTone(spent / total.limit)}>
+              {spent > total.limit ? `Te pasaste ${formatCRC(spent - total.limit)}` : `Quedan ${formatCRC(total.limit - spent)}`}
+            </p>
+            <p className="mt-1 text-footnote text-label-2">
+              {total.source === 'suma'
+                ? 'Es la suma de tus categorías. Toca para definir un total propio.'
+                : total.source === 'ajustado'
+                  ? `Subió a la suma de tus categorías; habías definido ${formatCRC(total.manual!)}.`
+                  : 'Definido por ti. Toca para cambiarlo.'}
             </p>
           </>
         ) : (
@@ -109,8 +119,8 @@ export function BudgetsPage() {
         <Section
           header="Por categoría"
           footer={
-            total && sumCategories > total.limit_amount
-              ? `Las categorías suman ${formatCRC(sumCategories)}, más que el total del mes.`
+            total.source === 'manual' && total.manual! > total.sum
+              ? `Sin asignar a categorías: ${formatCRC(total.manual! - total.sum)}.`
               : undefined
           }
         >
@@ -139,7 +149,7 @@ export function BudgetsPage() {
         </Section>
       )}
 
-      {progress.length === 0 && (
+      {budgets.length === 0 && (
         <Button variant="tinted" className="mt-6 w-full" onClick={onCopy} disabled={copy.isPending}>
           Copiar presupuestos de {monthName(prevMonth)}
         </Button>

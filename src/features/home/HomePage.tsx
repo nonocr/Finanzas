@@ -8,8 +8,8 @@ import { budgetTone, EmptyState, ProgressBar, Screen, Section, Skeleton } from '
 import { isDemo } from '../../lib/api';
 import { crDay, isoDate, monthName, monthRange, startOfMonth, startOfWeek, weekRange, WEEKDAY_INITIALS } from '../../lib/dates';
 import { formatCRC } from '../../lib/money';
-import { useAccounts, useBudgetProgress, useCategories, usePendingReview, useTransactions } from '../../lib/queries';
-import { spendingByCategory, spendingByDay, totals } from '../../lib/stats';
+import { useAccounts, useBudgets, useCategories, usePendingReview, useTransactions } from '../../lib/queries';
+import { spendingByCategory, spendingByDay, totalBudget, totals } from '../../lib/stats';
 import { TransactionRow } from '../transactions/TransactionRow';
 
 type Period = 'semana' | 'mes';
@@ -42,7 +42,7 @@ export function HomePage() {
   const { data: txs, isLoading } = useTransactions(range);
   const { data: categories = [] } = useCategories();
   const { data: accounts = [] } = useAccounts();
-  const { data: progress = [] } = useBudgetProgress(month);
+  const { data: budgets = [] } = useBudgets(month);
   const { data: pending = [] } = usePendingReview();
 
   const catMap = useMemo(() => new Map(categories.map((c) => [c.id, c])), [categories]);
@@ -54,13 +54,15 @@ export function HomePage() {
   const todayIdx = Math.round((today.getTime() - weekStart.getTime()) / 86_400_000);
 
   // Presupuesto total del mes; en vista semanal se prorratea a 7 días.
-  const totalBudget = progress.find((p) => p.category_id === null);
+  // El total se adapta a las categorías (ver totalBudget).
+  const monthLimit = totalBudget(budgets).limit;
   const daysInMonth = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth() + 1, 0)).getUTCDate();
-  const limit = totalBudget
-    ? period === 'mes'
-      ? totalBudget.limit_amount
-      : Math.round((totalBudget.limit_amount * 7) / daysInMonth / 100) * 100
-    : null;
+  const limit =
+    monthLimit === null
+      ? null
+      : period === 'mes'
+        ? monthLimit
+        : Math.round((monthLimit * 7) / daysInMonth / 100) * 100;
   const left = limit !== null ? limit - t.gastos : null;
 
   // Orden fijo de categorías para que la dona se transforme al cambiar de periodo.

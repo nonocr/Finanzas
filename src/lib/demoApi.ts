@@ -233,6 +233,18 @@ export function createDemoApi(): Api {
         });
       commit();
     },
+    listArchivedCategories: () => ok(db.categories.filter((c) => c.archived).sort((a, b) => a.name.localeCompare(b.name))),
+    countCategoryUse: (id) => ok(db.transactions.filter((t) => t.category_id === id).length),
+    async deleteCategory(id) {
+      // Igual que en la base: movimientos quedan sin categoría; presupuestos y reglas se borran.
+      db.transactions = db.transactions.map((t) => (t.category_id === id ? { ...t, category_id: null } : t));
+      db.budgets = db.budgets.filter((b) => b.category_id !== id);
+      db.rules = db.rules.filter((r) => r.category_id !== id);
+      db.categories = db.categories
+        .filter((c) => c.id !== id)
+        .map((c) => (c.parent_id === id ? { ...c, parent_id: null } : c));
+      commit();
+    },
     async saveBudget(b) {
       const existing = db.budgets.find((x) => x.month === b.month && x.category_id === b.category_id);
       if (existing) existing.amount = b.amount;

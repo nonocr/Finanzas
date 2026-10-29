@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { crDay } from './dates';
-import { monthlyTrend, spendingByCategory, spendingByDay, spendingByMethod, topMerchants, totals } from './stats';
+import { monthlyTrend, spendingByCategory, spendingByDay, spendingByMethod, topMerchants, totalBudget, totals } from './stats';
 import type { Account, Category, Transaction } from './types';
 
 let n = 0;
@@ -82,6 +82,28 @@ describe('stats', () => {
       [acct('cash', 'efectivo'), acct('visa', 'credito'), acct('deb', 'debito')],
     );
     expect(r).toEqual({ efectivo: 100, tarjeta: 350, otro: 0 });
+  });
+
+  it('total del presupuesto: sin total definido es la suma de categorías', () => {
+    expect(totalBudget([{ category_id: 'a', amount: 100 }, { category_id: 'b', amount: 50 }])).toEqual({
+      limit: 150, manual: null, sum: 150, source: 'suma',
+    });
+  });
+
+  it('total del presupuesto: el definido manda si alcanza', () => {
+    expect(totalBudget([{ category_id: null, amount: 500 }, { category_id: 'a', amount: 100 }])).toMatchObject({
+      limit: 500, source: 'manual',
+    });
+  });
+
+  it('total del presupuesto: sube si las categorías lo superan', () => {
+    expect(totalBudget([{ category_id: null, amount: 100 }, { category_id: 'a', amount: 80 }, { category_id: 'b', amount: 70 }])).toEqual({
+      limit: 150, manual: 100, sum: 150, source: 'ajustado',
+    });
+  });
+
+  it('total del presupuesto: nada definido', () => {
+    expect(totalBudget([])).toEqual({ limit: null, manual: null, sum: 0, source: null });
   });
 
   it('top comercios agrupa sin distinguir mayúsculas', () => {

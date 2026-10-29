@@ -33,6 +33,11 @@ export interface Api {
   deleteTransaction(id: string): Promise<void>;
   saveAccount(acc: Partial<Account>): Promise<void>;
   saveCategory(cat: Partial<Category>): Promise<void>;
+  listArchivedCategories(): Promise<Category[]>;
+  /** Cuántos movimientos usan la categoría (quedan sin categoría si se borra). */
+  countCategoryUse(id: string): Promise<number>;
+  /** Borra la categoría del todo: sus presupuestos y reglas se van con ella. */
+  deleteCategory(id: string): Promise<void>;
   saveBudget(b: { category_id: string | null; month: string; amount: number }): Promise<void>;
   deleteBudget(id: string): Promise<void>;
   copyBudgets(from: string, to: string): Promise<number>;
@@ -80,6 +85,15 @@ const supabaseApi: Api = {
   saveCategory: async ({ id, ...cat }) => {
     await unwrap(id ? supabase.from('categories').update(cat).eq('id', id) : supabase.from('categories').insert(cat));
   },
+  listArchivedCategories: () => unwrap(supabase.from('categories').select('*').eq('archived', true).order('name')),
+  countCategoryUse: async (id) => {
+    const { count, error } = await supabase.from('transactions').select('id', { count: 'exact', head: true }).eq('category_id', id);
+    if (error) throw new Error(error.message);
+    return count ?? 0;
+  },
+  deleteCategory: async (id) => {
+    await unwrap(supabase.from('categories').delete().eq('id', id));
+  },
   saveBudget: async (b) => {
     await unwrap(supabase.from('budgets').upsert(b, { onConflict: 'user_id,category_id,month' }));
   },
@@ -99,5 +113,6 @@ const supabaseApi: Api = {
   },
 };
 
-export const isDemo = !supabaseConfigured;
+// VITE_DEMO=1 fuerza la demo aunque haya Supabase configurado (para probar sin tocar datos reales).
+export const isDemo = !supabaseConfigured || import.meta.env.VITE_DEMO === '1';
 export const api: Api = isDemo ? createDemoApi() : supabaseApi;
