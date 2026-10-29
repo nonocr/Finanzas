@@ -1,0 +1,180 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-29T00:00:00Z",
+  "title": "Design System: Finanzas personales",
+  "extensions": {
+    "colorMeta": {
+      "blue": { "role": "primary", "displayName": "System Blue", "canonical": "#0a84ff", "tonalRamp": ["oklch(25% 0.08 255)", "oklch(35% 0.12 255)", "oklch(45% 0.16 255)", "oklch(55% 0.19 255)", "oklch(63% 0.2 255)", "oklch(73% 0.14 255)", "oklch(84% 0.08 255)", "oklch(95% 0.03 255)"] },
+      "green": { "role": "secondary", "displayName": "System Green", "canonical": "#30d158", "tonalRamp": ["oklch(25% 0.07 147)", "oklch(35% 0.1 147)", "oklch(46% 0.14 147)", "oklch(58% 0.17 147)", "oklch(76% 0.2 147)", "oklch(83% 0.14 147)", "oklch(89% 0.08 147)", "oklch(96% 0.03 147)"] },
+      "orange": { "role": "secondary", "displayName": "System Orange", "canonical": "#ff9f0a", "tonalRamp": ["oklch(25% 0.06 65)", "oklch(36% 0.09 65)", "oklch(48% 0.12 65)", "oklch(62% 0.15 65)", "oklch(78% 0.17 65)", "oklch(84% 0.12 65)", "oklch(90% 0.07 65)", "oklch(96% 0.03 65)"] },
+      "red": { "role": "secondary", "displayName": "System Red", "canonical": "#ff453a", "tonalRamp": ["oklch(24% 0.08 28)", "oklch(34% 0.12 28)", "oklch(45% 0.16 28)", "oklch(56% 0.2 28)", "oklch(66% 0.22 28)", "oklch(76% 0.14 28)", "oklch(86% 0.07 28)", "oklch(95% 0.03 28)"] },
+      "yellow": { "role": "tertiary", "displayName": "Category c5 Yellow", "canonical": "#ffd60a", "tonalRamp": ["oklch(25% 0.05 98)", "oklch(37% 0.08 98)", "oklch(50% 0.11 98)", "oklch(65% 0.14 98)", "oklch(88% 0.18 98)", "oklch(91% 0.12 98)", "oklch(94% 0.07 98)", "oklch(97% 0.03 98)"] },
+      "pink": { "role": "tertiary", "displayName": "Category c6 Pink", "canonical": "#ff375f", "tonalRamp": ["oklch(24% 0.08 15)", "oklch(34% 0.12 15)", "oklch(45% 0.16 15)", "oklch(56% 0.2 15)", "oklch(65% 0.23 15)", "oklch(75% 0.15 15)", "oklch(86% 0.07 15)", "oklch(95% 0.03 15)"] },
+      "purple": { "role": "tertiary", "displayName": "Category c7 Purple", "canonical": "#bf5af2", "tonalRamp": ["oklch(25% 0.08 310)", "oklch(35% 0.12 310)", "oklch(46% 0.16 310)", "oklch(57% 0.19 310)", "oklch(66% 0.2 310)", "oklch(76% 0.13 310)", "oklch(86% 0.07 310)", "oklch(95% 0.03 310)"] },
+      "indigo": { "role": "tertiary", "displayName": "Category c8 Indigo", "canonical": "#5e5ce6", "tonalRamp": ["oklch(24% 0.08 280)", "oklch(34% 0.12 280)", "oklch(44% 0.16 280)", "oklch(54% 0.19 280)", "oklch(60% 0.2 280)", "oklch(72% 0.13 280)", "oklch(84% 0.07 280)", "oklch(95% 0.03 280)"] },
+      "teal": { "role": "tertiary", "displayName": "Category c9 Teal", "canonical": "#40c8e0", "tonalRamp": ["oklch(25% 0.05 215)", "oklch(36% 0.07 215)", "oklch(48% 0.09 215)", "oklch(62% 0.11 215)", "oklch(77% 0.12 215)", "oklch(84% 0.09 215)", "oklch(90% 0.05 215)", "oklch(96% 0.02 215)"] },
+      "brown": { "role": "tertiary", "displayName": "Category c4 Brown", "canonical": "#ac8e68", "tonalRamp": ["oklch(24% 0.03 75)", "oklch(34% 0.04 75)", "oklch(45% 0.05 75)", "oklch(56% 0.06 75)", "oklch(66% 0.06 75)", "oklch(76% 0.05 75)", "oklch(86% 0.03 75)", "oklch(95% 0.01 75)"] },
+      "gray": { "role": "tertiary", "displayName": "System Gray (c10, inactive tabs)", "canonical": "#8e8e93", "tonalRamp": ["#1c1c1e", "#2c2c2e", "#3a3a3c", "#48484a", "#636366", "#8e8e93", "#aeaeb2", "#d1d1d6"] },
+      "bg": { "role": "neutral", "displayName": "True Black", "canonical": "#000000", "tonalRamp": ["#000000", "#1c1c1e", "#2c2c2e", "#3a3a3c", "#48484a", "#636366", "#8e8e93", "#d1d1d6"] },
+      "card": { "role": "neutral", "displayName": "Grouped Card", "canonical": "#1c1c1e", "tonalRamp": ["#000000", "#1c1c1e", "#2c2c2e", "#3a3a3c", "#48484a", "#636366", "#8e8e93", "#d1d1d6"] },
+      "card-2": { "role": "neutral", "displayName": "Raised Card", "canonical": "#2c2c2e", "tonalRamp": ["#000000", "#1c1c1e", "#2c2c2e", "#3a3a3c", "#48484a", "#636366", "#8e8e93", "#d1d1d6"] },
+      "card-3": { "role": "neutral", "displayName": "Pressed Card", "canonical": "#3a3a3c", "tonalRamp": ["#000000", "#1c1c1e", "#2c2c2e", "#3a3a3c", "#48484a", "#636366", "#8e8e93", "#d1d1d6"] },
+      "segment-pill": { "role": "neutral", "displayName": "Segment Pill", "canonical": "#636366", "tonalRamp": ["#000000", "#1c1c1e", "#2c2c2e", "#3a3a3c", "#48484a", "#636366", "#8e8e93", "#d1d1d6"] },
+      "fill": { "role": "neutral", "displayName": "Fill", "canonical": "rgb(118 118 128 / 0.24)" },
+      "fill-2": { "role": "neutral", "displayName": "Fill Strong", "canonical": "rgb(118 118 128 / 0.36)" },
+      "sep": { "role": "neutral", "displayName": "Separator", "canonical": "rgb(84 84 88 / 0.6)" },
+      "label": { "role": "neutral", "displayName": "Label", "canonical": "#ffffff" },
+      "label-2": { "role": "neutral", "displayName": "Secondary Label", "canonical": "rgb(235 235 245 / 0.6)" },
+      "label-3": { "role": "neutral", "displayName": "Tertiary Label", "canonical": "rgb(235 235 245 / 0.3)" }
+    },
+    "typographyMeta": {
+      "large-title": { "displayName": "Large Title", "purpose": "One per screen, the screen name." },
+      "amount-entry": { "displayName": "Amount Entry", "purpose": "The amount being typed in the add/edit sheet." },
+      "amount-hero": { "displayName": "Amount Hero", "purpose": "The dominant spent figure on Resumen." },
+      "title1": { "displayName": "Title 1", "purpose": "Totals in secondary summary cards (Presupuesto, Cuentas)." },
+      "title3": { "displayName": "Title 3", "purpose": "Section headers above grouped lists; keypad digits at 500." },
+      "headline": { "displayName": "Headline", "purpose": "Button labels, sheet titles, income and balance figures." },
+      "body": { "displayName": "Body", "purpose": "Row titles, field labels and values, plain actions." },
+      "subhead": { "displayName": "Subhead", "purpose": "Row subtitles, chips, legend, card captions, toast." },
+      "footnote": { "displayName": "Footnote", "purpose": "Metadata and list footers; 600 uppercase as the iOS form-group header above pickers." },
+      "caption": { "displayName": "Caption", "purpose": "Donut center label." },
+      "tab-label": { "displayName": "Tab Label", "purpose": "Tab bar labels only." }
+    },
+    "shadows": [
+      { "name": "sheet-lift", "value": "0 -8px 30px rgb(0 0 0 / 0.5)", "purpose": "Bottom sheet over its 60% black scrim." },
+      { "name": "toast-lift", "value": "0 8px 24px rgb(0 0 0 / 0.5)", "purpose": "Floating confirmation pill." },
+      { "name": "add-glow", "value": "0 4px 14px rgb(10 132 255 / 0.35)", "purpose": "Centered tab bar add button." },
+      { "name": "thumb", "value": "0 3px 8px rgb(0 0 0 / 0.12), 0 3px 1px rgb(0 0 0 / 0.04)", "purpose": "Segmented control thumb; toggle knob uses 0.15/0.06." },
+      { "name": "hairline", "value": "inset 0 -0.5px 0 var(--color-sep)", "purpose": "Row separators; tab bar top edge uses inset 0 0.5px." },
+      { "name": "tabbar-material", "value": "background: rgb(22 22 24 / 0.92); backdrop-filter: saturate(180%) blur(20px)", "purpose": "The only translucent surface." }
+    ],
+    "motion": [
+      { "name": "ease-smooth-out", "value": "cubic-bezier(0.22, 1, 0.36, 1)", "purpose": "Default ease for tabs, text resize, toast, donut morph, toggle, progress fill." },
+      { "name": "press", "value": "scale 0.96, 150ms cubic-bezier(0.2, 0, 0, 1)", "purpose": "Active state of every pressable control." },
+      { "name": "duration-quick", "value": "150ms", "purpose": "Press, donut dim." },
+      { "name": "duration-fast", "value": "250ms", "purpose": "Segmented thumb slide, toast close, toggle knob." },
+      { "name": "duration-medium", "value": "350ms", "purpose": "Toast open." },
+      { "name": "duration-slow", "value": "400ms", "purpose": "Donut segment morph." },
+      { "name": "text-soft", "value": "200ms ease-in-out, 2px blur; resize 240ms smooth-out", "purpose": "In-place swap of secondary figures and captions." },
+      { "name": "toast", "value": "open 350ms / close 250ms, 16px rise, 0.97 scale, 2px blur", "purpose": "Toast enter and exit." },
+      { "name": "sheet", "value": "open 500ms expo.out; close 300ms power3.in; scrim 300ms in / 250ms out", "purpose": "GSAP bottom sheet." },
+      { "name": "amount-count", "value": "600ms power3.out", "purpose": "GSAP count-up of headline totals." },
+      { "name": "progress-fill", "value": "width 500ms cubic-bezier(0.22, 1, 0.36, 1)", "purpose": "Budget progress bars." },
+      { "name": "reduced-motion", "value": "all of the above become instant", "purpose": "prefers-reduced-motion: reduce." }
+    ],
+    "breakpoints": [
+      { "name": "content-max", "value": "576px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Filled Button",
+      "kind": "button",
+      "refersTo": "button-filled",
+      "description": "The one primary action of a screen or sheet.",
+      "html": "<button class=\"ds-btn-filled\">Guardar</button>",
+      "css": ".ds-btn-filled { display: flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 20px; border: 0; border-radius: 12px; background: var(--color-blue, #0a84ff); color: #fff; font: 600 17px/22px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, system-ui, sans-serif; cursor: pointer; transition: scale 150ms cubic-bezier(0.2, 0, 0, 1), opacity 150ms; } .ds-btn-filled:active { scale: 0.96; } .ds-btn-filled:focus-visible { outline: 2px solid var(--color-blue, #0a84ff); outline-offset: 2px; } .ds-btn-filled:disabled { opacity: 0.4; }"
+    },
+    {
+      "name": "Destructive Button",
+      "kind": "button",
+      "refersTo": "button-destructive",
+      "description": "Delete or remove; always tinted, never filled red.",
+      "html": "<button class=\"ds-btn-destructive\">Eliminar movimiento</button>",
+      "css": ".ds-btn-destructive { display: flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 20px; border: 0; border-radius: 12px; background: rgb(255 69 58 / 0.15); color: var(--color-red, #ff453a); font: 600 17px/22px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, system-ui, sans-serif; cursor: pointer; transition: scale 150ms cubic-bezier(0.2, 0, 0, 1); } .ds-btn-destructive:active { scale: 0.96; } .ds-btn-destructive:focus-visible { outline: 2px solid var(--color-blue, #0a84ff); outline-offset: 2px; }"
+    },
+    {
+      "name": "Grouped List",
+      "kind": "card",
+      "refersTo": "list-row",
+      "description": "Inset grouped list with category tiles, hairlines from the text edge, chevrons.",
+      "html": "<div class=\"ds-list\"><a class=\"ds-row\" href=\"#\"><span class=\"ds-tile\" style=\"background:#0a84ff\"><svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.25\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"2\" y=\"5\" width=\"20\" height=\"14\" rx=\"2\"/><line x1=\"2\" y1=\"10\" x2=\"22\" y2=\"10\"/></svg></span><span class=\"ds-row-body\"><span class=\"ds-row-title\">Cuentas y tarjetas</span><span class=\"ds-row-trail\">3</span><svg class=\"ds-chev\" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.25\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m9 18 6-6-6-6\"/></svg></span></a><a class=\"ds-row\" href=\"#\"><span class=\"ds-tile\" style=\"background:#ff9f0a\"><svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.25\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2\"/><path d=\"M7 2v20\"/><path d=\"M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7\"/></svg></span><span class=\"ds-row-body\"><span class=\"ds-row-title\">Comida</span><span class=\"ds-row-trail\">₡152.400</span></span></a></div>",
+      "css": ".ds-list { overflow: hidden; border-radius: 14px; background: var(--color-card, #1c1c1e); color: #fff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, system-ui, sans-serif; } .ds-row { display: flex; align-items: center; gap: 12px; padding-left: 16px; color: inherit; text-decoration: none; transition: background-color 150ms; } .ds-row:active { background: var(--color-card-2, #2c2c2e); } .ds-row:focus-visible { outline: 2px solid #0a84ff; outline-offset: -2px; } .ds-tile { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 8px; color: #fff; flex-shrink: 0; } .ds-row-body { display: flex; flex: 1; align-items: center; gap: 12px; min-height: 44px; padding: 10px 16px 10px 0; box-shadow: inset 0 -0.5px 0 rgb(84 84 88 / 0.6); } .ds-row:last-child .ds-row-body { box-shadow: none; } .ds-row-title { flex: 1; font-size: 17px; line-height: 22px; } .ds-row-trail { font-size: 17px; color: rgb(235 235 245 / 0.6); font-variant-numeric: tabular-nums; } .ds-chev { color: rgb(235 235 245 / 0.3); }"
+    },
+    {
+      "name": "Summary Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Spent total with the One Budget Rule line and progress bar.",
+      "html": "<section class=\"ds-card\"><p class=\"ds-card-cap\">Gastado en octubre</p><p class=\"ds-hero\">₡961.190</p><p class=\"ds-left\">Quedan ₡138.810 de ₡1.100.000</p><div class=\"ds-track\"><div class=\"ds-bar\" style=\"width:87%\"></div></div></section>",
+      "css": ".ds-card { border-radius: 14px; background: var(--color-card, #1c1c1e); padding: 16px; color: #fff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, system-ui, sans-serif; } .ds-card-cap { margin: 0; font-weight: 600; font-size: 15px; line-height: 20px; color: rgb(235 235 245 / 0.6); } .ds-hero { margin: 4px 0 0; font-weight: 700; font-size: 40px; line-height: 46px; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; } .ds-left { margin: 4px 0 0; font-weight: 600; font-size: 15px; line-height: 20px; color: var(--color-orange, #ff9f0a); } .ds-track { margin-top: 12px; height: 6px; border-radius: 9999px; background: rgb(118 118 128 / 0.24); overflow: hidden; } .ds-bar { height: 100%; border-radius: 9999px; background: var(--color-orange, #ff9f0a); transition: width 500ms cubic-bezier(0.22, 1, 0.36, 1); }"
+    },
+    {
+      "name": "Segmented Control",
+      "kind": "nav",
+      "refersTo": "segmented",
+      "description": "Period and type switcher with a sliding thumb.",
+      "html": "<div class=\"ds-seg\" role=\"tablist\"><button class=\"ds-seg-tab\" role=\"tab\" aria-selected=\"false\">Semana</button><button class=\"ds-seg-tab\" role=\"tab\" aria-selected=\"true\">Mes</button></div>",
+      "css": ".ds-seg { display: flex; gap: 3px; padding: 2px; border-radius: 9px; background: rgb(118 118 128 / 0.24); width: 320px; } .ds-seg-tab { flex: 1; height: 28px; padding: 4px 12px; border: 0; border-radius: 7px; background: transparent; color: rgb(235 235 245 / 0.6); font: 600 13px/18px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, system-ui, sans-serif; cursor: pointer; transition: color 250ms cubic-bezier(0.22, 1, 0.36, 1), background-color 250ms cubic-bezier(0.22, 1, 0.36, 1); } .ds-seg-tab:hover, .ds-seg-tab[aria-selected='true'] { color: #fff; } .ds-seg-tab[aria-selected='true'] { background: #636366; box-shadow: 0 3px 8px rgb(0 0 0 / 0.12), 0 3px 1px rgb(0 0 0 / 0.04); } .ds-seg-tab:focus-visible { outline: 2px solid #0a84ff; outline-offset: 2px; }"
+    },
+    {
+      "name": "Picker Chip",
+      "kind": "chip",
+      "refersTo": "chip",
+      "description": "Category or account choice in the add sheet; selected inverts to white.",
+      "html": "<div class=\"ds-chips\"><button class=\"ds-chip\" aria-pressed=\"true\">Efectivo</button><button class=\"ds-chip\" aria-pressed=\"false\"><span class=\"ds-chip-tile\" style=\"background:#30d158\"></span>Súper</button></div>",
+      "css": ".ds-chips { display: flex; gap: 8px; } .ds-chip { display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 6px 16px 6px 8px; border: 0; border-radius: 9999px; background: var(--color-card-2, #2c2c2e); color: #fff; font: 600 15px/20px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, system-ui, sans-serif; white-space: nowrap; cursor: pointer; transition: scale 150ms cubic-bezier(0.2, 0, 0, 1), background-color 150ms; } .ds-chip[aria-pressed='true'] { background: #fff; color: #000; padding-left: 16px; } .ds-chip:active { scale: 0.96; } .ds-chip:focus-visible { outline: 2px solid #0a84ff; outline-offset: 2px; } .ds-chip-tile { width: 24px; height: 24px; border-radius: 7px; }"
+    },
+    {
+      "name": "Form Group",
+      "kind": "input",
+      "refersTo": "list-row",
+      "description": "iOS form rows: label left, value right, date as a pill.",
+      "html": "<div class=\"ds-form\"><label class=\"ds-field\"><span class=\"ds-field-in\"><span>Comercio</span><input class=\"ds-input\" placeholder=\"Automercado\"></span></label><label class=\"ds-field\"><span class=\"ds-field-in ds-last\"><span>Fecha</span><span class=\"ds-pill\">29 oct 2026</span></span></label></div>",
+      "css": ".ds-form { overflow: hidden; border-radius: 12px; background: var(--color-card-2, #2c2c2e); color: #fff; font: 17px/22px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, system-ui, sans-serif; } .ds-field { display: flex; padding-left: 16px; } .ds-field-in { display: flex; flex: 1; align-items: center; justify-content: space-between; gap: 16px; min-height: 44px; padding-right: 16px; box-shadow: inset 0 -0.5px 0 rgb(84 84 88 / 0.6); } .ds-last { box-shadow: none; } .ds-input { flex: 1; min-width: 0; background: transparent; border: 0; outline: none; text-align: right; color: #fff; font: inherit; caret-color: #0a84ff; } .ds-input::placeholder { color: rgb(235 235 245 / 0.3); } .ds-input:focus-visible { outline: none; } .ds-field:focus-within { background: rgb(255 255 255 / 0.02); } .ds-pill { border-radius: 8px; background: var(--color-card-3, #3a3a3c); padding: 6px 12px; }"
+    },
+    {
+      "name": "Tab Bar",
+      "kind": "nav",
+      "refersTo": "tab-bar-add",
+      "description": "Translucent bottom bar, four tabs around a centered blue add button.",
+      "html": "<nav class=\"ds-tabbar\"><a class=\"ds-tab is-active\" href=\"#\"><svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.25\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8\"/><path d=\"M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z\"/></svg>Resumen</a><a class=\"ds-tab\" href=\"#\"><svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3 12h.01\"/><path d=\"M3 18h.01\"/><path d=\"M3 6h.01\"/><path d=\"M8 12h13\"/><path d=\"M8 18h13\"/><path d=\"M8 6h13\"/></svg>Movimientos</a><span class=\"ds-tab\"><button class=\"ds-add\" aria-label=\"Agregar movimiento\"><svg width=\"26\" height=\"26\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\"><path d=\"M5 12h14\"/><path d=\"M12 5v14\"/></svg></button></span></nav>",
+      "css": ".ds-tabbar { display: flex; align-items: center; height: 56px; padding: 0 8px; background: rgb(22 22 24 / 0.92); backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px); box-shadow: inset 0 0.5px 0 rgb(84 84 88 / 0.6); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, system-ui, sans-serif; } .ds-tab { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 48px; font-size: 10px; font-weight: 500; color: #8e8e93; text-decoration: none; transition: color 150ms; } .ds-tab.is-active, .ds-tab:hover { color: #0a84ff; } .ds-tab:focus-visible { outline: 2px solid #0a84ff; outline-offset: 2px; } .ds-add { display: grid; place-items: center; width: 48px; height: 48px; border: 0; border-radius: 9999px; background: #0a84ff; color: #fff; box-shadow: 0 4px 14px rgb(10 132 255 / 0.35); cursor: pointer; transition: scale 150ms cubic-bezier(0.2, 0, 0, 1); } .ds-add:active { scale: 0.96; } .ds-add:focus-visible { outline: 2px solid #0a84ff; outline-offset: 2px; }"
+    },
+    {
+      "name": "Toast",
+      "kind": "custom",
+      "refersTo": "toast",
+      "description": "Floating confirmation pill above the tab bar.",
+      "html": "<div class=\"ds-toast\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#30d158\" stroke-width=\"2.25\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"m9 12 2 2 4-4\"/></svg>Gasto guardado</div>",
+      "css": ".ds-toast { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px 10px 14px; border-radius: 9999px; background: var(--color-card-2, #2c2c2e); color: #fff; font: 600 15px/20px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, system-ui, sans-serif; box-shadow: 0 8px 24px rgb(0 0 0 / 0.5); transition: opacity 350ms cubic-bezier(0.22, 1, 0.36, 1), transform 350ms cubic-bezier(0.22, 1, 0.36, 1), filter 350ms cubic-bezier(0.22, 1, 0.36, 1); } .ds-toast:hover { transform: translateY(-1px); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Wallet Pass, Kept Straight",
+    "overview": "This is the iOS dark system executed without a smuggled quirk: a pure black ground, grouped near-black cards, Apple system colors standing in for every category, SF system type with large bold titles, and money set in tabular numerals. The ambition is finish, not novelty. The reference bar is Apple Wallet and Apple Health in dark mode, and the measure of success is that nothing reads as web chrome: no browser-default controls, no misaligned figures, no generic dashboard furniture.\n\nDensity is phone-native (390px wide, one column, 16px gutters). Every screen opens with a large title, then a stack of rounded cards and inset grouped lists separated by hairlines. Color carries meaning, never decoration: blue is the one interactive voice, green/orange/red are the budget state, and the remaining system hues are category identity. Motion is quiet and physical: things slide, count, and blur-swap in place, and every motion collapses to an instant change under reduced motion.\n\nDark only, always. There is no light theme and no light-theme token.",
+    "keyCharacteristics": [
+      "Pure black ground (bg) with three stepped card greys for nesting; depth comes from tone, not shadow.",
+      "Apple system colors map one-to-one to category keys c1 to c10.",
+      "Large bold title per screen; amounts always tabular and bold.",
+      "Inset grouped lists with 0.5px hairlines that start where the text starts.",
+      "One budget color rule shared by every bar, label and banner.",
+      "Translucent blurred tab bar with a centered blue add button."
+    ],
+    "rules": [
+      { "name": "The One Budget Rule", "body": "Every budget expression (progress bar, \"Quedan\" line, per-category bar, warning banner) uses one ratio rule: base color under 80%, orange from 80%, red at 100% and over. Never pick a budget color by hand.", "section": "colors" },
+      { "name": "The One Blue Rule", "body": "Blue means \"you can act here\". It is not a category accent on chrome, a heading color, or decoration.", "section": "colors" },
+      { "name": "The Category Hue Rule", "body": "System hues other than blue/green/orange/red as state belong to categories. A category's color appears only where that category is identified.", "section": "colors" },
+      { "name": "The Tabular Money Rule", "body": "Every amount uses tabular numerals and the shared colón formatter. No exceptions for small or secondary figures.", "section": "typography" },
+      { "name": "The System Style Rule", "body": "Use the named iOS text styles; do not invent intermediate sizes. The two amount roles are the only display sizes outside the iOS scale.", "section": "typography" },
+      { "name": "The Flat Card Rule", "body": "Cards and grouped lists never carry a shadow. If a surface needs to read as nested, step it up one card grey.", "section": "elevation" },
+      { "name": "The Translucent Chrome Rule", "body": "The tab bar is the only blurred surface: rgb(22 22 24 / 0.92) with saturate(180%) blur(20px).", "section": "elevation" }
+    ],
+    "dos": [
+      "**Do** open every screen with the Large Title (34px bold) and build below it with cards (14px) and grouped lists.",
+      "**Do** route every budget color through the One Budget Rule (under 80% base, 80% orange, 100% red).",
+      "**Do** set every amount in tabular numerals with the shared colón formatter.",
+      "**Do** nest by stepping card greys (card, card-2, card-3) instead of adding shadows or borders.",
+      "**Do** keep every tap target at least 44px and give pressable elements the 0.96 press scale.",
+      "**Do** honor reduced motion: every slide, count, swap and morph becomes instant."
+    ],
+    "donts": [
+      "**Don't** introduce a light theme or light surfaces.",
+      "**Don't** use blue for anything that is not interactive or the Wallet review marker.",
+      "**Don't** put shadows or borders on cards and lists; only floating layers (sheet, toast, add button, thumbs) cast shadow.",
+      "**Don't** use browser-default controls; every control is an iOS-shaped component (segmented, switch, date pill, keypad).",
+      "**Don't** place a text eyebrow above the large title; that slot holds only the back link.",
+      "**Don't** pick category colors outside the c1 to c10 system hues."
+    ]
+  }
+}

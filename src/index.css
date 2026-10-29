@@ -1,0 +1,304 @@
+@import 'tailwindcss';
+
+/* ---------------------------------------------------------------------------
+   Sistema: iOS oscuro (referencia Apple Wallet / Salud). Solo modo oscuro.
+   --------------------------------------------------------------------------- */
+@theme {
+  --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', Roboto, system-ui, sans-serif;
+
+  --color-bg: #000000;
+  --color-card: #1c1c1e;
+  --color-card-2: #2c2c2e;
+  --color-card-3: #3a3a3c;
+  --color-fill: rgb(118 118 128 / 0.24);
+  --color-fill-2: rgb(118 118 128 / 0.36);
+  --color-sep: rgb(84 84 88 / 0.6);
+  --color-label: #ffffff;
+  --color-label-2: rgb(235 235 245 / 0.6);
+  --color-label-3: rgb(235 235 245 / 0.3);
+
+  --color-green: #30d158;
+  --color-blue: #0a84ff;
+  --color-orange: #ff9f0a;
+  --color-red: #ff453a;
+  --color-yellow: #ffd60a;
+  --color-pink: #ff375f;
+  --color-purple: #bf5af2;
+  --color-indigo: #5e5ce6;
+  --color-teal: #40c8e0;
+  --color-brown: #ac8e68;
+  --color-gray: #8e8e93;
+
+  /* Escala tipográfica de iOS */
+  --text-large-title: 34px;
+  --text-large-title--line-height: 41px;
+  --text-title1: 28px;
+  --text-title1--line-height: 34px;
+  --text-title2: 22px;
+  --text-title2--line-height: 28px;
+  --text-title3: 20px;
+  --text-title3--line-height: 25px;
+  --text-headline: 17px;
+  --text-headline--line-height: 22px;
+  --text-body: 17px;
+  --text-body--line-height: 22px;
+  --text-callout: 16px;
+  --text-callout--line-height: 21px;
+  --text-subhead: 15px;
+  --text-subhead--line-height: 20px;
+  --text-footnote: 13px;
+  --text-footnote--line-height: 18px;
+  --text-caption: 12px;
+  --text-caption--line-height: 16px;
+
+  --radius-card: 14px;
+}
+
+/* Tokens de movimiento de transitions.dev (subconjunto usado) */
+:root {
+  --duration-quick: 150ms;
+  --duration-fast: 250ms;
+  --duration-medium: 350ms;
+  --duration-slow: 400ms;
+  --ease-smooth-out: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --tabs-dur: 250ms;
+  --tabs-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --tabs-text-muted: rgb(235 235 245 / 0.6);
+  --tabs-text-active: #ffffff;
+  --tabs-bar-bg: rgb(118 118 128 / 0.24);
+  --tabs-pill-bg: #636366;
+
+  --text-soft-dur: 200ms;
+  --text-soft-blur: 2px;
+  --text-soft-ease: ease-in-out;
+  --text-soft-resize-dur: 240ms;
+  --text-soft-resize-ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --toast-open: 350ms;
+  --toast-close: 250ms;
+  --toast-distance: 16px;
+  --toast-blur: 2px;
+  --toast-scale: 0.97;
+  --toast-ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --chart-morph-dur: 400ms;
+  --chart-morph-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --chart-gap: 3px;
+  --chart-corner: 2px;
+
+  color-scheme: dark;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --tabbar-h: calc(56px + var(--safe-bottom));
+}
+
+@layer base {
+  html,
+  body {
+    background: var(--color-bg);
+    color: var(--color-label);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior-y: none;
+  }
+  body {
+    min-height: 100dvh;
+  }
+  ::selection {
+    background: rgb(10 132 255 / 0.45);
+  }
+  input,
+  textarea,
+  select {
+    caret-color: var(--color-blue);
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-blue);
+    outline-offset: 2px;
+  }
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+  p {
+    text-wrap: pretty;
+  }
+  button {
+    cursor: pointer;
+  }
+  button:disabled {
+    cursor: default;
+  }
+}
+
+@utility tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Presión táctil (make-interfaces-feel-better: 0.96) */
+@utility press {
+  transition-property: scale, opacity, background-color;
+  transition-duration: 150ms;
+  transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+  &:active:not(:disabled) {
+    scale: 0.96;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   transitions.dev — Tabs sliding
+   --------------------------------------------------------------------------- */
+.t-tabs {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px;
+  border-radius: 9px;
+  background: var(--tabs-bar-bg);
+}
+.t-tab {
+  position: relative;
+  appearance: none;
+  border: 0;
+  background: transparent;
+  height: 28px;
+  padding: 4px 12px;
+  color: var(--tabs-text-muted);
+  cursor: pointer;
+  border-radius: 7px;
+  z-index: 1;
+  transition: color var(--tabs-dur) var(--tabs-ease);
+}
+.t-tab:not([aria-selected='true']):hover,
+.t-tab[aria-selected='true'] {
+  color: var(--tabs-text-active);
+}
+.t-tabs-pill {
+  position: absolute;
+  top: 2px;
+  left: 0;
+  height: 28px;
+  width: 0;
+  background: var(--tabs-pill-bg);
+  border-radius: 7px;
+  box-shadow: 0 3px 8px rgb(0 0 0 / 0.12), 0 3px 1px rgb(0 0 0 / 0.04);
+  transform: translateX(0);
+  transition:
+    transform var(--tabs-dur) var(--tabs-ease),
+    width var(--tabs-dur) var(--tabs-ease);
+  will-change: transform, width;
+  z-index: 0;
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .t-tabs-pill,
+  .t-tab {
+    transition: none !important;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   transitions.dev — Text swap soft
+   --------------------------------------------------------------------------- */
+.t-text-soft {
+  display: inline-grid;
+  justify-items: var(--text-soft-align, start);
+  transition: width var(--text-soft-resize-dur) var(--text-soft-resize-ease);
+}
+.t-text-soft > span {
+  grid-area: 1 / 1;
+  white-space: pre;
+  transition:
+    filter var(--text-soft-dur) var(--text-soft-ease),
+    opacity var(--text-soft-dur) var(--text-soft-ease);
+}
+.t-text-soft-new {
+  opacity: 0;
+  filter: blur(var(--text-soft-blur));
+}
+.t-text-soft.is-swapping .t-text-soft-old {
+  opacity: 0;
+  filter: blur(var(--text-soft-blur));
+}
+.t-text-soft.is-swapping .t-text-soft-new {
+  opacity: 1;
+  filter: blur(0);
+}
+@media (prefers-reduced-motion: reduce) {
+  .t-text-soft,
+  .t-text-soft > span {
+    transition: none !important;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   transitions.dev — Toast open / close
+   --------------------------------------------------------------------------- */
+.t-toast {
+  opacity: 0;
+  transform: translateY(var(--toast-distance)) scale(var(--toast-scale));
+  filter: blur(var(--toast-blur));
+  will-change: transform, opacity, filter;
+  transition:
+    opacity var(--toast-close) var(--toast-ease),
+    transform var(--toast-close) var(--toast-ease),
+    filter var(--toast-close) var(--toast-ease);
+}
+.t-toast.is-open {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  filter: blur(0);
+  transition:
+    opacity var(--toast-open) var(--toast-ease),
+    transform var(--toast-open) var(--toast-ease),
+    filter var(--toast-open) var(--toast-ease);
+}
+@media (prefers-reduced-motion: reduce) {
+  .t-toast {
+    transition: none !important;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   transitions.dev — Donut chart
+   --------------------------------------------------------------------------- */
+.t-donut {
+  position: relative;
+}
+.t-donut svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.t-donut-seg {
+  stroke-linejoin: round;
+  transition: opacity 150ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.t-donut-seg.is-dim {
+  opacity: 0.2;
+}
+.t-donut-center {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  text-align: center;
+}
+@media (prefers-reduced-motion: reduce) {
+  .t-donut-seg {
+    transition: none !important;
+  }
+}
+
+/* Barra de pestañas translúcida al estilo iOS */
+.tabbar {
+  background: rgb(22 22 24 / 0.92);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  box-shadow: inset 0 0.5px 0 var(--color-sep);
+}

@@ -1,0 +1,5 @@
+project_id = "finanzas"
+
+[functions.wallet-ingest]
+# El Atajo de iOS se autentica con un token personal propio, no con un JWT de Supabase.
+verify_jwt = false
