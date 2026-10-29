@@ -193,7 +193,7 @@ function AccountSheet({
     <Sheet
       open={open}
       onClose={onClose}
-      dismissible={false}
+      swipeToClose
       title={initial.id ? 'Editar cuenta' : 'Nueva cuenta'}
       leading={
         <button type="button" className="min-h-11 text-body text-blue" onClick={onClose}>
@@ -265,7 +265,6 @@ function AccountSheet({
               pattern="[0-9]*"
               className="tnum"
               placeholder="1234"
-              autoFocus={!initial.id}
               value={acc.last4 ?? ''}
               onChange={(e) => set({ last4: e.target.value.replace(/\D/g, '').slice(0, 4) })}
             />
