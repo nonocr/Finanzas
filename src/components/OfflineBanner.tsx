@@ -19,7 +19,7 @@ export function OfflineBanner() {
   const text = !online
     ? waiting
       ? `Sin conexión · ${waiting} ${waiting === 1 ? 'cambio espera' : 'cambios esperan'} para subir`
-      : 'Sin conexión · ves lo último que se cargó'
+      : 'Sin conexión'
     : `Subiendo ${waiting} ${waiting === 1 ? 'cambio' : 'cambios'}…`;
 
   return (
