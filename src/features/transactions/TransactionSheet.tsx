@@ -1,4 +1,5 @@
 import clsx from 'clsx';
+import { onlineManager } from '@tanstack/react-query';
 import { ArrowRight, Smartphone } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { AmountInput } from '../../components/AmountInput';
@@ -78,7 +79,9 @@ export function TransactionSheet({
     (isTransfer ? destination && destination.id !== account.id : true) &&
     (!pending || categoryId);
 
-  const submit = async () => {
+  // Sin esperar a la red: el cambio entra a la cola (lib/offline.ts), la lista se actualiza al instante
+  // y se sube en cuanto haya conexión.
+  const submit = () => {
     if (!valid || !account) return;
     const occurred_at =
       tx && isoDate(crDayOf(tx.occurred_at)) === date
@@ -86,8 +89,8 @@ export function TransactionSheet({
         : date === today
           ? new Date().toISOString()
           : new Date(crDayStartInstant(new Date(date + 'T00:00:00Z')).getTime() + 12 * 3_600_000).toISOString();
-    await save.mutateAsync({
-      id: tx?.id,
+    save.mutate({
+      id: tx?.id ?? crypto.randomUUID(),
       type,
       amount: cents,
       account_id: account.id,
@@ -96,34 +99,34 @@ export function TransactionSheet({
       merchant: merchant.trim() || null,
       note: note.trim() || null,
       occurred_at,
+      source: tx?.source ?? 'manual',
       status: 'confirmada',
     });
     if (pending && remember && categoryId && tx?.merchant) {
-      await saveRule.mutateAsync({ pattern: tx.merchant.trim().toUpperCase(), category_id: categoryId });
+      saveRule.mutate({ pattern: tx.merchant.trim().toUpperCase(), category_id: categoryId });
     }
     try {
       localStorage.setItem(LAST_ACCOUNT_KEY, account.id);
     } catch {
       // preferencia opcional
     }
-    toast(
-      tx
-        ? pending
-          ? 'Pago confirmado'
-          : 'Cambios guardados'
-        : type === 'ingreso'
-          ? 'Ingreso guardado'
-          : isTransfer
-            ? 'Movimiento guardado'
-            : 'Gasto guardado',
-    );
+    const done = tx
+      ? pending
+        ? 'Pago confirmado'
+        : 'Cambios guardados'
+      : type === 'ingreso'
+        ? 'Ingreso guardado'
+        : isTransfer
+          ? 'Movimiento guardado'
+          : 'Gasto guardado';
+    toast(onlineManager.isOnline() ? done : `${done} · se sube al volver la señal`);
     onClose();
   };
 
-  const destroy = async () => {
+  const destroy = () => {
     if (!tx) return;
-    await remove.mutateAsync(tx.id);
-    toast('Movimiento eliminado');
+    remove.mutate(tx.id);
+    toast(onlineManager.isOnline() ? 'Movimiento eliminado' : 'Eliminado · se sincroniza al volver la señal');
     onClose();
   };
 

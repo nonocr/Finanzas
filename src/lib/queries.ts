@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api, type Range } from './api';
-import type { Account, Category, NewTransaction } from './types';
+import type { Account, Category, Transaction } from './types';
 
 // ---------------------------------------------------------------------------
 // Lecturas
@@ -35,15 +35,9 @@ function useInvalidate(keys: string[][]) {
   return () => Promise.all(keys.map((queryKey) => qc.invalidateQueries({ queryKey })));
 }
 
-export function useSaveTransaction() {
-  const onSuccess = useInvalidate(MONEY_KEYS);
-  return useMutation({ mutationFn: (tx: Partial<NewTransaction> & { id?: string }) => api.saveTransaction(tx), onSuccess });
-}
-
-export function useDeleteTransaction() {
-  const onSuccess = useInvalidate(MONEY_KEYS);
-  return useMutation({ mutationFn: api.deleteTransaction, onSuccess });
-}
+// Guardar/borrar movimientos y reglas usan los defaults de lib/offline.ts (cola sin conexión + listas optimistas).
+export const useSaveTransaction = () => useMutation<void, Error, Transaction>({ mutationKey: ['saveTransaction'] });
+export const useDeleteTransaction = () => useMutation<void, Error, string>({ mutationKey: ['deleteTransaction'] });
 
 export function useSaveAccount() {
   const onSuccess = useInvalidate([['accounts'], ['balances']]);
@@ -78,10 +72,8 @@ export function useCopyBudgets() {
   return useMutation({ mutationFn: (p: { from: string; to: string }) => api.copyBudgets(p.from, p.to), onSuccess });
 }
 
-export function useSaveMerchantRule() {
-  const onSuccess = useInvalidate([['merchant_rules']]);
-  return useMutation({ mutationFn: api.saveMerchantRule, onSuccess });
-}
+export const useSaveMerchantRule = () =>
+  useMutation<void, Error, { pattern: string; category_id: string }>({ mutationKey: ['saveMerchantRule'] });
 
 export function useDeleteMerchantRule() {
   const onSuccess = useInvalidate([['merchant_rules']]);

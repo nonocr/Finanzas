@@ -5,6 +5,7 @@ import { IconTile, Row, Screen, Section } from '../../components/ui';
 import { api, isDemo } from '../../lib/api';
 import { crDayOf, isoDate } from '../../lib/dates';
 import { resetDemo } from '../../lib/demoApi';
+import { clearOfflineCache } from '../../lib/offline';
 import { useAccounts, useCategories } from '../../lib/queries';
 import { supabase } from '../../lib/supabase';
 
@@ -91,7 +92,10 @@ export function MorePage() {
           />
         ) : (
           <Row
-            onClick={() => supabase.auth.signOut()}
+            onClick={async () => {
+              await supabase.auth.signOut();
+              clearOfflineCache(); // la copia local de tus datos no se queda en el teléfono
+            }}
             leading={<IconTile icon={LogOut} color="var(--color-red)" />}
             title="Cerrar sesión"
             destructive
