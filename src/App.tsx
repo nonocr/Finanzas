@@ -1,6 +1,7 @@
 import type { Session } from '@supabase/supabase-js';
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { Route, Routes, useLocation } from 'react-router-dom';
+import { SettingsButton } from './components/SettingsButton';
 import { TabBar } from './components/TabBar';
 import { ToastProvider } from './components/Toast';
 import { LoginPage } from './features/auth/LoginPage';
@@ -67,6 +68,7 @@ export default function App() {
           <Route path="/mas/wallet" element={<WalletPage />} />
           <Route path="*" element={<HomePage />} />
         </Routes>
+        <SettingsButton />
         <TabBar />
       </EditorProvider>
     </ToastProvider>

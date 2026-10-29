@@ -1,4 +1,4 @@
-import { ChevronRight, Settings, Smartphone } from 'lucide-react';
+import { ChevronRight, Smartphone } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Donut } from '../../components/Donut';
@@ -79,15 +79,6 @@ export function HomePage() {
   return (
     <Screen
       title="Resumen"
-      trailing={
-        <Link
-          to="/mas"
-          aria-label="Ajustes y cuentas"
-          className="press grid size-11 place-items-center rounded-full bg-card text-label-2"
-        >
-          <Settings size={22} strokeWidth={2} />
-        </Link>
-      }
     >
       <Segmented
         options={[

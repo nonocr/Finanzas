@@ -111,6 +111,7 @@ export function AccountsPage() {
           open={open}
           initial={editing.acc}
           others={accounts.filter((a) => a.id !== editing.acc.id)}
+          currentBalance={editing.acc.id ? balanceOf.get(editing.acc.id) : undefined}
           onClose={() => setOpen(false)}
         />
       )}
@@ -136,11 +137,14 @@ function AccountSheet({
   open,
   initial,
   others,
+  currentBalance,
   onClose,
 }: {
   open: boolean;
   initial: Partial<Account>;
   others: Account[];
+  /** Saldo de hoy (con signo; en crédito la deuda es negativa). Solo al editar. */
+  currentBalance?: number;
   onClose: () => void;
 }) {
   const save = useSaveAccount();
@@ -149,22 +153,29 @@ function AccountSheet({
   const set = (patch: Partial<Account>) => setAcc((a) => ({ ...a, ...patch }));
   const type = acc.type ?? 'debito';
   const isCard = type === 'credito' || type === 'debito';
+  // El campo muestra el saldo de HOY; al guardar se ajusta el saldo inicial para que hoy cuadre.
+  const startBalance = initial.id ? (currentBalance ?? 0) : (initial.initial_balance ?? 0);
+  const [balance, setBalance] = useState<number | null>(startBalance ? Math.abs(startBalance) : null);
   // Lo opcional queda plegado; se abre solo al editar una cuenta que ya tiene esos datos.
   const [details, setDetails] = useState(
-    Boolean(initial.initial_balance || initial.credit_limit || initial.cutoff_day || initial.payment_day || initial.wallet_name),
+    Boolean(startBalance || initial.credit_limit || initial.cutoff_day || initial.payment_day || initial.wallet_name),
   );
   const name = acc.name?.trim() || fallbackName(type, acc.last4);
-  const sameLast4 = isCard && acc.last4?.length === 4 ? others.find((o) => o.last4 === acc.last4) : undefined;
+  const last4Len = (acc.last4 ?? '').length;
+  const sameLast4 = isCard && last4Len === 4 ? others.find((o) => o.last4 === acc.last4) : undefined;
   const sameName = others.find((o) => o.name.toLowerCase() === name.toLowerCase());
-  const valid = !sameName && (acc.last4 ?? '').length !== 1 && (acc.last4 ?? '').length < 5;
+  const valid = !sameName && (last4Len === 0 || last4Len === 4);
 
   const submit = async () => {
     if (!valid) return;
+    const desired = (type === 'credito' ? -1 : 1) * (balance ?? 0);
+    const initial_balance = initial.id ? (initial.initial_balance ?? 0) + (desired - (currentBalance ?? 0)) : desired;
     await save.mutateAsync({
       ...acc,
       type,
       name,
-      last4: isCard && acc.last4?.length === 4 ? acc.last4 : null,
+      initial_balance,
+      last4: isCard && last4Len === 4 ? acc.last4 : null,
       wallet_name: acc.wallet_name?.trim() || null,
     });
     toast(initial.id ? 'Cuenta actualizada' : `${name} agregada`);
@@ -263,17 +274,23 @@ function AccountSheet({
           className="mt-4 flex min-h-11 w-full items-center justify-between rounded-[12px] bg-card-2 px-4 text-body"
         >
           <span className="text-label-2">
-            {type === 'credito' ? 'Saldo, límite y fechas de pago (opcional)' : 'Saldo inicial (opcional)'}
+            {type === 'credito' ? 'Deuda, límite y fechas de pago (opcional)' : 'Saldo actual (opcional)'}
           </span>
           <ChevronDown size={18} strokeWidth={2.25} className="text-label-3" />
         </button>
       ) : (
         <>
-          <FormGroup footer={type === 'credito' ? 'Lo que debes hoy en la tarjeta.' : 'Lo que tiene hoy, para que el saldo cuadre.'}>
+          <FormGroup
+            footer={
+              type === 'credito'
+                ? 'Lo que debes hoy. Cada gasto con la tarjeta lo sube y cada pago (Entre cuentas) lo baja.'
+                : 'Lo que tiene hoy. Cada gasto lo baja y cada ingreso lo sube, también los que llegan de Wallet.'
+            }
+          >
             <FormRow label={type === 'credito' ? 'Deuda actual' : 'Saldo actual'} last>
               <ColonesInput
-                cents={acc.initial_balance ? Math.abs(acc.initial_balance) : null}
-                onChange={(c) => set({ initial_balance: (type === 'credito' ? -1 : 1) * (c ?? 0) })}
+                cents={balance}
+                onChange={setBalance}
               />
             </FormRow>
           </FormGroup>
