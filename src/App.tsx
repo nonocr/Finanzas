@@ -1,6 +1,7 @@
 import type { Session } from '@supabase/supabase-js';
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { Route, Routes, useLocation } from 'react-router-dom';
+import { OfflineBanner } from './components/OfflineBanner';
 import { SettingsButton } from './components/SettingsButton';
 import { TabBar } from './components/TabBar';
 import { ToastProvider } from './components/Toast';
@@ -69,6 +70,7 @@ export default function App() {
           <Route path="*" element={<HomePage />} />
         </Routes>
         <SettingsButton />
+        <OfflineBanner />
         <TabBar />
       </EditorProvider>
     </ToastProvider>

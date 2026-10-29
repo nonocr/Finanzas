@@ -73,8 +73,9 @@ const supabaseApi: Api = {
   listMerchantRules: () => unwrap(supabase.from('merchant_rules').select('*').order('priority', { ascending: false })),
   listApiTokens: () =>
     unwrap(supabase.from('api_tokens').select('id, name, created_at, last_used_at').order('created_at')),
-  saveTransaction: async ({ id, ...tx }) => {
-    await unwrap(id ? supabase.from('transactions').update(tx).eq('id', id) : supabase.from('transactions').insert(tx));
+  // Con id (lo genera el teléfono) es un upsert: reintentar la misma escritura sin conexión no duplica.
+  saveTransaction: async (tx) => {
+    await unwrap(tx.id ? supabase.from('transactions').upsert(tx) : supabase.from('transactions').insert(tx));
   },
   deleteTransaction: async (id) => {
     await unwrap(supabase.from('transactions').delete().eq('id', id));

@@ -203,10 +203,11 @@ export function createDemoApi(): Api {
     listApiTokens: () => ok(db.tokens),
 
     async saveTransaction({ id, ...tx }) {
-      if (id) db.transactions = db.transactions.map((t) => (t.id === id ? { ...t, ...tx } : t));
-      else
+      if (id && db.transactions.some((t) => t.id === id)) {
+        db.transactions = db.transactions.map((t) => (t.id === id ? { ...t, ...tx } : t));
+      } else
         db.transactions.push({
-          id: uid(), occurred_at: new Date().toISOString(), amount: 0, type: 'gasto', account_id: db.accounts[0].id,
+          id: id ?? uid(), occurred_at: new Date().toISOString(), amount: 0, type: 'gasto', account_id: db.accounts[0].id,
           to_account_id: null, category_id: null, merchant: null, note: null, source: 'manual', status: 'confirmada', ...tx,
         });
       commit();

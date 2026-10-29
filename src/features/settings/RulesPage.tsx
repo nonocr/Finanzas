@@ -18,9 +18,9 @@ export function RulesPage() {
   const [categoryId, setCategoryId] = useState<string | null>(null);
   const expenseCats = categories.filter((c) => c.kind === 'gasto' && !c.parent_id);
 
-  const add = async () => {
+  const add = () => {
     if (!pattern.trim() || !categoryId) return;
-    await save.mutateAsync({ pattern: pattern.trim().toUpperCase(), category_id: categoryId });
+    save.mutate({ pattern: pattern.trim().toUpperCase(), category_id: categoryId });
     setPattern('');
     setCategoryId(null);
     toast('Regla guardada');
