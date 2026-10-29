@@ -327,7 +327,7 @@ Leading 30px category tile, body title with optional subhead subtitle, trailing 
 Rounded square in the category hue with a white Lucide line icon at 58% of the tile and 2.25 stroke, like iOS Settings icons. 30px in lists, 24px in chips.
 
 ### Bottom Sheet
-card surface, 12px top corners, 36x5 card-3 grabber, three-column nav bar (cancel / title / save). Opens 500ms expo.out, closes faster at 300ms power3.in; scrim fades at 60% black. Escape and scrim tap close it.
+card surface, 12px top corners, 36x5 card-3 grabber, three-column nav bar (cancel / title / save). Opens 500ms expo.out, closes faster at 300ms power3.in; scrim fades at 60% black. Escape and scrim tap close it. Quick-entry sheets (add/edit movement, budget amount) also close with a swipe down (`swipeToClose`): from the grabber/nav bar always, from the content only when it is scrolled to the top; the panel follows the finger, the scrim fades with it, and it closes past 28% of its height or on a downward flick, otherwise it springs back. Long forms where losing input hurts (account editor) use `dismissible={false}`: no swipe, no scrim tap, only Cancelar / Guardar / Escape. The page behind never scrolls or rubber-bands while a sheet is open.
 
 ### Amount Motion
 Totals count to their new value with GSAP (600ms power3.out, rounded to whole colones); smaller figures blur-swap in place (200ms, 2px blur). Donut segments morph over 400ms. All motion is skipped under reduced motion.
