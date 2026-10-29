@@ -36,7 +36,7 @@ export function RulesPage() {
         <div className="p-4">
           <FormGroup>
             <FormRow label="Comercio" last>
-              <TextInput value={pattern} onChange={(e) => setPattern(e.target.value)} placeholder="AUTOMERCADO" />
+              <TextInput value={pattern} maxLength={100} onChange={(e) => setPattern(e.target.value)} placeholder="AUTOMERCADO" />
             </FormRow>
           </FormGroup>
           <p className="mt-4 mb-2 px-1 text-footnote font-semibold text-label-2 uppercase">Asignar a</p>

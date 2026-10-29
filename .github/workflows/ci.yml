@@ -1,0 +1,45 @@
+# Verificación en cada push y PR: secretos, dependencias, tipos, lint, pruebas (incluye seguridad de la base) y build.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # historial completo para buscar secretos
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Instalar dependencias (sin scripts de terceros)
+        run: npm ci --ignore-scripts
+
+      - name: Buscar credenciales (archivos e historial)
+        run: node scripts/check-secrets.mjs --history
+
+      - name: Auditoría de dependencias (falla con severidad alta o crítica)
+        run: npm audit --audit-level=high
+
+      - name: Tipos
+        run: npx tsc -b
+
+      - name: Lint
+        run: npx oxlint src
+
+      - name: Pruebas (unitarias + seguridad de la base en PostgreSQL efímero)
+        run: npx vitest run
+
+      - name: Build
+        run: npx vite build

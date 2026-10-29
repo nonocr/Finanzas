@@ -207,6 +207,7 @@ export function TransactionSheet({
         <Field label={isTransfer ? 'Descripción' : type === 'ingreso' ? 'Origen' : 'Comercio'}>
           <input
             value={merchant}
+            maxLength={200}
             onChange={(e) => setMerchant(e.target.value)}
             placeholder={isTransfer ? 'Pago de tarjeta' : type === 'ingreso' ? 'Salario' : 'Automercado'}
             className="w-full bg-transparent text-right text-body outline-none placeholder:text-label-3"
@@ -232,6 +233,7 @@ export function TransactionSheet({
         <Field label="Nota" last>
           <input
             value={note}
+            maxLength={500}
             onChange={(e) => setNote(e.target.value)}
             placeholder="Opcional"
             className="w-full bg-transparent text-right text-body outline-none placeholder:text-label-3"

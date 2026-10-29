@@ -1,8 +1,17 @@
 /// <reference types="vitest/config" />
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
+import { readFileSync } from 'node:fs'
 import { defineConfig } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
+
+// `vite preview` sirve con los mismos encabezados de seguridad que Vercel (vercel.json), para probar la CSP en local.
+const vercel = JSON.parse(readFileSync(new URL('./vercel.json', import.meta.url), 'utf8')) as {
+  headers: { source: string; headers: { key: string; value: string }[] }[]
+}
+const securityHeaders = Object.fromEntries(
+  vercel.headers.find((h) => h.source === '/(.*)')!.headers.map((h) => [h.key, h.value]),
+)
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -35,7 +44,10 @@ export default defineConfig({
       },
     }),
   ],
+  preview: {
+    headers: securityHeaders,
+  },
   test: {
-    include: ['src/**/*.test.ts'],
+    include: ['src/**/*.test.ts', 'supabase/tests/**/*.test.ts', 'scripts/**/*.test.mjs'],
   },
 })
