@@ -10,3 +10,4 @@ export const supabase = createClient(url ?? 'http://localhost', anonKey ?? 'miss
 });
 
 export const WALLET_ENDPOINT = url ? `${url}/functions/v1/wallet-ingest` : '';
+export const WALLET_SYNC_ENDPOINT = url ? `${url}/functions/v1/wallet-sync` : '';
