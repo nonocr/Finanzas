@@ -17,6 +17,7 @@ import { EditorProvider } from './features/transactions/editor';
 import { TransactionsPage } from './features/transactions/TransactionsPage';
 import { isDemo } from './lib/api';
 import { needsMfaCode } from './lib/mfa';
+import { syncCacheWithSession } from './lib/offline';
 import { openedFromRecoveryLink, supabase } from './lib/supabase';
 
 // Recharts es lo más pesado del paquete; solo se carga al abrir Estadísticas.
@@ -30,8 +31,13 @@ function useAuth() {
   useEffect(() => {
     if (isDemo) return;
     // Con la sesión se calcula si falta el código de dos pasos (se lee del token guardado, sin red).
-    const update = async (session: Session | null) =>
-      setAuth({ session, mfaPending: session ? await needsMfaCode() : false });
+    // La copia local se ajusta a la sesión: sin sesión o con otra cuenta se borra, y la cola de cambios solo se
+    // reanuda cuando la sesión ya pasó los dos pasos.
+    const update = async (session: Session | null) => {
+      const mfaPending = session ? await needsMfaCode() : false;
+      void syncCacheWithSession(session?.user.id ?? null, Boolean(session) && !mfaPending);
+      setAuth({ session, mfaPending });
+    };
     supabase.auth.getSession().then(({ data }) => update(data.session));
     const { data } = supabase.auth.onAuthStateChange((event, s) => {
       if (event === 'PASSWORD_RECOVERY') setRecovery(true);

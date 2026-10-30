@@ -105,6 +105,8 @@
   }
   body {
     min-height: 100dvh;
+    /* Se puede ampliar con dos dedos (accesibilidad), pero el doble toque no hace zoom por accidente. */
+    touch-action: manipulation;
   }
   ::selection {
     background: rgb(10 132 255 / 0.45);

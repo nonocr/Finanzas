@@ -9,7 +9,7 @@ import { crDayOf, isoDate } from '../../lib/dates';
 import { resetDemo } from '../../lib/demoApi';
 import { clearOfflineCache } from '../../lib/offline';
 import { useAccounts, useCategories } from '../../lib/queries';
-import { supabase } from '../../lib/supabase';
+import { markPartialSignOut, supabase } from '../../lib/supabase';
 import { ChangePasswordSheet } from './ChangePasswordSheet';
 import { TwoFactorSheet } from './TwoFactorSheet';
 
@@ -119,8 +119,13 @@ export function MorePage() {
         ) : (
           <Row
             onClick={async () => {
-              // global: invalida la sesión en todos los dispositivos, no solo en este.
-              await supabase.auth.signOut({ scope: 'global' });
+              // global: invalida la sesión en todos los dispositivos, no solo en este. Sin conexión eso falla y la
+              // sesión seguiría abierta aquí: entonces se cierra al menos en este teléfono y se avisa.
+              const { error } = await supabase.auth.signOut({ scope: 'global' });
+              if (error) {
+                markPartialSignOut(); // la pantalla de entrar lo explica
+                await supabase.auth.signOut({ scope: 'local' });
+              }
               clearOfflineCache(); // la copia local de tus datos no se queda en el teléfono
             }}
             leading={<IconTile icon={LogOut} color="var(--color-red)" />}

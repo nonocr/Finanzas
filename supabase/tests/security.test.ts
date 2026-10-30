@@ -201,6 +201,51 @@ describe('verificación en dos pasos (TOTP)', () => {
   });
 });
 
+describe('segunda auditoría', () => {
+  it('una tabla nueva no nace con permisos para la app ni para visitantes', async () => {
+    await t.db.exec('create table public.tabla_futura (id int)');
+    const r = await t.db.query<{ auth: boolean; anon: boolean; trunc: boolean }>(
+      `select has_table_privilege('authenticated', 'public.tabla_futura', 'SELECT') auth,
+              has_table_privilege('anon', 'public.tabla_futura', 'SELECT') anon,
+              has_table_privilege('authenticated', 'public.tabla_futura', 'TRUNCATE') trunc`,
+    );
+    expect(r.rows[0]).toEqual({ auth: false, anon: false, trunc: false });
+    await t.db.exec('drop table public.tabla_futura');
+  });
+
+  it('las funciones propias fijan search_path con pg_temp al final', async () => {
+    const r = await t.db.query<{ proname: string; cfg: string }>(
+      `select proname, array_to_string(proconfig, ',') cfg from pg_proc
+       where pronamespace = 'public'::regnamespace
+         and proname in ('create_api_token', 'handle_new_user', 'enforce_same_owner', 'copy_budgets', 'protect_wallet_id')`,
+    );
+    expect(r.rows).toHaveLength(5);
+    for (const row of r.rows) expect(row.cfg).toMatch(/search_path=.*pg_temp/);
+  });
+
+  it('la huella de Wallet solo la asigna el servidor', async () => {
+    await expect(
+      t.as('authenticated', alice, `insert into transactions (amount, type, account_id, external_id) values (100, 'gasto', $1, 'reservada')`, [
+        aliceAccount,
+      ]),
+    ).rejects.toThrow(/solo la asigna el servidor/);
+
+    // El servidor (service_role) sí la pone; la app puede editar ese pago reenviando la misma huella, no cambiarla.
+    const id = (
+      await t.as<{ id: string }>(
+        'service_role',
+        null,
+        `insert into transactions (user_id, amount, type, account_id, source, external_id) values ($1, 100, 'gasto', $2, 'wallet', 'h1') returning id`,
+        [alice, aliceAccount],
+      )
+    )[0].id;
+    await t.as('authenticated', alice, `update transactions set note = 'ok', external_id = 'h1' where id = $1`, [id]);
+    await expect(t.as('authenticated', alice, `update transactions set external_id = 'otra' where id = $1`, [id])).rejects.toThrow(
+      /solo la asigna el servidor/,
+    );
+  });
+});
+
 describe('antes de la migración de seguridad (para mostrar qué se corrigió)', () => {
   it('anon tenía permisos sobre las tablas y se podía apuntar a cuentas ajenas', async () => {
     const old = await createDb({ upTo: '20261030999999' });

@@ -46,3 +46,5 @@ En esta máquina (Windows), git no está en el PATH de PowerShell. Antepón `$en
 ## Capturas de verificación
 
 Chrome headless tiene un ancho mínimo y no avanza las transiciones CSS en tiempo virtual. Para ver la app a 390×844 con tiempos reales, usa un script con el protocolo DevTools (emulación de dispositivo) en lugar de `--screenshot`.
+
+`node scripts/capturas.mjs <carpeta> [url]` hace eso. Captura iPhone SE, iPhone, Pro Max, horizontal, iPad y escritorio, y en cada pantalla mide el desborde horizontal, los táctiles de menos de 44 px y el texto de menos de 12 px. Úsalo contra un servidor con `VITE_DEMO=1`, para que las capturas no tengan datos reales.
