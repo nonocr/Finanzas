@@ -5,6 +5,7 @@ import { ACCOUNT_ICONS } from '../../components/palette';
 import { Sheet } from '../../components/Sheet';
 import { useToast } from '../../components/Toast';
 import { Button, IconTile, Row, Screen, Section } from '../../components/ui';
+import { QuietColon } from '../../components/motion';
 import { crDay } from '../../lib/dates';
 import { formatCRC } from '../../lib/money';
 import { useAccounts, useBalances, useSaveAccount } from '../../lib/queries';
@@ -50,7 +51,9 @@ export function AccountsPage() {
     <Screen title="Cuentas" subtitle={<BackLink />}>
       <div className="black-card rounded-[18px] px-5 pt-5 pb-5">
         <p className="text-headline font-semibold">Patrimonio neto</p>
-        <p className={'tnum mt-3 text-[40px] leading-[46px] font-light tracking-[-0.03em] ' + (net < 0 ? 'text-red' : 'engraved')}>{formatCRC(net)}</p>
+        <p className={'tnum mt-3 text-[40px] leading-[46px] font-light tracking-[-0.03em] ' + (net < 0 ? 'text-red' : 'engraved')}>
+          {net < 0 ? formatCRC(net) : <><QuietColon />{formatCRC(net).replace('₡', '')}</>}
+        </p>
       </div>
 
       <Section header="Efectivo y bancos">

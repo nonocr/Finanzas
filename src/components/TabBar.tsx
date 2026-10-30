@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { ChartPie, House, List, PiggyBank, Plus, type LucideIcon } from 'lucide-react';
+import { ChartPie, Gauge, House, List, Plus, type LucideIcon } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { useEditor } from '../features/transactions/editor';
 
@@ -7,7 +7,7 @@ const TABS: { to: string; label: string; icon: LucideIcon; end?: boolean }[] = [
   { to: '/', label: 'Resumen', icon: House, end: true },
   { to: '/movimientos', label: 'Movimientos', icon: List },
   { to: '/estadisticas', label: 'Estadísticas', icon: ChartPie },
-  { to: '/presupuesto', label: 'Presupuesto', icon: PiggyBank },
+  { to: '/presupuesto', label: 'Presupuesto', icon: Gauge },
 ];
 
 function Tab({ to, label, icon: Icon, end }: (typeof TABS)[number]) {

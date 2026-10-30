@@ -39,7 +39,11 @@ export function CategoryGrid({
             >
               <Icon size={21} strokeWidth={1.9} />
             </span>
-            <span className={clsx('w-full truncate px-0.5 text-center text-caption', on ? 'font-semibold text-label' : 'text-label-2')}>
+            <span
+              lang="es"
+              // Nombres largos («Entretenimiento») se parten con guion en dos líneas en vez de cortarse.
+              className={clsx('line-clamp-2 w-full px-0.5 text-center text-caption hyphens-auto', on ? 'font-semibold text-label' : 'text-label-2')}
+            >
               {c.name}
             </span>
           </button>

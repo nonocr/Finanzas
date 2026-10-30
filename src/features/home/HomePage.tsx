@@ -40,6 +40,8 @@ export function HomePage() {
   const range = period === 'semana' ? weekRange(today) : monthRange(today);
   const month = isoDate(startOfMonth(today));
   const { data: txs, isLoading } = useTransactions(range);
+  // La semana tiene su propia consulta: puede empezar en el mes anterior (en Semana es la misma que la de arriba).
+  const { data: weekTxs } = useTransactions(weekRange(today));
   const { data: categories = [] } = useCategories();
   const { data: accounts = [] } = useAccounts();
   const { data: budgets = [] } = useBudgets(month);
@@ -50,7 +52,7 @@ export function HomePage() {
   const t = totals(txs ?? []);
   const slices = useMemo(() => spendingByCategory(txs ?? [], categories), [txs, categories]);
   const weekStart = startOfWeek(today);
-  const days = spendingByDay(txs ?? [], weekStart, 7);
+  const days = spendingByDay(weekTxs ?? [], weekStart, 7);
   const todayIdx = Math.round((today.getTime() - weekStart.getTime()) / 86_400_000);
 
   // Presupuesto total del mes; en vista semanal se prorratea a 7 días.
@@ -105,7 +107,7 @@ export function HomePage() {
         {isLoading ? (
           <Skeleton className="mt-4 h-12 w-52" />
         ) : (
-          <AnimatedAmount cents={t.gastos} className="engraved mt-4 block text-[48px] leading-[52px] font-light tracking-[-0.035em]" />
+          <AnimatedAmount quietCurrency cents={t.gastos} className="engraved mt-4 block text-[48px] leading-[52px] font-light tracking-[-0.035em]" />
         )}
         {left !== null && limit !== null ? (
           <>
@@ -162,33 +164,12 @@ export function HomePage() {
           <ChevronRight size={18} strokeWidth={2.25} className="text-label-3" />
         </Link>
       )}
-      {period === 'semana' && (
-        <Section header="Por día" className="mt-6">
-          <WeekBars values={days} todayIndex={todayIdx} />
-        </Section>
-      )}
-
-      <Section header="Por categoría" className="mt-6">
-        <div className="flex items-center gap-5 p-4">
-          <Donut segments={segments} size={148} thickness={18}>
-            <span className="text-caption text-label-2">Total</span>
-            <span className="tnum text-subhead font-semibold">
-              <SoftText text={formatCRC(t.gastos)} />
-            </span>
-          </Donut>
-          <ul className="min-w-0 flex-1 space-y-1.5">
-            {slices.slice(0, 5).map((s) => {
-              const c = s.categoryId ? catMap.get(s.categoryId) : undefined;
-              return (
-                <li key={s.categoryId ?? 'none'} className="flex items-center gap-2 text-subhead">
-                  <span className="size-2.5 shrink-0 rounded-[3px]" style={{ background: c ? hexOf(c.color) : '#48484a' }} />
-                  <span className="min-w-0 flex-1 truncate">{c?.name ?? 'Sin categoría'}</span>
-                  <span className="tnum text-label-2">{Math.round(s.share * 100)}%</span>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
+      <Section
+        header="Esta semana"
+        className="mt-6"
+        action={<span className="tnum text-body text-label-2">{formatCRC(days.reduce((a, b) => a + b, 0))}</span>}
+      >
+        <WeekBars values={days} todayIndex={todayIdx} />
       </Section>
 
       <Section
@@ -214,6 +195,29 @@ export function HomePage() {
         )}
       </Section>
 
+      <Section header="Por categoría">
+        <div className="flex items-center gap-5 p-4">
+          <Donut segments={segments} size={148} thickness={18}>
+            <span className="text-caption text-label-2">Total</span>
+            <span className="tnum text-subhead font-semibold">
+              <SoftText text={formatCRC(t.gastos)} />
+            </span>
+          </Donut>
+          <ul className="min-w-0 flex-1 space-y-1.5">
+            {slices.slice(0, 5).map((s) => {
+              const c = s.categoryId ? catMap.get(s.categoryId) : undefined;
+              return (
+                <li key={s.categoryId ?? 'none'} className="flex items-center gap-2 text-subhead">
+                  <span className="size-2.5 shrink-0 rounded-[3px]" style={{ background: c ? hexOf(c.color) : '#48484a' }} />
+                  <span className="min-w-0 flex-1 truncate">{c?.name ?? 'Sin categoría'}</span>
+                  <span className="tnum text-label-2">{Math.round(s.share * 100)}%</span>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      </Section>
+
       {isDemo && (
         <p className="mt-4 px-4 text-footnote text-label-2">
           Datos de ejemplo. Conecta tu cuenta en Ajustes para ver tus movimientos reales.
@@ -223,26 +227,24 @@ export function HomePage() {
   );
 }
 
-const CHART_H = 144;
+const CHART_H = 92;
 
-/** Barras por día al estilo de Salud: hoy resaltado, días futuros apagados. */
+/** Franja de la semana: barras compactas, hoy en platino, días futuros apagados; el promedio en una línea discreta. */
 function WeekBars({ values, todayIndex }: { values: number[]; todayIndex: number }) {
   const max = Math.max(...values, 1);
   const avg = values.slice(0, todayIndex + 1).reduce((a, b) => a + b, 0) / (todayIndex + 1);
   return (
-    <div className="p-4">
-      <p className="text-footnote text-label-2">Promedio diario</p>
-      <p className="tnum text-title3 font-bold">{formatCRC(Math.round(avg / 100) * 100)}</p>
-      <div className="relative mt-4 flex items-end gap-2.5" style={{ height: CHART_H }} role="img" aria-label="Gasto por día de esta semana">
-        <div
-          className="pointer-events-none absolute inset-x-0 border-t border-dashed border-label-3"
-          style={{ bottom: (avg / max) * CHART_H }}
-          aria-hidden="true"
-        />
+    <div className="px-4 pt-4 pb-3">
+      <div
+        className="flex items-end gap-2.5"
+        style={{ height: CHART_H }}
+        role="img"
+        aria-label={`Gasto por día de esta semana. Promedio diario ${formatCRC(Math.round(avg / 100) * 100)}, hoy ${formatCRC(values[todayIndex] ?? 0)}`}
+      >
         {values.map((v, i) => (
           <div key={i} className="flex-1">
             <div
-              className="rounded-t-[5px] rounded-b-[2px] transition-[height] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none"
+              className="rounded-t-[4px] rounded-b-[2px] transition-[height] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none"
               style={{
                 height: i > todayIndex ? 4 : Math.max(4, (v / max) * CHART_H),
                 background: i === todayIndex ? 'var(--color-accent)' : i > todayIndex ? 'var(--color-fill)' : '#4a4a4f',
@@ -254,16 +256,13 @@ function WeekBars({ values, todayIndex }: { values: number[]; todayIndex: number
       </div>
       <div className="mt-2 flex gap-2.5">
         {WEEKDAY_INITIALS.map((d, i) => (
-          <span
-            key={d}
-            className={'flex-1 text-center text-caption font-semibold ' + (i === todayIndex ? 'text-label' : 'text-label-3')}
-          >
+          <span key={d} className={'flex-1 text-center text-caption ' + (i === todayIndex ? 'font-semibold text-label' : 'text-label-2')}>
             {d}
           </span>
         ))}
       </div>
       <p className="tnum mt-3 text-footnote text-label-2">
-        Hoy {formatCRC(values[todayIndex] ?? 0)}
+        Promedio diario {formatCRC(Math.round(avg / 100) * 100)} · Hoy {formatCRC(values[todayIndex] ?? 0)}
       </p>
     </div>
   );

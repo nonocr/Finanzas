@@ -29,7 +29,8 @@ export function TransactionRow({
       : (tx.merchant ?? cat?.name ?? (tx.type === 'ingreso' ? 'Ingreso' : 'Gasto'));
 
   const meta = [
-    tx.type === 'transferencia' ? `${acc?.name ?? ''} → ${to?.name ?? ''}` : acc?.name,
+    // Con el sello «Revisar» no cabe todo: se queda la hora (identifica el cobro) y la tarjeta se ve al abrirlo.
+    tx.type === 'transferencia' ? `${acc?.name ?? ''} → ${to?.name ?? ''}` : pending ? null : acc?.name,
     showTime ? timeFmt.format(new Date(tx.occurred_at)) : null,
   ]
     .filter(Boolean)

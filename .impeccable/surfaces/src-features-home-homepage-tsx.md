@@ -13,6 +13,10 @@ Audience/job: the owner opens it on her iPhone to see how this week and this mon
 
 Constraints: colones only; dark always; Wallet inbox findable in one glance; quick add under five seconds; budget keeps its single colour rule.
 
+Approved mocks (2026-10-30, user: «ese es, usa ese»): .impeccable/mocks/wayne/resumen.html, movimientos.html, nuevo-gasto.html (shared wayne.css). They are the composition the build matches.
+
+Cited adaptations: Movimientos keeps the month bar first because Estadísticas and Presupuesto share that month-navigation position; the Resumen donut stays (existing function); pending Wallet rows use a neutral plate because they have no category yet.
+
 ## Direction contract
 
 THESIS: Discreet luxury of a private black card: the month is a matte-metal card you hold, not a dashboard tile. It refuses the category's saturated system colours and colour-tiled icons; colour appears only where it means something (budget state, income).

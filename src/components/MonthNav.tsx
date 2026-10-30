@@ -7,7 +7,7 @@ export function MonthNav({ month, onChange }: { month: Date; onChange: (m: Date)
   const isCurrent = month.getTime() >= current.getTime();
   const label = `${monthName(month)} ${month.getUTCFullYear()}`;
   return (
-    <div className="flex items-center justify-between rounded-card bg-card px-1">
+    <div className="machined flex items-center justify-between rounded-card bg-card px-1">
       <button
         type="button"
         aria-label="Mes anterior"

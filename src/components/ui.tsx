@@ -142,7 +142,7 @@ export function Stamp({ children }: { children: ReactNode }) {
 }
 
 export function Card({ className, ...props }: ComponentProps<'div'>) {
-  return <div className={clsx('rounded-card bg-card p-4', className)} {...props} />;
+  return <div className={clsx('machined rounded-card bg-card p-4', className)} {...props} />;
 }
 
 /** Una sola regla para el avance de un presupuesto: acero < 80 %, ámbar desde 80 %, rojo al llegar al 100 %. */

@@ -76,9 +76,9 @@ export function StatsPage() {
     <Screen title="Estadísticas">
       <MonthNav month={month} onChange={setMonth} />
 
-      <section className="mt-4 rounded-card bg-card p-4">
+      <section className="machined mt-4 rounded-card bg-card p-4">
         <p className="text-subhead font-semibold text-label-2">Gastado</p>
-        <AnimatedAmount cents={t.gastos} className="engraved block text-[40px] leading-[46px] font-light tracking-[-0.03em]" />
+        <AnimatedAmount quietCurrency cents={t.gastos} className="engraved block text-[40px] leading-[46px] font-light tracking-[-0.03em]" />
         {change !== null && (
           <p className={'mt-1 flex items-center gap-1 text-subhead font-semibold ' + (change > 0 ? 'text-red' : 'text-green')}>
             {change > 0 ? <TrendingUp size={18} strokeWidth={2.25} /> : <TrendingDown size={18} strokeWidth={2.25} />}
