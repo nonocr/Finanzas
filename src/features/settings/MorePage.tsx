@@ -82,6 +82,29 @@ export function MorePage() {
         <Row to="/mas/wallet" leading={<IconTile icon={Smartphone} color="var(--color-blue)" />} title="Apple Wallet" subtitle="Registrar pagos con Atajos" chevron />
       </Section>
 
+      {!isDemo && (
+        <Section header="Seguridad">
+          <Row
+            onClick={() => {
+              setPasswordKey((k) => k + 1);
+              setPasswordOpen(true);
+            }}
+            leading={<IconTile icon={KeyRound} color="var(--color-gray)" />}
+            title="Cambiar contraseña"
+            chevron
+          />
+          <Row
+            onClick={() => {
+              setTwoFactorKey((k) => k + 1);
+              setTwoFactorOpen(true);
+            }}
+            leading={<IconTile icon={ShieldCheck} color="var(--color-green)" />}
+            title="Verificación en dos pasos"
+            chevron
+          />
+        </Section>
+      )}
+
       <Section header="Datos">
         <Row onClick={exportCsv} leading={<IconTile icon={Download} color="var(--color-teal)" />} title="Exportar movimientos (CSV)" />
         {isDemo ? (
@@ -106,29 +129,6 @@ export function MorePage() {
           />
         )}
       </Section>
-
-      {!isDemo && (
-        <Section header="Seguridad">
-          <Row
-            onClick={() => {
-              setPasswordKey((k) => k + 1);
-              setPasswordOpen(true);
-            }}
-            leading={<IconTile icon={KeyRound} color="var(--color-gray)" />}
-            title="Cambiar contraseña"
-            chevron
-          />
-          <Row
-            onClick={() => {
-              setTwoFactorKey((k) => k + 1);
-              setTwoFactorOpen(true);
-            }}
-            leading={<IconTile icon={ShieldCheck} color="var(--color-green)" />}
-            title="Verificación en dos pasos"
-            chevron
-          />
-        </Section>
-      )}
       <ChangePasswordSheet key={passwordKey} open={passwordOpen} onClose={() => setPasswordOpen(false)} />
       <TwoFactorSheet key={`2fa-${twoFactorKey}`} open={twoFactorOpen} onClose={() => setTwoFactorOpen(false)} />
 
