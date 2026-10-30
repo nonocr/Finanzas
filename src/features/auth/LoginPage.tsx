@@ -13,7 +13,8 @@ import { supabase } from '../../lib/supabase';
 const MESSAGES: Record<string, string> = {
   invalid_credentials: 'Correo o contraseña incorrectos.',
   email_not_confirmed: 'Falta confirmar el correo. Revisa tu bandeja de entrada.',
-  over_email_send_rate_limit: 'Ya se envió un correo hace poco. Espera un rato antes de pedir otro.',
+  // El correo gratis de Supabase manda pocos correos por hora para todo el proyecto, no solo para ti.
+  over_email_send_rate_limit: 'Se alcanzó el límite de correos por hora. Inténtalo de nuevo en una hora.',
   over_request_rate_limit: 'Demasiados intentos. Espera unos minutos.',
   same_password: 'La nueva contraseña es igual a la anterior.',
   weak_password: 'La contraseña es muy débil.',
