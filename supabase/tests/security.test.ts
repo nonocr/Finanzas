@@ -174,6 +174,33 @@ describe('límite de frecuencia de los webhooks', () => {
   });
 });
 
+describe('verificación en dos pasos (TOTP)', () => {
+  it('con un factor verificado, la sesión que solo pasó la contraseña no ve ni escribe nada', async () => {
+    const carol = await t.createUser('carol@example.com');
+    const acc = (await t.as<{ id: string }>('authenticated', carol, 'select id from accounts'))[0].id;
+    // Un factor sin verificar (inscripción a medias) todavía no exige el segundo paso.
+    await t.db.query("insert into auth.mfa_factors (user_id, status) values ($1, 'unverified')", [carol]);
+    expect(await t.as('authenticated', carol, 'select id from accounts')).toHaveLength(1);
+
+    await t.db.query("update auth.mfa_factors set status = 'verified' where user_id = $1", [carol]);
+    expect(await t.as('authenticated', carol, 'select id from accounts')).toEqual([]);
+    expect(await t.as('authenticated', carol, 'select * from account_balances')).toEqual([]);
+    await expect(
+      t.as('authenticated', carol, `insert into transactions (amount, type, account_id) values (100, 'gasto', $1)`, [acc]),
+    ).rejects.toThrow(/row-level security|cuenta no existe/);
+    await expect(t.as('authenticated', carol, 'select create_api_token()')).rejects.toThrow(/not authenticated/);
+
+    // Con el código del autenticador (aal2) todo vuelve a funcionar.
+    expect(await t.as('authenticated', carol, 'select id from accounts', [], 'aal2')).toHaveLength(1);
+    await t.as('authenticated', carol, `insert into transactions (amount, type, account_id) values (100, 'gasto', $1)`, [acc], 'aal2');
+    await expect(t.as('authenticated', carol, 'select create_api_token()', [], 'aal2')).resolves.toBeDefined();
+  });
+
+  it('sin factores, una sesión normal sigue funcionando', async () => {
+    expect(await t.as('authenticated', alice, 'select id from accounts')).toHaveLength(1);
+  });
+});
+
 describe('antes de la migración de seguridad (para mostrar qué se corrigió)', () => {
   it('anon tenía permisos sobre las tablas y se podía apuntar a cuentas ajenas', async () => {
     const old = await createDb({ upTo: '20261030999999' });
