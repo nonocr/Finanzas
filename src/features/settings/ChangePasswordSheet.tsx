@@ -9,6 +9,8 @@ const ERRORS: Record<string, string> = {
   same_password: 'La nueva contraseña es igual a la actual.',
   weak_password: 'La contraseña es muy débil.',
   current_password_mismatch: 'La contraseña actual no es correcta.',
+  current_password_invalid: 'La contraseña actual no es correcta.',
+  insufficient_aal: 'Vuelve a iniciar sesión con tu código de dos pasos e inténtalo de nuevo.',
   current_password_required: 'Escribe tu contraseña actual.',
   reauthentication_needed: 'Vuelve a iniciar sesión e inténtalo de nuevo.',
   over_request_rate_limit: 'Demasiados intentos. Espera unos minutos.',

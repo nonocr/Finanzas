@@ -17,8 +17,11 @@ const SUPABASE_BASELINE = `
   create table auth.users (id uuid primary key default gen_random_uuid(), email text, encrypted_password text);
   create function auth.uid() returns uuid language sql stable as
     $$ select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid $$;
+  create function auth.jwt() returns jsonb language sql stable as
+    $$ select coalesce(nullif(current_setting('request.jwt.claims', true), ''), '{}')::jsonb $$;
+  create table auth.mfa_factors (id uuid primary key default gen_random_uuid(), user_id uuid not null, status text not null);
   grant usage on schema public, auth, extensions to anon, authenticated, service_role;
-  grant execute on function auth.uid() to anon, authenticated, service_role;
+  grant execute on function auth.uid(), auth.jwt() to anon, authenticated, service_role;
   -- Defaults de Supabase: todo lo que se crea en public queda concedido a los roles del API.
   alter default privileges in schema public grant all on tables to anon, authenticated, service_role;
   alter default privileges in schema public grant all on functions to anon, authenticated, service_role;
@@ -42,9 +45,16 @@ export async function createDb(opts: { upTo?: string } = {}) {
     return r.rows[0].id;
   }
 
-  /** Ejecuta SQL como un rol del API, con el usuario de la sesión (o ninguno). */
-  async function as<T = Record<string, unknown>>(role: Role, userId: string | null, sql: string, params: unknown[] = []) {
+  /** Ejecuta SQL como un rol del API, con el usuario de la sesión (o ninguno). `aal` imita el nivel de la sesión. */
+  async function as<T = Record<string, unknown>>(
+    role: Role,
+    userId: string | null,
+    sql: string,
+    params: unknown[] = [],
+    aal: 'aal1' | 'aal2' = 'aal1',
+  ) {
     await db.query("select set_config('request.jwt.claim.sub', $1, false)", [userId ?? '']);
+    await db.query("select set_config('request.jwt.claims', $1, false)", [userId ? JSON.stringify({ sub: userId, aal }) : '']);
     await db.exec(`set role ${role}`);
     try {
       return (await db.query<T>(sql, params)).rows;
