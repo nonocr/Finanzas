@@ -283,7 +283,7 @@ export function Sheet({
         ref={panelRef}
         data-panel
         tabIndex={-1}
-        className="absolute inset-x-0 bottom-0 mx-auto flex max-w-xl flex-col rounded-t-[12px] bg-card shadow-[0_-8px_30px_rgb(0_0_0/0.5)] outline-none"
+        className="absolute inset-x-0 bottom-0 mx-auto flex max-w-xl flex-col rounded-t-[14px] bg-card shadow-[inset_0_1px_0_rgb(255_255_255/0.07),0_-10px_30px_rgb(0_0_0/0.6)] outline-none"
         style={{ maxHeight: 'calc(100dvh - var(--safe-top) - 12px)' }}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}

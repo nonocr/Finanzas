@@ -102,7 +102,7 @@ export function BudgetsPage() {
             </p>
           </>
         ) : (
-          <p className="mt-1 text-body text-blue">Definir el total del mes</p>
+          <p className="mt-1 text-body text-accent">Definir el total del mes</p>
         )}
       </button>
 
@@ -142,7 +142,7 @@ export function BudgetsPage() {
               <CategoryIcon icon={c.icon} color={c.color} />
               <span className="flex min-h-11 flex-1 items-center justify-between py-2.5 pr-4 shadow-[inset_0_-0.5px_0_var(--color-sep)] group-last:shadow-none">
                 <span className="text-body">{c.name}</span>
-                <Plus size={20} strokeWidth={2.25} className="text-blue" />
+                <Plus size={20} strokeWidth={2.25} className="text-accent" />
               </span>
             </button>
           ))}

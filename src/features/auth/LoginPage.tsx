@@ -24,7 +24,7 @@ const GENERIC = 'No se pudo completar. Revisa tu conexión e inténtalo de nuevo
 function AuthLayout({ title, subtitle, children }: { title: string; subtitle: ReactNode; children: ReactNode }) {
   return (
     <main className="mx-auto flex min-h-dvh max-w-sm flex-col justify-center px-6 pt-[var(--safe-top)] pb-[var(--safe-bottom)]">
-      <div className="mb-8 grid size-16 place-items-center rounded-[16px] bg-green text-black">
+      <div className="mb-8 grid size-16 place-items-center rounded-[16px] black-card text-accent">
         <Wallet size={34} strokeWidth={2} />
       </div>
       <h1 className="text-large-title font-bold">{title}</h1>

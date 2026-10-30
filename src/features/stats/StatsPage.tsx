@@ -78,7 +78,7 @@ export function StatsPage() {
 
       <section className="mt-4 rounded-card bg-card p-4">
         <p className="text-subhead font-semibold text-label-2">Gastado</p>
-        <AnimatedAmount cents={t.gastos} className="block text-[34px] leading-[41px] font-bold tracking-[-0.02em]" />
+        <AnimatedAmount cents={t.gastos} className="engraved block text-[40px] leading-[46px] font-light tracking-[-0.03em]" />
         {change !== null && (
           <p className={'mt-1 flex items-center gap-1 text-subhead font-semibold ' + (change > 0 ? 'text-red' : 'text-green')}>
             {change > 0 ? <TrendingUp size={18} strokeWidth={2.25} /> : <TrendingDown size={18} strokeWidth={2.25} />}
@@ -146,22 +146,22 @@ export function StatsPage() {
         >
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={trend} barGap={2} barCategoryGap="22%">
-              <XAxis dataKey="name" tickLine={false} axisLine={false} tick={{ fill: 'rgb(235 235 245 / 0.6)', fontSize: 12 }} />
+              <XAxis dataKey="name" tickLine={false} axisLine={false} tick={{ fill: '#9a9aa1', fontSize: 12 }} />
               <YAxis
                 tickLine={false}
                 axisLine={false}
                 width={44}
-                tick={{ fill: 'rgb(235 235 245 / 0.3)', fontSize: 11 }}
+                tick={{ fill: '#7c7c83', fontSize: 12 }}
                 tickFormatter={(v: number) => compact.format(v)}
               />
               <Tooltip
-                cursor={{ fill: 'rgb(118 118 128 / 0.18)' }}
-                contentStyle={{ background: '#2c2c2e', border: 0, borderRadius: 10, fontSize: 13 }}
-                labelStyle={{ color: '#fff', fontWeight: 600, textTransform: 'capitalize' }}
+                cursor={{ fill: 'rgb(150 150 160 / 0.1)' }}
+                contentStyle={{ background: '#1b1b1d', border: '1px solid #29292c', borderRadius: 10, fontSize: 13 }}
+                labelStyle={{ color: '#ececef', fontWeight: 600, textTransform: 'capitalize' }}
                 formatter={(v) => formatCRC(Number(v) * 100)}
               />
-              <Bar dataKey="Ingresos" fill="#30d158" radius={[4, 4, 1, 1]} isAnimationActive={false} />
-              <Bar dataKey="Gastos" fill="#ff9f0a" radius={[4, 4, 1, 1]} isAnimationActive={false} />
+              <Bar dataKey="Ingresos" fill="#a9bfae" radius={[4, 4, 1, 1]} isAnimationActive={false} />
+              <Bar dataKey="Gastos" fill="#dcdce0" radius={[4, 4, 1, 1]} isAnimationActive={false} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -171,7 +171,7 @@ export function StatsPage() {
             Ingresos
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="size-2.5 rounded-[3px] bg-orange" />
+            <span className="size-2.5 rounded-[3px] bg-accent" />
             Gastos
           </span>
         </div>
@@ -237,4 +237,4 @@ export function StatsPage() {
 }
 
 const METHOD_LABEL = { tarjeta: 'Tarjeta', efectivo: 'Efectivo', otro: 'Otros' } as const;
-const METHOD_COLOR = { tarjeta: '#0a84ff', efectivo: '#30d158', otro: '#8e8e93' } as const;
+const METHOD_COLOR = { tarjeta: '#dcdce0', efectivo: '#a9bfae', otro: '#5a5a60' } as const;

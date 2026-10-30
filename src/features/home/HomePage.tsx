@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { Donut } from '../../components/Donut';
 import { AnimatedAmount, Segmented, SoftText } from '../../components/motion';
 import { hexOf } from '../../components/palette';
-import { budgetTone, EmptyState, ProgressBar, Screen, Section, Skeleton } from '../../components/ui';
+import { budgetTone, EmptyState, IconTile, ProgressBar, Screen, Section, Skeleton, Stamp } from '../../components/ui';
 import { isDemo } from '../../lib/api';
 import { crDay, isoDate, monthName, monthRange, startOfMonth, startOfWeek, weekRange, WEEKDAY_INITIALS } from '../../lib/dates';
 import { formatCRC } from '../../lib/money';
@@ -64,6 +64,7 @@ export function HomePage() {
         ? monthLimit
         : Math.round((monthLimit * 7) / daysInMonth / 100) * 100;
   const left = limit !== null ? limit - t.gastos : null;
+  const ratio = limit ? t.gastos / limit : null;
 
   // Orden fijo de categorías para que la dona se transforme al cambiar de periodo.
   const expenseCats = categories.filter((c) => c.kind === 'gasto' && !c.parent_id);
@@ -89,18 +90,26 @@ export function HomePage() {
         onChange={setPeriod}
       />
 
-      <section className="mt-5 rounded-card bg-card p-4">
-        <p className="text-subhead font-semibold text-label-2">
-          <SoftText text={title} />
-        </p>
+      {/* La tarjeta negra: el periodo en metal mate, la cifra grabada y el presupuesto como ranura. */}
+      <section className="black-card mt-5 rounded-[18px] px-5 pt-5 pb-4">
+        <div className="flex items-baseline justify-between gap-3">
+          <p className="text-headline font-semibold">
+            <SoftText text={title} />
+          </p>
+          {ratio !== null && (
+            <p className={'tnum text-subhead font-semibold ' + budgetTone(ratio)}>
+              <SoftText text={`${Math.round(ratio * 100)} %`} align="end" />
+            </p>
+          )}
+        </div>
         {isLoading ? (
-          <Skeleton className="mt-2 h-10 w-48" />
+          <Skeleton className="mt-4 h-12 w-52" />
         ) : (
-          <AnimatedAmount cents={t.gastos} className="mt-1 block text-[40px] leading-[46px] font-bold tracking-[-0.02em]" />
+          <AnimatedAmount cents={t.gastos} className="engraved mt-4 block text-[48px] leading-[52px] font-light tracking-[-0.035em]" />
         )}
         {left !== null && limit !== null ? (
           <>
-            <p className={'mt-1 text-subhead font-semibold ' + budgetTone(limit ? t.gastos / limit : 0)}>
+            <p className="mt-2 text-subhead text-label-2">
               <SoftText
                 text={
                   left >= 0
@@ -110,24 +119,25 @@ export function HomePage() {
               />
             </p>
             <div className="mt-3">
-              <ProgressBar value={limit ? t.gastos / limit : 0} />
+              <ProgressBar value={ratio ?? 0} />
             </div>
           </>
         ) : (
-          <Link to="/presupuesto" className="mt-1 inline-flex min-h-11 items-center text-subhead font-semibold text-blue">
+          <Link to="/presupuesto" className="mt-1 inline-flex min-h-11 items-center text-subhead font-semibold text-accent">
             Definir un presupuesto
           </Link>
         )}
-        <dl className="mt-4 grid grid-cols-2 gap-3 border-t-[0.5px] border-sep pt-3">
+        {/* Campos de tarjeta: etiqueta grabada pequeña y valor. */}
+        <dl className="mt-5 grid grid-cols-2 gap-3">
           <div>
-            <dt className="text-footnote text-label-2">Ingresos</dt>
-            <dd className="tnum text-headline font-semibold text-green">
+            <dt className="text-caption font-semibold tracking-[0.12em] text-label-2">INGRESOS</dt>
+            <dd className="tnum engraved mt-1 text-headline font-medium">
               <SoftText text={formatCRC(t.ingresos)} />
             </dd>
           </div>
           <div>
-            <dt className="text-footnote text-label-2">Balance</dt>
-            <dd className={'tnum text-headline font-semibold ' + (t.neto < 0 ? 'text-red' : 'text-label')}>
+            <dt className="text-caption font-semibold tracking-[0.12em] text-label-2">BALANCE</dt>
+            <dd className={'tnum mt-1 text-headline font-medium ' + (t.neto < 0 ? 'text-red' : 'engraved')}>
               <SoftText text={formatCRC(t.neto, { sign: true })} />
             </dd>
           </div>
@@ -137,23 +147,21 @@ export function HomePage() {
       {pending.length > 0 && (
         <Link
           to="/movimientos?filtro=revisar"
-          className="press mt-3 flex min-h-14 items-center gap-3 rounded-card bg-card px-4 py-3"
+          className="press machined mt-3 flex min-h-14 items-center gap-3 rounded-card bg-card px-4 py-3"
         >
-          <span className="grid size-[30px] place-items-center rounded-[8px] bg-blue text-white">
-            <Smartphone size={18} strokeWidth={2.25} />
-          </span>
-          <span className="flex-1">
+          <IconTile icon={Smartphone} color="var(--color-accent)" size={36} />
+          <span className="min-w-0 flex-1">
             <span className="block text-body font-semibold">
-              {pending.length === 1 ? '1 pago de Wallet' : `${pending.length} pagos de Wallet`} por revisar
+              {pending.length === 1 ? '1 pago de Wallet' : `${pending.length} pagos de Wallet`}
             </span>
             <span className="tnum block text-subhead text-label-2">
+              <Stamp>Revisar</Stamp>
               {formatCRC(pending.reduce((s, p) => s + p.amount, 0))} sin categoría
             </span>
           </span>
           <ChevronRight size={18} strokeWidth={2.25} className="text-label-3" />
         </Link>
       )}
-
       {period === 'semana' && (
         <Section header="Por día" className="mt-6">
           <WeekBars values={days} todayIndex={todayIdx} />
@@ -186,7 +194,7 @@ export function HomePage() {
       <Section
         header="Recientes"
         action={
-          <Link to="/movimientos" className="inline-flex min-h-11 items-center text-body text-blue">
+          <Link to="/movimientos" className="inline-flex min-h-11 items-center text-body text-accent">
             Ver todos
           </Link>
         }
@@ -237,7 +245,7 @@ function WeekBars({ values, todayIndex }: { values: number[]; todayIndex: number
               className="rounded-t-[5px] rounded-b-[2px] transition-[height] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none"
               style={{
                 height: i > todayIndex ? 4 : Math.max(4, (v / max) * CHART_H),
-                background: i === todayIndex ? 'var(--color-orange)' : i > todayIndex ? 'var(--color-fill)' : 'rgb(255 159 10 / 0.45)',
+                background: i === todayIndex ? 'var(--color-accent)' : i > todayIndex ? 'var(--color-fill)' : '#4a4a4f',
               }}
               title={formatCRC(v)}
             />

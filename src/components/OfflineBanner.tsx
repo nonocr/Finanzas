@@ -31,7 +31,7 @@ export function OfflineBanner() {
     >
       <div className="flex items-center gap-2 rounded-full bg-card-2 py-2 pr-4 pl-3 text-footnote font-semibold text-label shadow-[0_6px_18px_rgb(0_0_0/0.45)]">
         {online ? (
-          <RefreshCw size={16} strokeWidth={2.25} className="animate-spin text-blue motion-reduce:animate-none" />
+          <RefreshCw size={16} strokeWidth={2.25} className="animate-spin text-accent motion-reduce:animate-none" />
         ) : (
           <CloudOff size={16} strokeWidth={2.25} className="text-orange" />
         )}

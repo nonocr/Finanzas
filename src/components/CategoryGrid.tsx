@@ -27,15 +27,17 @@ export function CategoryGrid({
           >
             <span
               className={clsx(
-                'grid size-10 place-items-center rounded-[11px] text-white transition-[box-shadow,opacity] duration-150',
-                selected && !on && 'opacity-45',
+                'grid size-11 place-items-center rounded-[12px] shadow-[inset_0_1px_0_rgb(255_255_255/0.06)] transition-[box-shadow,opacity,background-color] duration-150',
+                on ? 'bg-fill-2' : 'bg-card-3',
+                selected && !on && 'opacity-50',
               )}
               style={{
-                background: colorOf(c.color),
-                boxShadow: on ? '0 0 0 2px var(--color-card), 0 0 0 4px var(--color-label)' : undefined,
+                color: colorOf(c.color),
+                // Seleccionada: aro de platino separado por una línea del fondo de la hoja.
+                boxShadow: on ? '0 0 0 2px var(--color-card), 0 0 0 3.5px var(--color-accent)' : undefined,
               }}
             >
-              <Icon size={20} strokeWidth={2} />
+              <Icon size={21} strokeWidth={1.9} />
             </span>
             <span className={clsx('w-full truncate px-0.5 text-center text-caption', on ? 'font-semibold text-label' : 'text-label-2')}>
               {c.name}

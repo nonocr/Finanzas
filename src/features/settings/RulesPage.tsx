@@ -39,7 +39,7 @@ export function RulesPage() {
               <TextInput value={pattern} maxLength={100} onChange={(e) => setPattern(e.target.value)} placeholder="AUTOMERCADO" />
             </FormRow>
           </FormGroup>
-          <p className="mt-4 mb-2 px-1 text-footnote font-semibold text-label-2 uppercase">Asignar a</p>
+          <p className="mt-4 mb-2 px-1 text-subhead font-semibold text-label">Asignar a</p>
           <CategoryGrid categories={expenseCats} selected={categoryId} onSelect={setCategoryId} />
           <Button className="mt-4 w-full" disabled={!pattern.trim() || !categoryId || save.isPending} onClick={add}>
             Guardar regla

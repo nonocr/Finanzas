@@ -1,33 +1,43 @@
 @import 'tailwindcss';
 
 /* ---------------------------------------------------------------------------
-   Sistema: iOS oscuro (referencia Apple Wallet / Salud). Solo modo oscuro.
+   Sistema «Tarjeta negra»: negros mate, grafitos en capas y platino como única
+   acción. El color solo aparece donde significa algo (estado del presupuesto,
+   ingresos) y, muy sobrio, para distinguir categorías. Solo modo oscuro.
    --------------------------------------------------------------------------- */
 @theme {
   --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', Roboto, system-ui, sans-serif;
 
-  --color-bg: #000000;
-  --color-card: #1c1c1e;
-  --color-card-2: #2c2c2e;
-  --color-card-3: #3a3a3c;
-  --color-fill: rgb(118 118 128 / 0.24);
-  --color-fill-2: rgb(118 118 128 / 0.36);
-  --color-sep: rgb(84 84 88 / 0.6);
-  --color-label: #ffffff;
-  --color-label-2: rgb(235 235 245 / 0.6);
-  --color-label-3: rgb(235 235 245 / 0.3);
+  /* Escala de grafitos: los únicos neutros */
+  --color-bg: #050505;
+  --color-card: #111112;
+  --color-card-2: #1b1b1d;
+  --color-card-3: #29292c;
+  --color-fill: rgb(150 150 160 / 0.14);
+  --color-fill-2: rgb(150 150 160 / 0.24);
+  --color-sep: #242427;
+  --color-label: #ececef;
+  --color-label-2: #9a9aa1;
+  --color-label-3: #7c7c83;
 
-  --color-green: #30d158;
-  --color-blue: #0a84ff;
-  --color-orange: #ff9f0a;
-  --color-red: #ff453a;
-  --color-yellow: #ffd60a;
-  --color-pink: #ff375f;
-  --color-purple: #bf5af2;
-  --color-indigo: #5e5ce6;
-  --color-teal: #40c8e0;
-  --color-brown: #ac8e68;
-  --color-gray: #8e8e93;
+  /* Acción: platino (relleno claro con texto casi negro) */
+  --color-accent: #dcdce0;
+  --color-on-accent: #0a0a0b;
+
+  /* Estados y tintes de categoría: baja saturación, para convivir con el metal */
+  --color-green: #a9bfae;
+  --color-blue: #8497ab;
+  --color-orange: #d4a04c;
+  --color-red: #e0695a;
+  --color-yellow: #c4b07a;
+  --color-pink: #ab8289;
+  --color-purple: #9187a6;
+  --color-indigo: #7d86a8;
+  --color-teal: #83a7a3;
+  --color-brown: #a08f7e;
+  --color-gray: #85858b;
+  /* Base del presupuesto antes del 80 %: acero */
+  --color-steel: #b4b4ba;
 
   /* Escala tipográfica de iOS */
   --text-large-title: 34px;
@@ -64,10 +74,10 @@
 
   --tabs-dur: 250ms;
   --tabs-ease: cubic-bezier(0.22, 1, 0.36, 1);
-  --tabs-text-muted: rgb(235 235 245 / 0.6);
-  --tabs-text-active: #ffffff;
-  --tabs-bar-bg: rgb(118 118 128 / 0.24);
-  --tabs-pill-bg: #636366;
+  --tabs-text-muted: #9a9aa1;
+  --tabs-text-active: #ececef;
+  --tabs-bar-bg: #111112;
+  --tabs-pill-bg: #29292c;
 
   --text-soft-dur: 200ms;
   --text-soft-blur: 2px;
@@ -109,15 +119,15 @@
     touch-action: manipulation;
   }
   ::selection {
-    background: rgb(10 132 255 / 0.45);
+    background: rgb(220 220 224 / 0.28);
   }
   input,
   textarea,
   select {
-    caret-color: var(--color-blue);
+    caret-color: var(--color-accent);
   }
   :focus-visible {
-    outline: 2px solid var(--color-blue);
+    outline: 2px solid var(--color-accent);
     outline-offset: 2px;
   }
   h1,
@@ -140,6 +150,45 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* Platino: la única superficie de acción. Metal claro con canto pulido; el texto casi negro. */
+@utility metal {
+  color: var(--color-on-accent);
+  background-color: var(--color-accent);
+  background-image: linear-gradient(180deg, #f3f3f5, #c8c8cd);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.85),
+    inset 0 -1px 0 rgb(0 0 0 / 0.18),
+    0 2px 6px rgb(0 0 0 / 0.5);
+}
+
+/* Superficie elevada con canto mecanizado: brillo de 1px arriba, sombra abajo. */
+@utility machined {
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.06),
+    0 0 0 1px var(--color-sep);
+}
+
+/* La tarjeta negra: metal mate cepillado. */
+@utility black-card {
+  background-color: #0f0f10;
+  background-image:
+    repeating-linear-gradient(100deg, rgb(255 255 255 / 0.012) 0 1px, transparent 1px 3px),
+    linear-gradient(155deg, #1c1c1e 0%, #0e0e0f 55%, #121213 100%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.1),
+    inset 0 -1px 0 rgb(0 0 0 / 0.8),
+    0 10px 28px rgb(0 0 0 / 0.55),
+    0 0 0 1px #232326;
+}
+
+/* Cifras grabadas en el metal. */
+@utility engraved {
+  color: #d6d6da;
+  text-shadow:
+    0 -1px 0 rgb(0 0 0 / 0.9),
+    0 1px 0 rgb(255 255 255 / 0.07);
+}
+
 /* Presión táctil (make-interfaces-feel-better: 0.96) */
 @utility press {
   transition-property: scale, opacity, background-color;
@@ -159,15 +208,16 @@
   align-items: center;
   gap: 3px;
   padding: 2px;
-  border-radius: 9px;
+  border-radius: 10px;
   background: var(--tabs-bar-bg);
+  box-shadow: 0 0 0 1px var(--color-sep);
 }
 .t-tab {
   position: relative;
   appearance: none;
   border: 0;
   background: transparent;
-  height: 28px;
+  height: 32px;
   padding: 4px 12px;
   color: var(--tabs-text-muted);
   cursor: pointer;
@@ -183,11 +233,11 @@
   position: absolute;
   top: 2px;
   left: 0;
-  height: 28px;
+  height: 32px;
   width: 0;
   background: var(--tabs-pill-bg);
   border-radius: 7px;
-  box-shadow: 0 3px 8px rgb(0 0 0 / 0.12), 0 3px 1px rgb(0 0 0 / 0.04);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.07), 0 1px 3px rgb(0 0 0 / 0.6);
   transform: translateX(0);
   transition:
     transform var(--tabs-dur) var(--tabs-ease),
@@ -299,8 +349,8 @@
 
 /* Barra de pestañas translúcida al estilo iOS */
 .tabbar {
-  background: rgb(22 22 24 / 0.92);
-  backdrop-filter: saturate(180%) blur(20px);
-  -webkit-backdrop-filter: saturate(180%) blur(20px);
-  box-shadow: inset 0 0.5px 0 var(--color-sep);
+  background: rgb(7 7 8 / 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: inset 0 1px 0 var(--color-sep);
 }

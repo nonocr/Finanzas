@@ -15,7 +15,7 @@ import { TwoFactorSheet } from './TwoFactorSheet';
 
 export function BackLink() {
   return (
-    <Link to="/mas" className="-ml-1 inline-flex min-h-11 items-center gap-0.5 text-body font-normal text-blue normal-case">
+    <Link to="/mas" className="-ml-1 inline-flex min-h-11 items-center gap-0.5 text-body font-normal text-accent normal-case">
       <ChevronLeft size={22} strokeWidth={2.25} />
       Ajustes
     </Link>
@@ -73,13 +73,13 @@ export function MorePage() {
   return (
     <Screen title="Ajustes">
       <Section>
-        <Row to="/mas/cuentas" leading={<IconTile icon={CreditCard} color="var(--color-blue)" />} title="Cuentas y tarjetas" trailing={accounts.length} chevron />
-        <Row to="/mas/categorias" leading={<IconTile icon={Tags} color="var(--color-orange)" />} title="Categorías" chevron />
-        <Row to="/mas/reglas" leading={<IconTile icon={Wand2} color="var(--color-purple)" />} title="Reglas de comercios" chevron />
+        <Row to="/mas/cuentas" leading={<IconTile icon={CreditCard} color="var(--color-label-2)" />} title="Cuentas y tarjetas" trailing={accounts.length} chevron />
+        <Row to="/mas/categorias" leading={<IconTile icon={Tags} color="var(--color-label-2)" />} title="Categorías" chevron />
+        <Row to="/mas/reglas" leading={<IconTile icon={Wand2} color="var(--color-label-2)" />} title="Reglas de comercios" chevron />
       </Section>
 
       <Section header="Automático">
-        <Row to="/mas/wallet" leading={<IconTile icon={Smartphone} color="var(--color-blue)" />} title="Apple Wallet" subtitle="Registrar pagos con Atajos" chevron />
+        <Row to="/mas/wallet" leading={<IconTile icon={Smartphone} color="var(--color-label-2)" />} title="Apple Wallet" subtitle="Registrar pagos con Atajos" chevron />
       </Section>
 
       {!isDemo && (
@@ -89,7 +89,7 @@ export function MorePage() {
               setPasswordKey((k) => k + 1);
               setPasswordOpen(true);
             }}
-            leading={<IconTile icon={KeyRound} color="var(--color-gray)" />}
+            leading={<IconTile icon={KeyRound} color="var(--color-label-2)" />}
             title="Cambiar contraseña"
             chevron
           />
@@ -98,7 +98,7 @@ export function MorePage() {
               setTwoFactorKey((k) => k + 1);
               setTwoFactorOpen(true);
             }}
-            leading={<IconTile icon={ShieldCheck} color="var(--color-green)" />}
+            leading={<IconTile icon={ShieldCheck} color="var(--color-label-2)" />}
             title="Verificación en dos pasos"
             chevron
           />
@@ -106,14 +106,14 @@ export function MorePage() {
       )}
 
       <Section header="Datos">
-        <Row onClick={exportCsv} leading={<IconTile icon={Download} color="var(--color-teal)" />} title="Exportar movimientos (CSV)" />
+        <Row onClick={exportCsv} leading={<IconTile icon={Download} color="var(--color-label-2)" />} title="Exportar movimientos (CSV)" />
         {isDemo ? (
           <Row
             onClick={() => {
               resetDemo();
               location.reload();
             }}
-            leading={<IconTile icon={RotateCcw} color="var(--color-gray)" />}
+            leading={<IconTile icon={RotateCcw} color="var(--color-label-2)" />}
             title="Reiniciar datos de ejemplo"
           />
         ) : (

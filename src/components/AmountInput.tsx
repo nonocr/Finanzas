@@ -36,11 +36,11 @@ export function AmountInput({
   return (
     <label
       className={clsx(
-        'tnum flex items-baseline justify-center gap-1 text-[52px] leading-[60px] font-bold tracking-[-0.02em]',
-        empty ? 'text-label-3' : tone === 'ingreso' ? 'text-green' : 'text-label',
+        'tnum flex items-baseline justify-center gap-1 text-[56px] leading-[62px] font-light tracking-[-0.035em]',
+        empty ? 'text-label-3' : tone === 'ingreso' ? 'text-green' : 'engraved',
       )}
     >
-      <span aria-hidden="true">₡</span>
+      <span aria-hidden="true" className="text-[34px] text-label-2">₡</span>
       <input
         ref={input}
         aria-label={label}

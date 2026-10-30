@@ -147,14 +147,14 @@ export function TransactionSheet({
       swipeToClose
       title={title}
       leading={
-        <button type="button" className="min-h-11 text-body text-blue" onClick={onClose}>
+        <button type="button" className="min-h-11 text-body text-accent" onClick={onClose}>
           Cancelar
         </button>
       }
       trailing={
         <button
           type="button"
-          className="press min-h-9 rounded-full bg-blue px-4 text-body font-semibold text-white disabled:bg-fill disabled:text-label-3"
+          className="press metal min-h-9 rounded-full px-4 text-body font-semibold disabled:bg-none disabled:bg-fill disabled:text-label-3 disabled:shadow-none"
           disabled={!valid || save.isPending}
           onClick={submit}
         >
@@ -163,8 +163,8 @@ export function TransactionSheet({
       }
     >
       {pending && (
-        <div className="mb-4 flex items-center gap-3 rounded-[12px] bg-blue/15 px-3.5 py-3 text-subhead text-label">
-          <Smartphone size={20} strokeWidth={2} className="shrink-0 text-blue" />
+        <div className="mb-4 flex items-center gap-3 rounded-[12px] bg-accent/12 px-3.5 py-3 text-subhead text-label">
+          <Smartphone size={20} strokeWidth={2} className="shrink-0 text-accent" />
           <span>
             Llegó de Apple Wallet{tx?.note ? ` (${tx.note.replace(/^Wallet · /, '')})` : ''}. Elige la categoría y confírmalo.
           </span>
@@ -263,7 +263,7 @@ export function TransactionSheet({
 function Group({ label, icon, children }: { label: string; icon?: React.ReactNode; children: React.ReactNode }) {
   return (
     <div className="mt-5">
-      <p className="mb-2 flex items-center gap-1 px-1 text-footnote font-semibold text-label-2 uppercase">
+      <p className="mb-2 flex items-center gap-1 px-1 text-subhead font-semibold text-label">
         {label}
         {icon}
       </p>
@@ -282,7 +282,8 @@ function AccountChips({
   onSelect: (id: string) => void;
 }) {
   return (
-    <div className="flex flex-wrap gap-2">
+    // Cada medio de pago es una tarjeta negra en miniatura, con sus últimos 4 dígitos grabados.
+    <div className="grid grid-cols-3 gap-2">
       {accounts.map((a) => {
         const Icon = ACCOUNT_ICONS[a.type];
         const on = a.id === selected;
@@ -293,20 +294,21 @@ function AccountChips({
             onClick={() => onSelect(a.id)}
             aria-pressed={on}
             className={clsx(
-              'press flex min-h-11 items-center gap-2 rounded-full py-1.5 pr-4 pl-3 text-subhead font-semibold',
-              on ? 'bg-label text-black' : 'bg-card-2 text-label',
+              'press black-card flex h-16 min-w-0 flex-col justify-between rounded-[10px] px-2.5 py-2 text-left',
+              on && 'ring-[1.5px] ring-accent',
             )}
           >
-            <Icon size={18} strokeWidth={2} className={on ? 'text-black/60' : 'text-label-2'} />
-            {a.name}
-            {a.last4 && <span className={on ? 'text-black/50' : 'text-label-3'}>•{a.last4}</span>}
+            <span className="flex min-w-0 items-center gap-1.5">
+              <Icon size={15} strokeWidth={1.9} className={on ? 'shrink-0 text-accent' : 'shrink-0 text-label-2'} />
+              <span className={clsx('truncate text-footnote font-semibold', on ? 'text-label' : 'text-label-2')}>{a.name}</span>
+            </span>
+            <span className="tnum engraved text-caption tracking-[0.08em]">{a.last4 ? `•••• ${a.last4}` : ' '}</span>
           </button>
         );
       })}
     </div>
   );
 }
-
 function Field({ label, last, children }: { label: string; last?: boolean; children: React.ReactNode }) {
   return (
     <label className="flex min-h-11 items-center gap-4 pl-4">
@@ -327,11 +329,11 @@ export function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: 
       onClick={() => onChange(!checked)}
       className={clsx(
         'relative h-[31px] w-[51px] shrink-0 rounded-full transition-colors duration-200',
-        checked ? 'bg-green' : 'bg-fill-2',
+        checked ? 'bg-accent' : 'bg-fill-2',
       )}
     >
       <span
-        className="absolute top-[2px] left-[2px] size-[27px] rounded-full bg-white shadow-[0_3px_8px_rgb(0_0_0/0.15),0_3px_1px_rgb(0_0_0/0.06)] transition-transform duration-250 ease-[cubic-bezier(0.22,1,0.36,1)]"
+        className="absolute top-[2px] left-[2px] size-[27px] rounded-full bg-white shadow-[0_0_0_0.5px_rgb(0_0_0/0.5),0_3px_8px_rgb(0_0_0/0.35)] transition-transform duration-250 ease-[cubic-bezier(0.22,1,0.36,1)]"
         style={{ transform: checked ? 'translateX(20px)' : 'translateX(0)' }}
       />
     </button>

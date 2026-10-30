@@ -17,14 +17,14 @@ function Tab({ to, label, icon: Icon, end }: (typeof TABS)[number]) {
       end={end}
       className={({ isActive }) =>
         clsx(
-          'flex min-h-12 flex-1 flex-col items-center justify-center gap-0.5 text-[10px] font-medium transition-colors',
-          isActive ? 'text-blue' : 'text-gray',
+          'flex min-h-12 flex-1 flex-col items-center justify-center gap-0.5 text-[11px] transition-colors',
+          isActive ? 'font-semibold text-label' : 'font-medium text-label-2',
         )
       }
     >
       {({ isActive }) => (
         <>
-          <Icon size={24} strokeWidth={isActive ? 2.25 : 1.75} />
+          <Icon size={23} strokeWidth={isActive ? 2 : 1.6} />
           {label}
         </>
       )}
@@ -47,7 +47,7 @@ export function TabBar() {
             type="button"
             onClick={() => openNew()}
             aria-label="Agregar movimiento"
-            className="press grid size-12 place-items-center rounded-full bg-blue text-white shadow-[0_4px_14px_rgb(10_132_255/0.35)]"
+            className="press grid size-[52px] place-items-center rounded-full text-on-accent shadow-[inset_0_1px_0_rgb(255_255_255/0.8),inset_0_-2px_3px_rgb(0_0_0/0.25),0_6px_16px_rgb(0_0_0/0.6),0_0_0_1px_#000] [background:radial-gradient(120%_120%_at_30%_20%,#ffffff_0%,#d7d7db_45%,#a9a9ae_100%)]"
           >
             <Plus size={26} strokeWidth={2.5} />
           </button>

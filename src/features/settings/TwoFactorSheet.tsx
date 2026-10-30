@@ -69,7 +69,7 @@ export function TwoFactorSheet({ open, onClose }: { open: boolean; onClose: () =
       swipeToClose
       title="Dos pasos"
       leading={
-        <button type="button" className="min-h-11 text-body text-blue" onClick={onClose}>
+        <button type="button" className="min-h-11 text-body text-accent" onClick={onClose}>
           {enrollment ? 'Cancelar' : 'Cerrar'}
         </button>
       }
@@ -77,7 +77,7 @@ export function TwoFactorSheet({ open, onClose }: { open: boolean; onClose: () =
         enrollment && (
           <button
             type="button"
-            className="press min-h-9 rounded-full bg-blue px-4 text-body font-semibold text-white disabled:bg-fill disabled:text-label-3"
+            className="press metal min-h-9 rounded-full px-4 text-body font-semibold disabled:bg-none disabled:bg-fill disabled:text-label-3 disabled:shadow-none"
             disabled={code.length !== 6 || busy}
             onClick={verify}
           >
@@ -100,7 +100,7 @@ export function TwoFactorSheet({ open, onClose }: { open: boolean; onClose: () =
       ) : !enrollment ? (
         <>
           <div className="flex flex-col items-center px-4 pt-2 text-center">
-            <span className="grid size-14 place-items-center rounded-[14px] bg-blue/15 text-blue">
+            <span className="grid size-14 place-items-center rounded-[14px] bg-accent/12 text-accent">
               <KeyRound size={28} strokeWidth={2} />
             </span>
             <p className="mt-4 text-body text-pretty text-label-2">
@@ -123,7 +123,7 @@ export function TwoFactorSheet({ open, onClose }: { open: boolean; onClose: () =
             header="1. Guarda el código"
             footer="En iPhone se guarda en la app Contraseñas. En otro dispositivo, escanea el QR con tu autenticador."
           >
-            <a href={enrollment.uri} className="flex min-h-11 items-center px-4 text-body text-blue active:bg-card">
+            <a href={enrollment.uri} className="flex min-h-11 items-center px-4 text-body text-accent active:bg-card">
               Agregar a Contraseñas
             </a>
           </FormGroup>
@@ -137,7 +137,7 @@ export function TwoFactorSheet({ open, onClose }: { open: boolean; onClose: () =
               onClick={() => void navigator.clipboard?.writeText(enrollment.secret).then(() => toast('Clave copiada'))}
             >
               <span className="tnum min-w-0 flex-1 truncate font-mono text-subhead">{enrollment.secret}</span>
-              <Copy size={18} strokeWidth={2.25} className="shrink-0 text-blue" />
+              <Copy size={18} strokeWidth={2.25} className="shrink-0 text-accent" />
             </button>
           </FormGroup>
           <FormGroup header="2. Escribe el código que aparece">

@@ -3,7 +3,7 @@ import type { ComponentProps, ReactNode } from 'react';
 
 /** Encabezado de grupo de formulario estilo iOS (nota en mayúsculas, alineada con el texto de las filas). */
 export function FormHeader({ children }: { children: ReactNode }) {
-  return <p className="mb-2 px-4 text-footnote font-semibold text-label-2 uppercase">{children}</p>;
+  return <p className="mb-2 px-4 text-subhead font-semibold text-label">{children}</p>;
 }
 
 /**
