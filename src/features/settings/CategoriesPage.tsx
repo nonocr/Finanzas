@@ -107,14 +107,14 @@ function CategorySheet({ open, initial, onClose }: { open: boolean; initial: Par
       onClose={onClose}
       title={initial.id ? 'Editar categoría' : 'Nueva categoría'}
       leading={
-        <button type="button" className="min-h-11 text-body text-blue" onClick={onClose}>
+        <button type="button" className="min-h-11 text-body text-accent" onClick={onClose}>
           Cancelar
         </button>
       }
       trailing={
         <button
           type="button"
-          className="press min-h-9 rounded-full bg-blue px-4 text-body font-semibold text-white disabled:bg-fill disabled:text-label-3"
+          className="press metal min-h-9 rounded-full px-4 text-body font-semibold disabled:bg-none disabled:bg-fill disabled:text-label-3 disabled:shadow-none"
           disabled={!cat.name?.trim() || save.isPending}
           onClick={submit}
         >
@@ -131,7 +131,7 @@ function CategorySheet({ open, initial, onClose }: { open: boolean; initial: Par
         </FormRow>
       </FormGroup>
 
-      <p className="mt-5 mb-2 px-1 text-footnote font-semibold text-label-2 uppercase">Color</p>
+      <p className="mt-5 mb-2 px-1 text-subhead font-semibold text-label">Color</p>
       <div className="grid grid-cols-5 gap-3 rounded-[12px] bg-card-2 p-4">
         {Object.entries(CATEGORY_COLORS).map(([key, color]) => (
           <button
@@ -148,7 +148,7 @@ function CategorySheet({ open, initial, onClose }: { open: boolean; initial: Par
         ))}
       </div>
 
-      <p className="mt-5 mb-2 px-1 text-footnote font-semibold text-label-2 uppercase">Ícono</p>
+      <p className="mt-5 mb-2 px-1 text-subhead font-semibold text-label">Ícono</p>
       <div className="grid grid-cols-6 gap-2 rounded-[12px] bg-card-2 p-3">
         {Object.entries(ICONS).map(([name, Icon]) => (
           <button
@@ -159,7 +159,7 @@ function CategorySheet({ open, initial, onClose }: { open: boolean; initial: Par
             onClick={() => set({ icon: name })}
             className={clsx(
               'press grid aspect-square place-items-center rounded-[10px]',
-              cat.icon === name ? 'bg-label text-black' : 'text-label-2',
+              cat.icon === name ? 'metal' : 'text-label-2',
             )}
           >
             <Icon size={22} strokeWidth={2} />

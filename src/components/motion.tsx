@@ -93,7 +93,27 @@ export function Segmented<T extends string>({
 // Monto que cuenta hasta su nuevo valor (GSAP)
 // ---------------------------------------------------------------------------
 
-export function AnimatedAmount({ cents, className }: { cents: number; className?: string }) {
+/** Signo de colón como marca secundaria: más pequeño y gris, para que mande la cifra grabada. */
+export function QuietColon() {
+  return <span className="mr-[0.04em] align-baseline text-[0.6em] text-[#9d9da3] [text-shadow:none]">₡</span>;
+}
+
+/**
+ * Monto que cuenta hasta su nuevo valor. Con `quietCurrency` el ₡ va aparte, como marca secundaria; solo para montos
+ * que no son negativos (gastos del periodo), donde no hay signo que colocar antes del ₡.
+ */
+export function AnimatedAmount({ cents, className, quietCurrency }: { cents: number; className?: string; quietCurrency?: boolean }) {
+  if (quietCurrency && cents >= 0)
+    return (
+      <span className={clsx('tnum', className)}>
+        <QuietColon />
+        <CountUp cents={cents} format={(c) => formatCRC(c).replace('₡', '')} />
+      </span>
+    );
+  return <CountUp cents={cents} className={clsx('tnum', className)} format={formatCRC} />;
+}
+
+function CountUp({ cents, className, format }: { cents: number; className?: string; format: (c: number) => string }) {
   const el = useRef<HTMLSpanElement>(null);
   const shown = useRef<number | null>(null);
 
@@ -105,7 +125,7 @@ export function AnimatedAmount({ cents, className }: { cents: number; className?
       shown.current = cents;
       // Primera vez, recién cargado (desde 0) o movimiento reducido: sin conteo, el número aparece tal cual.
       if (!from || from === cents || prefersReducedMotion()) {
-        node.textContent = formatCRC(cents);
+        node.textContent = format(cents);
         return;
       }
       const state = { v: from };
@@ -114,7 +134,7 @@ export function AnimatedAmount({ cents, className }: { cents: number; className?
         duration: 0.6,
         ease: 'power3.out',
         onUpdate: () => {
-          node.textContent = formatCRC(Math.round(state.v / 100) * 100);
+          node.textContent = format(Math.round(state.v / 100) * 100);
         },
       });
     },
@@ -122,8 +142,8 @@ export function AnimatedAmount({ cents, className }: { cents: number; className?
   );
 
   return (
-    <span ref={el} className={clsx('tnum', className)}>
-      {formatCRC(cents)}
+    <span ref={el} className={className}>
+      {format(cents)}
     </span>
   );
 }

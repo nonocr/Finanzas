@@ -79,12 +79,12 @@ export function BudgetsPage() {
     <Screen title="Presupuesto">
       <MonthNav month={month} onChange={setMonth} />
 
-      <button type="button" onClick={() => edit(null, 'Total del mes')} className="press mt-4 block w-full rounded-card bg-card p-4 text-left">
-        <p className="text-subhead font-semibold text-label-2">Total del mes</p>
+      <button type="button" onClick={() => edit(null, 'Total del mes')} className="press black-card mt-4 block w-full rounded-[18px] px-5 pt-5 pb-4 text-left">
+        <p className="text-headline font-semibold">Total del mes</p>
         {total.limit ? (
           <>
-            <p className="mt-1 flex items-baseline gap-2">
-              <AnimatedAmount cents={spent} className="text-title1 font-bold" />
+            <p className="mt-3 flex flex-wrap items-baseline gap-x-2">
+              <AnimatedAmount quietCurrency cents={spent} className="engraved text-[40px] leading-[46px] font-light tracking-[-0.03em]" />
               <span className="tnum text-subhead text-label-2">de {formatCRC(total.limit)}</span>
             </p>
             <div className="mt-3">
@@ -102,7 +102,7 @@ export function BudgetsPage() {
             </p>
           </>
         ) : (
-          <p className="mt-1 text-body text-blue">Definir el total del mes</p>
+          <p className="mt-1 text-body text-accent">Definir el total del mes</p>
         )}
       </button>
 
@@ -142,7 +142,7 @@ export function BudgetsPage() {
               <CategoryIcon icon={c.icon} color={c.color} />
               <span className="flex min-h-11 flex-1 items-center justify-between py-2.5 pr-4 shadow-[inset_0_-0.5px_0_var(--color-sep)] group-last:shadow-none">
                 <span className="text-body">{c.name}</span>
-                <Plus size={20} strokeWidth={2.25} className="text-blue" />
+                <Plus size={20} strokeWidth={2.25} className="text-accent" />
               </span>
             </button>
           ))}

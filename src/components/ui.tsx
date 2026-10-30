@@ -52,7 +52,7 @@ export function Section({
           {action}
         </div>
       )}
-      <div className="overflow-hidden rounded-card bg-card">{children}</div>
+      <div className="machined overflow-hidden rounded-card bg-card">{children}</div>
       {footer && <p className="mt-2 px-4 text-footnote text-label-2">{footer}</p>}
     </section>
   );
@@ -100,43 +100,63 @@ export function Row({ leading, title, subtitle, trailing, chevron, to, onClick, 
   return <div className="group flex w-full items-center gap-3 pl-4">{body}</div>;
 }
 
-/** Ícono de categoría en cuadrito de color, como los de Ajustes de iOS. */
+/**
+ * Ícono en placa de grafito: el color de la categoría vive solo en el trazo, como un grabado con tinte.
+ * Así la pantalla sigue siendo negra y gris y el color dice algo (qué categoría) sin gritar.
+ */
+function Plate({ size, color, children }: { size: number; color: string; children: ReactNode }) {
+  return (
+    <span
+      className="grid shrink-0 place-items-center bg-card-3 shadow-[inset_0_1px_0_rgb(255_255_255/0.06)]"
+      style={{ width: size, height: size, color, borderRadius: size * 0.28 }}
+    >
+      {children}
+    </span>
+  );
+}
+
 export function CategoryIcon({ icon, color, size = 30 }: { icon: string | null; color: string | null; size?: number }) {
   const Icon = iconOf(icon);
   return (
-    <span
-      className="grid shrink-0 place-items-center rounded-[8px] text-white"
-      style={{ width: size, height: size, background: colorOf(color), borderRadius: size * 0.27 }}
-    >
-      <Icon size={size * 0.58} strokeWidth={2.25} />
-    </span>
+    <Plate size={size} color={colorOf(color)}>
+      <Icon size={size * 0.56} strokeWidth={1.9} />
+    </Plate>
   );
 }
 
 export function IconTile({ icon: Icon, color, size = 30 }: { icon: LucideIcon; color: string; size?: number }) {
   return (
-    <span
-      className="grid shrink-0 place-items-center text-white"
-      style={{ width: size, height: size, background: color, borderRadius: size * 0.27 }}
-    >
-      <Icon size={size * 0.58} strokeWidth={2.25} />
+    <Plate size={size} color={color}>
+      <Icon size={size * 0.56} strokeWidth={1.9} />
+    </Plate>
+  );
+}
+
+/** Sello grabado para estados (p. ej. «Revisar»): el estado no depende solo del color. */
+export function Stamp({ children }: { children: ReactNode }) {
+  return (
+    <span className="mr-1.5 inline-block rounded-[4px] px-[5px] py-px align-[1px] text-[10px] leading-[14px] font-bold tracking-[0.14em] text-accent uppercase shadow-[inset_0_0_0_1px_var(--color-label-2)]">
+      {children}
     </span>
   );
 }
 
 export function Card({ className, ...props }: ComponentProps<'div'>) {
-  return <div className={clsx('rounded-card bg-card p-4', className)} {...props} />;
+  return <div className={clsx('machined rounded-card bg-card p-4', className)} {...props} />;
 }
 
-/** Una sola regla para el avance de un presupuesto: normal < 80 %, naranja desde 80 %, rojo al llegar al 100 %. */
-export const budgetColor = (ratio: number, base = 'var(--color-green)') =>
+/** Una sola regla para el avance de un presupuesto: acero < 80 %, ámbar desde 80 %, rojo al llegar al 100 %. */
+export const budgetColor = (ratio: number, base = 'var(--color-steel)') =>
   ratio >= 1 ? 'var(--color-red)' : ratio >= 0.8 ? 'var(--color-orange)' : base;
-export const budgetTone = (ratio: number) => (ratio >= 1 ? 'text-red' : ratio >= 0.8 ? 'text-orange' : 'text-green');
+export const budgetTone = (ratio: number) => (ratio >= 1 ? 'text-red' : ratio >= 0.8 ? 'text-orange' : 'text-steel');
+
+/** Ranura grabada en el metal: el riel de cualquier avance. */
+export const GROOVE = 'overflow-hidden rounded-full bg-[#070708] shadow-[inset_0_1px_1px_rgb(0_0_0/0.9),0_1px_0_rgb(255_255_255/0.05)]';
 
 export function ProgressBar({ value, color }: { value: number; color?: string }) {
   const pct = Math.max(0, Math.min(1, value));
   return (
-    <div className="h-1.5 overflow-hidden rounded-full bg-fill">
+    <div className={clsx('h-1.5', GROOVE)}>
       <div
         className="h-full rounded-full transition-[width] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none"
         style={{ width: `${pct * 100}%`, background: budgetColor(value, color) }}
@@ -155,9 +175,9 @@ export function Button({
       type="button"
       className={clsx(
         'press flex min-h-[50px] items-center justify-center gap-2 rounded-[12px] px-5 text-headline font-semibold disabled:opacity-40',
-        variant === 'filled' && 'bg-blue text-white',
-        variant === 'tinted' && 'bg-blue/15 text-blue',
-        variant === 'plain' && 'text-blue',
+        variant === 'filled' && 'metal disabled:shadow-none',
+        variant === 'tinted' && 'bg-accent/12 text-accent',
+        variant === 'plain' && 'text-accent',
         variant === 'destructive' && 'bg-red/15 text-red',
         className,
       )}

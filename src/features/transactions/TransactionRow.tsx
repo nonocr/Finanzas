@@ -1,5 +1,5 @@
 import { ArrowLeftRight, CircleDot } from 'lucide-react';
-import { CategoryIcon, IconTile, Row } from '../../components/ui';
+import { CategoryIcon, IconTile, Row, Stamp } from '../../components/ui';
 import { formatCRC } from '../../lib/money';
 import type { Account, Category, Transaction } from '../../lib/types';
 import { useEditor } from './editor';
@@ -29,7 +29,8 @@ export function TransactionRow({
       : (tx.merchant ?? cat?.name ?? (tx.type === 'ingreso' ? 'Ingreso' : 'Gasto'));
 
   const meta = [
-    tx.type === 'transferencia' ? `${acc?.name ?? ''} → ${to?.name ?? ''}` : acc?.name,
+    // Con el sello «Revisar» no cabe todo: se queda la hora (identifica el cobro) y la tarjeta se ve al abrirlo.
+    tx.type === 'transferencia' ? `${acc?.name ?? ''} → ${to?.name ?? ''}` : pending ? null : acc?.name,
     showTime ? timeFmt.format(new Date(tx.occurred_at)) : null,
   ]
     .filter(Boolean)
@@ -40,15 +41,24 @@ export function TransactionRow({
       onClick={() => openEdit(tx)}
       leading={
         tx.type === 'transferencia' ? (
-          <IconTile icon={ArrowLeftRight} color="var(--color-gray)" />
+          <IconTile icon={ArrowLeftRight} color="var(--color-label-2)" size={36} />
         ) : pending && !cat ? (
-          <IconTile icon={CircleDot} color="var(--color-blue)" />
+          <IconTile icon={CircleDot} color="var(--color-accent)" size={36} />
         ) : (
-          <CategoryIcon icon={cat?.icon ?? null} color={cat?.color ?? null} />
+          <CategoryIcon icon={cat?.icon ?? null} color={cat?.color ?? null} size={36} />
         )
       }
       title={title}
-      subtitle={pending ? <span className="text-blue">Por revisar · {meta}</span> : meta}
+      subtitle={
+        pending ? (
+          <>
+            <Stamp>Revisar</Stamp>
+            {meta}
+          </>
+        ) : (
+          meta
+        )
+      }
       trailing={
         <span
           className={

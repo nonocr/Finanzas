@@ -33,10 +33,14 @@ En esta máquina (Windows), git no está en el PATH de PowerShell. Antepón `$en
 ## Diseño
 
 - `PRODUCT.md` tiene la verdad del producto y `DESIGN.md` el sistema visual. Léelos antes de tocar la UI.
-- Mundo visual: el estándar oscuro de iOS (referencia Apple Wallet y Salud), **siempre en modo oscuro**. Los tokens están en `src/index.css` (`@theme`). Las categorías guardan una clave `c1…c10` que `src/components/palette.tsx` traduce a colores.
+- Mundo visual: **«Tarjeta negra»**, el lujo discreto de una tarjeta de crédito negra de metal. Negros mate y grafitos en capas, **siempre en modo oscuro**. Los tokens están en `src/index.css` (`@theme`), junto con las utilidades `metal`, `machined`, `black-card` y `engraved`.
+- Las categorías guardan una clave `c1…c10` que `src/components/palette.tsx` traduce a tintes de baja saturación (bronce, salvia, acero…). El tinte vive solo en el trazo del ícono, sobre una placa de grafito (`CategoryIcon`/`IconTile`).
 - Reglas que no se rompen:
-  - El azul es el único color de acción.
-  - El presupuesto usa una sola regla de color: `budgetColor`/`budgetTone` en `src/components/ui.tsx`.
+  - El **platino** (`accent`, utilidad `metal`) es el único color de acción, con texto casi negro encima.
+  - El color solo aparece donde significa algo: el estado del presupuesto, los ingresos y el tinte de la categoría.
+  - El presupuesto usa una sola regla de color (acero bajo el 80 %, ámbar desde el 80 % y rojo desde el 100 %): `budgetColor`/`budgetTone` en `src/components/ui.tsx`.
+  - Los estados se marcan con el sello `Stamp` («Revisar»), no solo con color.
+  - Las cifras grandes van grabadas y en peso fino, con el ₡ como marca secundaria (`AnimatedAmount quietCurrency` o `QuietColon`).
   - Los montos van con `tnum`.
   - Nada de etiquetas en mayúsculas encima de los títulos.
   - Usa los íconos de lucide; nada de emoji ni glifos Unicode.

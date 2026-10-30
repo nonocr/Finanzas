@@ -1,66 +1,83 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-29T00:00:00Z",
+  "generatedAt": "2026-10-30T00:00:00Z",
   "title": "Design System: Finanzas personales",
   "extensions": {
     "colorMeta": {
-      "blue": { "role": "primary", "displayName": "System Blue", "canonical": "#0a84ff", "tonalRamp": ["oklch(25% 0.08 255)", "oklch(35% 0.12 255)", "oklch(45% 0.16 255)", "oklch(55% 0.19 255)", "oklch(63% 0.2 255)", "oklch(73% 0.14 255)", "oklch(84% 0.08 255)", "oklch(95% 0.03 255)"] },
-      "green": { "role": "secondary", "displayName": "System Green", "canonical": "#30d158", "tonalRamp": ["oklch(25% 0.07 147)", "oklch(35% 0.1 147)", "oklch(46% 0.14 147)", "oklch(58% 0.17 147)", "oklch(76% 0.2 147)", "oklch(83% 0.14 147)", "oklch(89% 0.08 147)", "oklch(96% 0.03 147)"] },
-      "orange": { "role": "secondary", "displayName": "System Orange", "canonical": "#ff9f0a", "tonalRamp": ["oklch(25% 0.06 65)", "oklch(36% 0.09 65)", "oklch(48% 0.12 65)", "oklch(62% 0.15 65)", "oklch(78% 0.17 65)", "oklch(84% 0.12 65)", "oklch(90% 0.07 65)", "oklch(96% 0.03 65)"] },
-      "red": { "role": "secondary", "displayName": "System Red", "canonical": "#ff453a", "tonalRamp": ["oklch(24% 0.08 28)", "oklch(34% 0.12 28)", "oklch(45% 0.16 28)", "oklch(56% 0.2 28)", "oklch(66% 0.22 28)", "oklch(76% 0.14 28)", "oklch(86% 0.07 28)", "oklch(95% 0.03 28)"] },
-      "yellow": { "role": "tertiary", "displayName": "Category c5 Yellow", "canonical": "#ffd60a", "tonalRamp": ["oklch(25% 0.05 98)", "oklch(37% 0.08 98)", "oklch(50% 0.11 98)", "oklch(65% 0.14 98)", "oklch(88% 0.18 98)", "oklch(91% 0.12 98)", "oklch(94% 0.07 98)", "oklch(97% 0.03 98)"] },
-      "pink": { "role": "tertiary", "displayName": "Category c6 Pink", "canonical": "#ff375f", "tonalRamp": ["oklch(24% 0.08 15)", "oklch(34% 0.12 15)", "oklch(45% 0.16 15)", "oklch(56% 0.2 15)", "oklch(65% 0.23 15)", "oklch(75% 0.15 15)", "oklch(86% 0.07 15)", "oklch(95% 0.03 15)"] },
-      "purple": { "role": "tertiary", "displayName": "Category c7 Purple", "canonical": "#bf5af2", "tonalRamp": ["oklch(25% 0.08 310)", "oklch(35% 0.12 310)", "oklch(46% 0.16 310)", "oklch(57% 0.19 310)", "oklch(66% 0.2 310)", "oklch(76% 0.13 310)", "oklch(86% 0.07 310)", "oklch(95% 0.03 310)"] },
-      "indigo": { "role": "tertiary", "displayName": "Category c8 Indigo", "canonical": "#5e5ce6", "tonalRamp": ["oklch(24% 0.08 280)", "oklch(34% 0.12 280)", "oklch(44% 0.16 280)", "oklch(54% 0.19 280)", "oklch(60% 0.2 280)", "oklch(72% 0.13 280)", "oklch(84% 0.07 280)", "oklch(95% 0.03 280)"] },
-      "teal": { "role": "tertiary", "displayName": "Category c9 Teal", "canonical": "#40c8e0", "tonalRamp": ["oklch(25% 0.05 215)", "oklch(36% 0.07 215)", "oklch(48% 0.09 215)", "oklch(62% 0.11 215)", "oklch(77% 0.12 215)", "oklch(84% 0.09 215)", "oklch(90% 0.05 215)", "oklch(96% 0.02 215)"] },
-      "brown": { "role": "tertiary", "displayName": "Category c4 Brown", "canonical": "#ac8e68", "tonalRamp": ["oklch(24% 0.03 75)", "oklch(34% 0.04 75)", "oklch(45% 0.05 75)", "oklch(56% 0.06 75)", "oklch(66% 0.06 75)", "oklch(76% 0.05 75)", "oklch(86% 0.03 75)", "oklch(95% 0.01 75)"] },
-      "gray": { "role": "tertiary", "displayName": "System Gray (c10, inactive tabs)", "canonical": "#8e8e93", "tonalRamp": ["#1c1c1e", "#2c2c2e", "#3a3a3c", "#48484a", "#636366", "#8e8e93", "#aeaeb2", "#d1d1d6"] },
-      "bg": { "role": "neutral", "displayName": "True Black", "canonical": "#000000", "tonalRamp": ["#000000", "#1c1c1e", "#2c2c2e", "#3a3a3c", "#48484a", "#636366", "#8e8e93", "#d1d1d6"] },
-      "card": { "role": "neutral", "displayName": "Grouped Card", "canonical": "#1c1c1e", "tonalRamp": ["#000000", "#1c1c1e", "#2c2c2e", "#3a3a3c", "#48484a", "#636366", "#8e8e93", "#d1d1d6"] },
-      "card-2": { "role": "neutral", "displayName": "Raised Card", "canonical": "#2c2c2e", "tonalRamp": ["#000000", "#1c1c1e", "#2c2c2e", "#3a3a3c", "#48484a", "#636366", "#8e8e93", "#d1d1d6"] },
-      "card-3": { "role": "neutral", "displayName": "Pressed Card", "canonical": "#3a3a3c", "tonalRamp": ["#000000", "#1c1c1e", "#2c2c2e", "#3a3a3c", "#48484a", "#636366", "#8e8e93", "#d1d1d6"] },
-      "segment-pill": { "role": "neutral", "displayName": "Segment Pill", "canonical": "#636366", "tonalRamp": ["#000000", "#1c1c1e", "#2c2c2e", "#3a3a3c", "#48484a", "#636366", "#8e8e93", "#d1d1d6"] },
-      "fill": { "role": "neutral", "displayName": "Fill", "canonical": "rgb(118 118 128 / 0.24)" },
-      "fill-2": { "role": "neutral", "displayName": "Fill Strong", "canonical": "rgb(118 118 128 / 0.36)" },
-      "sep": { "role": "neutral", "displayName": "Separator", "canonical": "rgb(84 84 88 / 0.6)" },
-      "label": { "role": "neutral", "displayName": "Label", "canonical": "#ffffff" },
-      "label-2": { "role": "neutral", "displayName": "Secondary Label", "canonical": "rgb(235 235 245 / 0.6)" },
-      "label-3": { "role": "neutral", "displayName": "Tertiary Label", "canonical": "rgb(235 235 245 / 0.3)" }
+      "accent": { "role": "primary", "displayName": "Platinum", "canonical": "#dcdce0", "tonalRamp": ["#1a1a1c", "#2e2e31", "#48484c", "#66666b", "#8a8a90", "#b0b0b6", "#dcdce0", "#f3f3f5"] },
+      "on-accent": { "role": "primary", "displayName": "Near-Black Ink", "canonical": "#0a0a0b" },
+      "steel": { "role": "secondary", "displayName": "Steel", "canonical": "#b4b4ba", "tonalRamp": ["#1d1d20", "#34343a", "#4e4e55", "#6c6c73", "#8f8f96", "#b4b4ba", "#d2d2d7", "#ececef"] },
+      "orange": { "role": "secondary", "displayName": "Amber", "canonical": "#d4a04c", "tonalRamp": ["#2a1e0a", "#4a3412", "#6e4e1c", "#94692a", "#b9853a", "#d4a04c", "#e6c48a", "#f4e2c4"] },
+      "red": { "role": "secondary", "displayName": "Oxide Red", "canonical": "#e0695a", "tonalRamp": ["#2c120f", "#4d1f1a", "#742e26", "#9c3f33", "#c15444", "#e0695a", "#ec9e94", "#f7d3ce"] },
+      "green": { "role": "secondary", "displayName": "Sage", "canonical": "#a9bfae", "tonalRamp": ["#1a221c", "#2c3a2f", "#435646", "#5d7562", "#7c947f", "#a9bfae", "#c9d7cc", "#e6eee8"] },
+      "blue": { "role": "tertiary", "displayName": "Steel Blue (débito)", "canonical": "#8497ab", "tonalRamp": ["#171b20", "#283039", "#3d4856", "#556475", "#6c7e92", "#8497ab", "#b2bfcc", "#dfe5eb"] },
+      "indigo": { "role": "tertiary", "displayName": "Dusk Indigo (crédito)", "canonical": "#7d86a8" },
+      "teal": { "role": "tertiary", "displayName": "Patina (banco)", "canonical": "#83a7a3" },
+      "pink": { "role": "tertiary", "displayName": "Dusty Rose (ahorro)", "canonical": "#ab8289" },
+      "gray": { "role": "tertiary", "displayName": "Graphite Tint (utility)", "canonical": "#85858b" },
+      "c1-bronce": { "role": "tertiary", "displayName": "Bronce", "canonical": "#b28c62", "tonalRamp": ["#241a10", "#3e2e1c", "#5c442a", "#7c5d3b", "#9a764f", "#b28c62", "#cfb393", "#ecdccb"] },
+      "c2-salvia": { "role": "tertiary", "displayName": "Salvia", "canonical": "#93a893", "tonalRamp": ["#1a1f1a", "#2d362d", "#435043", "#5b6c5b", "#768b76", "#93a893", "#bccabc", "#e3eae3"] },
+      "c3-acero-azul": { "role": "tertiary", "displayName": "Acero azul", "canonical": "#8497ab", "tonalRamp": ["#171b20", "#283039", "#3d4856", "#556475", "#6c7e92", "#8497ab", "#b2bfcc", "#dfe5eb"] },
+      "c4-topo": { "role": "tertiary", "displayName": "Topo", "canonical": "#a08f7e", "tonalRamp": ["#201c18", "#37302a", "#51473e", "#6c5f53", "#877868", "#a08f7e", "#c4b8ac", "#e8e1da"] },
+      "c5-champan": { "role": "tertiary", "displayName": "Champán", "canonical": "#bcaa7a", "tonalRamp": ["#25200f", "#40381c", "#5e522c", "#7e6f40", "#9e8d5c", "#bcaa7a", "#d6caa8", "#efe8d6"] },
+      "c6-palo-de-rosa": { "role": "tertiary", "displayName": "Palo de rosa", "canonical": "#ab8289", "tonalRamp": ["#221719", "#3b282b", "#573c40", "#745157", "#916870", "#ab8289", "#cbadb2", "#ebdcdf"] },
+      "c7-lavanda": { "role": "tertiary", "displayName": "Lavanda", "canonical": "#9187a6", "tonalRamp": ["#1c1a21", "#302c39", "#474155", "#605873", "#787090", "#9187a6", "#bab3c9", "#e3dfea"] },
+      "c8-pizarra": { "role": "tertiary", "displayName": "Pizarra", "canonical": "#73909e", "tonalRamp": ["#151b1e", "#243035", "#36474f", "#4a5f6a", "#5f7884", "#73909e", "#a6bcc6", "#d9e4e9"] },
+      "c9-patina": { "role": "tertiary", "displayName": "Pátina", "canonical": "#83a7a3", "tonalRamp": ["#172020", "#283736", "#3c5250", "#536f6c", "#6b8b88", "#83a7a3", "#b1cbc8", "#dfebea"] },
+      "c10-grafito": { "role": "tertiary", "displayName": "Grafito", "canonical": "#85858b", "tonalRamp": ["#1a1a1c", "#2e2e31", "#45454a", "#5c5c62", "#727278", "#85858b", "#b2b2b7", "#e0e0e3"] },
+      "bg": { "role": "neutral", "displayName": "Matte Black", "canonical": "#050505", "tonalRamp": ["#050505", "#0f0f10", "#111112", "#1b1b1d", "#29292c", "#4a4a4f", "#9a9aa1", "#ececef"] },
+      "card": { "role": "neutral", "displayName": "Graphite", "canonical": "#111112" },
+      "card-2": { "role": "neutral", "displayName": "Raised Graphite", "canonical": "#1b1b1d" },
+      "card-3": { "role": "neutral", "displayName": "Plate Graphite", "canonical": "#29292c" },
+      "black-card": { "role": "neutral", "displayName": "Black Card Metal", "canonical": "#0f0f10" },
+      "groove": { "role": "neutral", "displayName": "Groove Black", "canonical": "#070708" },
+      "fill": { "role": "neutral", "displayName": "Translucent Fill", "canonical": "rgb(150 150 160 / 0.14)" },
+      "fill-2": { "role": "neutral", "displayName": "Translucent Fill Strong", "canonical": "rgb(150 150 160 / 0.24)" },
+      "sep": { "role": "neutral", "displayName": "Separator", "canonical": "#242427" },
+      "label": { "role": "neutral", "displayName": "Label", "canonical": "#ececef" },
+      "label-2": { "role": "neutral", "displayName": "Label Secondary", "canonical": "#9a9aa1" },
+      "label-3": { "role": "neutral", "displayName": "Label Tertiary", "canonical": "#7c7c83" },
+      "engraved": { "role": "neutral", "displayName": "Engraved Silver", "canonical": "#d6d6da" }
     },
     "typographyMeta": {
       "large-title": { "displayName": "Large Title", "purpose": "One per screen, the screen name." },
       "amount-entry": { "displayName": "Amount Entry", "purpose": "The amount being typed in the add/edit sheet." },
-      "amount-hero": { "displayName": "Amount Hero", "purpose": "The dominant spent figure on Resumen." },
-      "title1": { "displayName": "Title 1", "purpose": "Totals in secondary summary cards (Presupuesto, Cuentas)." },
-      "title3": { "displayName": "Title 3", "purpose": "Section headers above grouped lists; keypad digits at 500." },
-      "headline": { "displayName": "Headline", "purpose": "Button labels, sheet titles, income and balance figures." },
+      "amount-card": { "displayName": "Amount Card", "purpose": "The engraved spent figure on the Resumen black card." },
+      "amount-hero": { "displayName": "Amount Hero", "purpose": "Lead engraved figure on Estadísticas, Presupuesto and Cuentas summary cards." },
+      "title3": { "displayName": "Title 3", "purpose": "Section headers above grouped lists; the daily average." },
+      "headline": { "displayName": "Headline", "purpose": "Button labels, sheet and card titles, month name, card-field values." },
       "body": { "displayName": "Body", "purpose": "Row titles, field labels and values, plain actions." },
-      "subhead": { "displayName": "Subhead", "purpose": "Row subtitles, chips, legend, card captions, toast." },
-      "footnote": { "displayName": "Footnote", "purpose": "Metadata and list footers; 600 uppercase as the iOS form-group header above pickers." },
-      "caption": { "displayName": "Caption", "purpose": "Donut center label." },
+      "subhead": { "displayName": "Subhead", "purpose": "Row subtitles, sheet group labels, legend, budget percentage, toast." },
+      "footnote": { "displayName": "Footnote", "purpose": "Metadata, list footers, segmented labels, payment-card names." },
+      "caption": { "displayName": "Caption", "purpose": "Donut centre label, weekday initials, category key names." },
+      "card-field": { "displayName": "Card Field", "purpose": "Uppercase field labels on the black card only (INGRESOS, BALANCE)." },
+      "stamp": { "displayName": "Stamp", "purpose": "The inline status stamp only (REVISAR)." },
       "tab-label": { "displayName": "Tab Label", "purpose": "Tab bar labels only." }
     },
     "shadows": [
-      { "name": "sheet-lift", "value": "0 -8px 30px rgb(0 0 0 / 0.5)", "purpose": "Bottom sheet over its 60% black scrim." },
+      { "name": "machined", "value": "inset 0 1px 0 rgb(255 255 255 / 0.06), 0 0 0 1px var(--color-sep)", "purpose": "Machined edge on grouped-list cards and the Wallet review row." },
+      { "name": "black-card", "value": "inset 0 1px 0 rgb(255 255 255 / 0.1), inset 0 -1px 0 rgb(0 0 0 / 0.8), 0 10px 28px rgb(0 0 0 / 0.55), 0 0 0 1px #232326", "purpose": "The black card and payment mini cards, over the brushed gradient." },
+      { "name": "platinum-metal", "value": "inset 0 1px 0 rgb(255 255 255 / 0.85), inset 0 -1px 0 rgb(0 0 0 / 0.18), 0 2px 6px rgb(0 0 0 / 0.5)", "purpose": "Filled buttons and the sheet save pill, over linear-gradient(180deg, #f3f3f5, #c8c8cd)." },
+      { "name": "add-disc", "value": "inset 0 1px 0 rgb(255 255 255 / 0.8), inset 0 -2px 3px rgb(0 0 0 / 0.25), 0 6px 16px rgb(0 0 0 / 0.6), 0 0 0 1px #000", "purpose": "Centred tab bar add disc, over a radial platinum gradient." },
+      { "name": "engraving", "value": "text-shadow: 0 -1px 0 rgb(0 0 0 / 0.9), 0 1px 0 rgb(255 255 255 / 0.07)", "purpose": "Figures cut into metal." },
+      { "name": "groove", "value": "inset 0 1px 1px rgb(0 0 0 / 0.9), 0 1px 0 rgb(255 255 255 / 0.05)", "purpose": "Recessed progress track." },
+      { "name": "plate-catch", "value": "inset 0 1px 0 rgb(255 255 255 / 0.06)", "purpose": "Icon plates and category keys." },
+      { "name": "segment-thumb", "value": "inset 0 1px 0 rgb(255 255 255 / 0.07), 0 1px 3px rgb(0 0 0 / 0.6)", "purpose": "Segmented control sliding thumb." },
+      { "name": "sheet-lift", "value": "inset 0 1px 0 rgb(255 255 255 / 0.07), 0 -10px 30px rgb(0 0 0 / 0.6)", "purpose": "Bottom sheet over its 60% black scrim." },
       { "name": "toast-lift", "value": "0 8px 24px rgb(0 0 0 / 0.5)", "purpose": "Floating confirmation pill." },
-      { "name": "add-glow", "value": "0 4px 14px rgb(10 132 255 / 0.35)", "purpose": "Centered tab bar add button." },
-      { "name": "thumb", "value": "0 3px 8px rgb(0 0 0 / 0.12), 0 3px 1px rgb(0 0 0 / 0.04)", "purpose": "Segmented control thumb; toggle knob uses 0.15/0.06." },
-      { "name": "hairline", "value": "inset 0 -0.5px 0 var(--color-sep)", "purpose": "Row separators; tab bar top edge uses inset 0 0.5px." },
-      { "name": "tabbar-material", "value": "background: rgb(22 22 24 / 0.92); backdrop-filter: saturate(180%) blur(20px)", "purpose": "The only translucent surface." }
+      { "name": "hairline", "value": "inset 0 -0.5px 0 var(--color-sep)", "purpose": "Row separators; tab bar top edge uses inset 0 1px 0." }
     ],
     "motion": [
-      { "name": "ease-smooth-out", "value": "cubic-bezier(0.22, 1, 0.36, 1)", "purpose": "Default ease for tabs, text resize, toast, donut morph, toggle, progress fill." },
-      { "name": "press", "value": "scale 0.96, 150ms cubic-bezier(0.2, 0, 0, 1)", "purpose": "Active state of every pressable control." },
-      { "name": "duration-quick", "value": "150ms", "purpose": "Press, donut dim." },
+      { "name": "duration-quick", "value": "150ms", "purpose": "Press scale, donut segment dim, category key state." },
       { "name": "duration-fast", "value": "250ms", "purpose": "Segmented thumb slide, toast close, toggle knob." },
       { "name": "duration-medium", "value": "350ms", "purpose": "Toast open." },
-      { "name": "duration-slow", "value": "400ms", "purpose": "Donut segment morph." },
-      { "name": "text-soft", "value": "200ms ease-in-out, 2px blur; resize 240ms smooth-out", "purpose": "In-place swap of secondary figures and captions." },
-      { "name": "toast", "value": "open 350ms / close 250ms, 16px rise, 0.97 scale, 2px blur", "purpose": "Toast enter and exit." },
-      { "name": "sheet", "value": "open 500ms expo.out; close 300ms power3.in; scrim 300ms in / 250ms out", "purpose": "GSAP bottom sheet." },
-      { "name": "amount-count", "value": "600ms power3.out", "purpose": "GSAP count-up of headline totals." },
-      { "name": "progress-fill", "value": "width 500ms cubic-bezier(0.22, 1, 0.36, 1)", "purpose": "Budget progress bars." },
-      { "name": "reduced-motion", "value": "all of the above become instant", "purpose": "prefers-reduced-motion: reduce." }
+      { "name": "duration-slow", "value": "400ms", "purpose": "Donut morph." },
+      { "name": "ease-smooth-out", "value": "cubic-bezier(0.22, 1, 0.36, 1)", "purpose": "Default easing for slides, morphs, progress and bar heights." },
+      { "name": "ease-press", "value": "cubic-bezier(0.2, 0, 0, 1)", "purpose": "0.96 press scale over 150ms." },
+      { "name": "text-soft", "value": "200ms ease-in-out, 2px blur", "purpose": "Blur-swap of changing figures and labels in place." },
+      { "name": "count-up", "value": "600ms power3.out (GSAP)", "purpose": "Totals counting to their new value, rounded to whole colones." },
+      { "name": "sheet-open", "value": "500ms expo.out (GSAP)", "purpose": "Bottom sheet entrance; closes at 300ms power3.in." },
+      { "name": "progress", "value": "500ms cubic-bezier(0.22, 1, 0.36, 1)", "purpose": "Progress fill and week bar height changes." }
     ],
     "breakpoints": [
       { "name": "content-max", "value": "576px" }
@@ -68,113 +85,116 @@
   },
   "components": [
     {
-      "name": "Filled Button",
+      "name": "Filled Button (Platinum)",
       "kind": "button",
       "refersTo": "button-filled",
-      "description": "The one primary action of a screen or sheet.",
-      "html": "<button class=\"ds-btn-filled\">Guardar</button>",
-      "css": ".ds-btn-filled { display: flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 20px; border: 0; border-radius: 12px; background: var(--color-blue, #0a84ff); color: #fff; font: 600 17px/22px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, system-ui, sans-serif; cursor: pointer; transition: scale 150ms cubic-bezier(0.2, 0, 0, 1), opacity 150ms; } .ds-btn-filled:active { scale: 0.96; } .ds-btn-filled:focus-visible { outline: 2px solid var(--color-blue, #0a84ff); outline-offset: 2px; } .ds-btn-filled:disabled { opacity: 0.4; }"
+      "description": "The one primary action of a screen: polished platinum metal with near-black text.",
+      "html": "<button class='ds-btn-filled'>Guardar</button>",
+      "css": ".ds-btn-filled { display: inline-flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 20px; border: 0; border-radius: 12px; font: 600 17px/22px -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif; color: var(--color-on-accent, #0a0a0b); background-color: var(--color-accent, #dcdce0); background-image: linear-gradient(180deg, #f3f3f5, #c8c8cd); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.85), inset 0 -1px 0 rgb(0 0 0 / 0.18), 0 2px 6px rgb(0 0 0 / 0.5); cursor: pointer; transition: scale 150ms cubic-bezier(0.2, 0, 0, 1), opacity 150ms; } .ds-btn-filled:hover { background-image: linear-gradient(180deg, #f7f7f9, #d0d0d5); } .ds-btn-filled:active { scale: 0.96; } .ds-btn-filled:focus-visible { outline: 2px solid var(--color-accent, #dcdce0); outline-offset: 2px; } .ds-btn-filled:disabled { opacity: 0.4; box-shadow: none; }"
     },
     {
-      "name": "Destructive Button",
+      "name": "Plain and Destructive Buttons",
       "kind": "button",
-      "refersTo": "button-destructive",
-      "description": "Delete or remove; always tinted, never filled red.",
-      "html": "<button class=\"ds-btn-destructive\">Eliminar movimiento</button>",
-      "css": ".ds-btn-destructive { display: flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 20px; border: 0; border-radius: 12px; background: rgb(255 69 58 / 0.15); color: var(--color-red, #ff453a); font: 600 17px/22px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, system-ui, sans-serif; cursor: pointer; transition: scale 150ms cubic-bezier(0.2, 0, 0, 1); } .ds-btn-destructive:active { scale: 0.96; } .ds-btn-destructive:focus-visible { outline: 2px solid var(--color-blue, #0a84ff); outline-offset: 2px; }"
+      "refersTo": "button-plain",
+      "description": "Platinum text actions and the tinted destructive button.",
+      "html": "<div class='ds-btn-row'><button class='ds-btn-plain'>Ver todos</button><button class='ds-btn-destructive'>Eliminar movimiento</button></div>",
+      "css": ".ds-btn-row { display: flex; gap: 12px; align-items: center; } .ds-btn-plain { min-height: 44px; padding: 0 4px; border: 0; background: transparent; color: var(--color-accent, #dcdce0); font: 400 17px/22px -apple-system, system-ui, sans-serif; cursor: pointer; } .ds-btn-plain:hover { color: #f3f3f5; } .ds-btn-plain:focus-visible, .ds-btn-destructive:focus-visible { outline: 2px solid var(--color-accent, #dcdce0); outline-offset: 2px; } .ds-btn-destructive { min-height: 50px; padding: 0 20px; border: 0; border-radius: 12px; background: rgb(224 105 90 / 0.15); color: var(--color-red, #e0695a); font: 600 17px/22px -apple-system, system-ui, sans-serif; cursor: pointer; transition: scale 150ms cubic-bezier(0.2, 0, 0, 1); } .ds-btn-destructive:hover { background: rgb(224 105 90 / 0.22); } .ds-btn-destructive:active { scale: 0.96; }"
     },
     {
-      "name": "Grouped List",
+      "name": "Black Card",
+      "kind": "card",
+      "refersTo": "black-card",
+      "description": "Signature month summary: brushed matte metal, engraved light figure with a quiet colón, budget groove and card fields.",
+      "html": "<section class='ds-black-card'><div class='ds-bc-top'><span class='ds-bc-title'>Gastado en octubre</span><span class='ds-bc-pct'>87 %</span></div><div class='ds-bc-amount'><span class='ds-bc-colon'>₡</span>961.190</div><p class='ds-bc-left'>Quedan ₡138.810 de ₡1.100.000</p><div class='ds-groove'><div class='ds-groove-fill' style='width:87%;background:var(--color-orange,#d4a04c)'></div></div><dl class='ds-bc-fields'><div><dt>INGRESOS</dt><dd>₡1.407.100</dd></div><div><dt>BALANCE</dt><dd>+₡445.910</dd></div></dl></section>",
+      "css": ".ds-black-card { max-width: 358px; padding: 20px 20px 16px; border-radius: 18px; color: var(--color-label, #ececef); font-family: -apple-system, system-ui, sans-serif; background-color: #0f0f10; background-image: repeating-linear-gradient(100deg, rgb(255 255 255 / 0.012) 0 1px, transparent 1px 3px), linear-gradient(155deg, #1c1c1e 0%, #0e0e0f 55%, #121213 100%); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.1), inset 0 -1px 0 rgb(0 0 0 / 0.8), 0 10px 28px rgb(0 0 0 / 0.55), 0 0 0 1px #232326; } .ds-bc-top { display: flex; justify-content: space-between; align-items: baseline; } .ds-bc-title { font: 600 17px/22px inherit; font-family: inherit; } .ds-bc-pct { font: 600 15px/20px inherit; font-family: inherit; color: var(--color-orange, #d4a04c); font-variant-numeric: tabular-nums; } .ds-bc-amount { margin-top: 16px; font-size: 48px; line-height: 52px; font-weight: 300; letter-spacing: -0.035em; font-variant-numeric: tabular-nums; color: #d6d6da; text-shadow: 0 -1px 0 rgb(0 0 0 / 0.9), 0 1px 0 rgb(255 255 255 / 0.07); } .ds-bc-colon { margin-right: 0.04em; font-size: 0.6em; color: #9d9da3; text-shadow: none; } .ds-bc-left { margin: 8px 0 0; font-size: 15px; line-height: 20px; color: var(--color-label-2, #9a9aa1); } .ds-groove { margin-top: 12px; height: 6px; border-radius: 9999px; overflow: hidden; background: #070708; box-shadow: inset 0 1px 1px rgb(0 0 0 / 0.9), 0 1px 0 rgb(255 255 255 / 0.05); } .ds-groove-fill { height: 100%; border-radius: 9999px; transition: width 500ms cubic-bezier(0.22, 1, 0.36, 1); } .ds-bc-fields { margin: 20px 0 0; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; } .ds-bc-fields dt { font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: 0.12em; color: var(--color-label-2, #9a9aa1); } .ds-bc-fields dd { margin: 4px 0 0; font-size: 17px; line-height: 22px; font-weight: 500; font-variant-numeric: tabular-nums; color: #d6d6da; text-shadow: 0 -1px 0 rgb(0 0 0 / 0.9), 0 1px 0 rgb(255 255 255 / 0.07); }"
+    },
+    {
+      "name": "Wallet Review Row with Stamp",
+      "kind": "custom",
+      "refersTo": "stamp",
+      "description": "Machined graphite row with a platinum glyph on a plate and the engraved REVISAR stamp.",
+      "html": "<a class='ds-review' href='#'><span class='ds-plate'><svg width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'><rect width='14' height='20' x='5' y='2' rx='2' ry='2'/><path d='M12 18h.01'/></svg></span><span class='ds-review-text'><span class='ds-review-title'>2 pagos de Wallet</span><span class='ds-review-sub'><span class='ds-stamp'>Revisar</span>₡19.650 sin categoría</span></span><svg class='ds-chev' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.25' stroke-linecap='round' stroke-linejoin='round'><path d='m9 18 6-6-6-6'/></svg></a>",
+      "css": ".ds-review { display: flex; align-items: center; gap: 12px; max-width: 358px; min-height: 56px; padding: 12px 16px; border-radius: 14px; background: var(--color-card, #111112); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.06), 0 0 0 1px var(--color-sep, #242427); color: var(--color-label, #ececef); text-decoration: none; font-family: -apple-system, system-ui, sans-serif; transition: scale 150ms cubic-bezier(0.2, 0, 0, 1); } .ds-review:active { scale: 0.96; } .ds-review:focus-visible { outline: 2px solid var(--color-accent, #dcdce0); outline-offset: 2px; } .ds-plate { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 10px; background: var(--color-card-3, #29292c); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.06); color: var(--color-accent, #dcdce0); flex-shrink: 0; } .ds-review-text { flex: 1; min-width: 0; } .ds-review-title { display: block; font-size: 17px; line-height: 22px; font-weight: 600; } .ds-review-sub { display: block; font-size: 15px; line-height: 20px; color: var(--color-label-2, #9a9aa1); font-variant-numeric: tabular-nums; } .ds-stamp { display: inline-block; margin-right: 6px; padding: 1px 5px; border-radius: 4px; font-size: 10px; line-height: 14px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; vertical-align: 1px; color: var(--color-accent, #dcdce0); box-shadow: inset 0 0 0 1px var(--color-label-2, #9a9aa1); } .ds-chev { color: var(--color-label-3, #7c7c83); flex-shrink: 0; }"
+    },
+    {
+      "name": "Grouped List Row",
       "kind": "card",
       "refersTo": "list-row",
-      "description": "Inset grouped list with category tiles, hairlines from the text edge, chevrons.",
-      "html": "<div class=\"ds-list\"><a class=\"ds-row\" href=\"#\"><span class=\"ds-tile\" style=\"background:#0a84ff\"><svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.25\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"2\" y=\"5\" width=\"20\" height=\"14\" rx=\"2\"/><line x1=\"2\" y1=\"10\" x2=\"22\" y2=\"10\"/></svg></span><span class=\"ds-row-body\"><span class=\"ds-row-title\">Cuentas y tarjetas</span><span class=\"ds-row-trail\">3</span><svg class=\"ds-chev\" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.25\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m9 18 6-6-6-6\"/></svg></span></a><a class=\"ds-row\" href=\"#\"><span class=\"ds-tile\" style=\"background:#ff9f0a\"><svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.25\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2\"/><path d=\"M7 2v20\"/><path d=\"M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7\"/></svg></span><span class=\"ds-row-body\"><span class=\"ds-row-title\">Comida</span><span class=\"ds-row-trail\">₡152.400</span></span></a></div>",
-      "css": ".ds-list { overflow: hidden; border-radius: 14px; background: var(--color-card, #1c1c1e); color: #fff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, system-ui, sans-serif; } .ds-row { display: flex; align-items: center; gap: 12px; padding-left: 16px; color: inherit; text-decoration: none; transition: background-color 150ms; } .ds-row:active { background: var(--color-card-2, #2c2c2e); } .ds-row:focus-visible { outline: 2px solid #0a84ff; outline-offset: -2px; } .ds-tile { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 8px; color: #fff; flex-shrink: 0; } .ds-row-body { display: flex; flex: 1; align-items: center; gap: 12px; min-height: 44px; padding: 10px 16px 10px 0; box-shadow: inset 0 -0.5px 0 rgb(84 84 88 / 0.6); } .ds-row:last-child .ds-row-body { box-shadow: none; } .ds-row-title { flex: 1; font-size: 17px; line-height: 22px; } .ds-row-trail { font-size: 17px; color: rgb(235 235 245 / 0.6); font-variant-numeric: tabular-nums; } .ds-chev { color: rgb(235 235 245 / 0.3); }"
-    },
-    {
-      "name": "Summary Card",
-      "kind": "card",
-      "refersTo": "card",
-      "description": "Spent total with the One Budget Rule line and progress bar.",
-      "html": "<section class=\"ds-card\"><p class=\"ds-card-cap\">Gastado en octubre</p><p class=\"ds-hero\">₡961.190</p><p class=\"ds-left\">Quedan ₡138.810 de ₡1.100.000</p><div class=\"ds-track\"><div class=\"ds-bar\" style=\"width:87%\"></div></div></section>",
-      "css": ".ds-card { border-radius: 14px; background: var(--color-card, #1c1c1e); padding: 16px; color: #fff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, system-ui, sans-serif; } .ds-card-cap { margin: 0; font-weight: 600; font-size: 15px; line-height: 20px; color: rgb(235 235 245 / 0.6); } .ds-hero { margin: 4px 0 0; font-weight: 700; font-size: 40px; line-height: 46px; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; } .ds-left { margin: 4px 0 0; font-weight: 600; font-size: 15px; line-height: 20px; color: var(--color-orange, #ff9f0a); } .ds-track { margin-top: 12px; height: 6px; border-radius: 9999px; background: rgb(118 118 128 / 0.24); overflow: hidden; } .ds-bar { height: 100%; border-radius: 9999px; background: var(--color-orange, #ff9f0a); transition: width 500ms cubic-bezier(0.22, 1, 0.36, 1); }"
+      "description": "Machined graphite list with category plates whose tint lives only in the icon stroke.",
+      "html": "<div class='ds-list'><button class='ds-row'><span class='ds-row-plate' style='color:#b28c62'><svg width='17' height='17' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'><path d='M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2'/><path d='M7 2v20'/><path d='M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7'/></svg></span><span class='ds-row-body'><span class='ds-row-text'><span class='ds-row-title'>Automercado</span><span class='ds-row-sub'>Comida · Tarjeta</span></span><span class='ds-row-val'>₡12.500</span></span></button><button class='ds-row'><span class='ds-row-plate' style='color:#8497ab'><svg width='17' height='17' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'><path d='M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8'/><path d='M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z'/></svg></span><span class='ds-row-body'><span class='ds-row-text'><span class='ds-row-title'>Alquiler</span><span class='ds-row-sub'>Casa · Banco</span></span><span class='ds-row-val'>₡350.000</span></span></button></div>",
+      "css": ".ds-list { max-width: 358px; overflow: hidden; border-radius: 14px; background: var(--color-card, #111112); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.06), 0 0 0 1px var(--color-sep, #242427); font-family: -apple-system, system-ui, sans-serif; } .ds-row { display: flex; width: 100%; align-items: center; gap: 12px; padding: 0 0 0 16px; border: 0; background: transparent; color: var(--color-label, #ececef); text-align: left; cursor: pointer; transition: background-color 150ms; } .ds-row:hover, .ds-row:active { background: var(--color-card-2, #1b1b1d); } .ds-row:focus-visible { outline: 2px solid var(--color-accent, #dcdce0); outline-offset: -2px; } .ds-row-plate { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 8px; flex-shrink: 0; background: var(--color-card-3, #29292c); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.06); } .ds-row-body { display: flex; flex: 1; min-height: 44px; align-items: center; gap: 12px; padding: 10px 16px 10px 0; box-shadow: inset 0 -0.5px 0 var(--color-sep, #242427); } .ds-row:last-child .ds-row-body { box-shadow: none; } .ds-row-text { flex: 1; min-width: 0; } .ds-row-title { display: block; font-size: 17px; line-height: 22px; } .ds-row-sub { display: block; font-size: 15px; line-height: 20px; color: var(--color-label-2, #9a9aa1); } .ds-row-val { font-size: 17px; font-variant-numeric: tabular-nums; }"
     },
     {
       "name": "Segmented Control",
       "kind": "nav",
       "refersTo": "segmented",
-      "description": "Period and type switcher with a sliding thumb.",
-      "html": "<div class=\"ds-seg\" role=\"tablist\"><button class=\"ds-seg-tab\" role=\"tab\" aria-selected=\"false\">Semana</button><button class=\"ds-seg-tab\" role=\"tab\" aria-selected=\"true\">Mes</button></div>",
-      "css": ".ds-seg { display: flex; gap: 3px; padding: 2px; border-radius: 9px; background: rgb(118 118 128 / 0.24); width: 320px; } .ds-seg-tab { flex: 1; height: 28px; padding: 4px 12px; border: 0; border-radius: 7px; background: transparent; color: rgb(235 235 245 / 0.6); font: 600 13px/18px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, system-ui, sans-serif; cursor: pointer; transition: color 250ms cubic-bezier(0.22, 1, 0.36, 1), background-color 250ms cubic-bezier(0.22, 1, 0.36, 1); } .ds-seg-tab:hover, .ds-seg-tab[aria-selected='true'] { color: #fff; } .ds-seg-tab[aria-selected='true'] { background: #636366; box-shadow: 0 3px 8px rgb(0 0 0 / 0.12), 0 3px 1px rgb(0 0 0 / 0.04); } .ds-seg-tab:focus-visible { outline: 2px solid #0a84ff; outline-offset: 2px; }"
+      "description": "Graphite track with machined ring and a sliding raised thumb.",
+      "html": "<div class='ds-seg' role='tablist'><button class='ds-seg-tab' role='tab' aria-selected='false'>Semana</button><button class='ds-seg-tab' role='tab' aria-selected='true'>Mes</button></div>",
+      "css": ".ds-seg { display: flex; gap: 3px; padding: 2px; max-width: 358px; border-radius: 10px; background: var(--color-card, #111112); box-shadow: 0 0 0 1px var(--color-sep, #242427); font-family: -apple-system, system-ui, sans-serif; } .ds-seg-tab { flex: 1; height: 32px; padding: 4px 12px; border: 0; border-radius: 7px; background: transparent; color: var(--color-label-2, #9a9aa1); font-size: 13px; line-height: 18px; font-weight: 600; cursor: pointer; transition: color 250ms cubic-bezier(0.22, 1, 0.36, 1), background-color 250ms cubic-bezier(0.22, 1, 0.36, 1); } .ds-seg-tab:hover { color: var(--color-label, #ececef); } .ds-seg-tab[aria-selected='true'] { color: var(--color-label, #ececef); background: var(--color-card-3, #29292c); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.07), 0 1px 3px rgb(0 0 0 / 0.6); } .ds-seg-tab:focus-visible { outline: 2px solid var(--color-accent, #dcdce0); outline-offset: 2px; }"
     },
     {
-      "name": "Picker Chip",
-      "kind": "chip",
-      "refersTo": "chip",
-      "description": "Category or account choice in the add sheet; selected inverts to white.",
-      "html": "<div class=\"ds-chips\"><button class=\"ds-chip\" aria-pressed=\"true\">Efectivo</button><button class=\"ds-chip\" aria-pressed=\"false\"><span class=\"ds-chip-tile\" style=\"background:#30d158\"></span>Súper</button></div>",
-      "css": ".ds-chips { display: flex; gap: 8px; } .ds-chip { display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 6px 16px 6px 8px; border: 0; border-radius: 9999px; background: var(--color-card-2, #2c2c2e); color: #fff; font: 600 15px/20px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, system-ui, sans-serif; white-space: nowrap; cursor: pointer; transition: scale 150ms cubic-bezier(0.2, 0, 0, 1), background-color 150ms; } .ds-chip[aria-pressed='true'] { background: #fff; color: #000; padding-left: 16px; } .ds-chip:active { scale: 0.96; } .ds-chip:focus-visible { outline: 2px solid #0a84ff; outline-offset: 2px; } .ds-chip-tile { width: 24px; height: 24px; border-radius: 7px; }"
-    },
-    {
-      "name": "Form Group",
-      "kind": "input",
-      "refersTo": "list-row",
-      "description": "iOS form rows: label left, value right, date as a pill.",
-      "html": "<div class=\"ds-form\"><label class=\"ds-field\"><span class=\"ds-field-in\"><span>Comercio</span><input class=\"ds-input\" placeholder=\"Automercado\"></span></label><label class=\"ds-field\"><span class=\"ds-field-in ds-last\"><span>Fecha</span><span class=\"ds-pill\">29 oct 2026</span></span></label></div>",
-      "css": ".ds-form { overflow: hidden; border-radius: 12px; background: var(--color-card-2, #2c2c2e); color: #fff; font: 17px/22px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, system-ui, sans-serif; } .ds-field { display: flex; padding-left: 16px; } .ds-field-in { display: flex; flex: 1; align-items: center; justify-content: space-between; gap: 16px; min-height: 44px; padding-right: 16px; box-shadow: inset 0 -0.5px 0 rgb(84 84 88 / 0.6); } .ds-last { box-shadow: none; } .ds-input { flex: 1; min-width: 0; background: transparent; border: 0; outline: none; text-align: right; color: #fff; font: inherit; caret-color: #0a84ff; } .ds-input::placeholder { color: rgb(235 235 245 / 0.3); } .ds-input:focus-visible { outline: none; } .ds-field:focus-within { background: rgb(255 255 255 / 0.02); } .ds-pill { border-radius: 8px; background: var(--color-card-3, #3a3a3c); padding: 6px 12px; }"
-    },
-    {
-      "name": "Tab Bar",
+      "name": "Tab Bar with Platinum Add Disc",
       "kind": "nav",
       "refersTo": "tab-bar-add",
-      "description": "Translucent bottom bar, four tabs around a centered blue add button.",
-      "html": "<nav class=\"ds-tabbar\"><a class=\"ds-tab is-active\" href=\"#\"><svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.25\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8\"/><path d=\"M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z\"/></svg>Resumen</a><a class=\"ds-tab\" href=\"#\"><svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3 12h.01\"/><path d=\"M3 18h.01\"/><path d=\"M3 6h.01\"/><path d=\"M8 12h13\"/><path d=\"M8 18h13\"/><path d=\"M8 6h13\"/></svg>Movimientos</a><span class=\"ds-tab\"><button class=\"ds-add\" aria-label=\"Agregar movimiento\"><svg width=\"26\" height=\"26\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\"><path d=\"M5 12h14\"/><path d=\"M12 5v14\"/></svg></button></span></nav>",
-      "css": ".ds-tabbar { display: flex; align-items: center; height: 56px; padding: 0 8px; background: rgb(22 22 24 / 0.92); backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px); box-shadow: inset 0 0.5px 0 rgb(84 84 88 / 0.6); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, system-ui, sans-serif; } .ds-tab { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 48px; font-size: 10px; font-weight: 500; color: #8e8e93; text-decoration: none; transition: color 150ms; } .ds-tab.is-active, .ds-tab:hover { color: #0a84ff; } .ds-tab:focus-visible { outline: 2px solid #0a84ff; outline-offset: 2px; } .ds-add { display: grid; place-items: center; width: 48px; height: 48px; border: 0; border-radius: 9999px; background: #0a84ff; color: #fff; box-shadow: 0 4px 14px rgb(10 132 255 / 0.35); cursor: pointer; transition: scale 150ms cubic-bezier(0.2, 0, 0, 1); } .ds-add:active { scale: 0.96; } .ds-add:focus-visible { outline: 2px solid #0a84ff; outline-offset: 2px; }"
+      "description": "Translucent tab bar, four line-icon tabs split around the 52px platinum add disc.",
+      "html": "<nav class='ds-tabbar'><a class='ds-tab is-active' href='#'><svg width='23' height='23' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8'/><path d='M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z'/></svg>Resumen</a><span class='ds-tab-mid'><button class='ds-add' aria-label='Agregar movimiento'><svg width='26' height='26' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><path d='M5 12h14'/><path d='M12 5v14'/></svg></button></span><a class='ds-tab' href='#'><svg width='23' height='23' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'><path d='m19 5-14 14'/><circle cx='6.5' cy='6.5' r='2.5'/><circle cx='17.5' cy='17.5' r='2.5'/></svg>Presupuesto</a></nav>",
+      "css": ".ds-tabbar { display: flex; align-items: center; height: 56px; max-width: 390px; padding: 0 8px; background: rgb(7 7 8 / 0.92); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); box-shadow: inset 0 1px 0 var(--color-sep, #242427); font-family: -apple-system, system-ui, sans-serif; } .ds-tab { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 48px; justify-content: center; font-size: 11px; font-weight: 500; color: var(--color-label-2, #9a9aa1); text-decoration: none; transition: color 150ms; } .ds-tab:hover { color: var(--color-label, #ececef); } .ds-tab.is-active { font-weight: 600; color: var(--color-label, #ececef); } .ds-tab:focus-visible, .ds-add:focus-visible { outline: 2px solid var(--color-accent, #dcdce0); outline-offset: 2px; } .ds-tab-mid { flex: 1; display: flex; justify-content: center; } .ds-add { display: grid; place-items: center; width: 52px; height: 52px; border: 0; border-radius: 9999px; color: var(--color-on-accent, #0a0a0b); background: radial-gradient(120% 120% at 30% 20%, #ffffff 0%, #d7d7db 45%, #a9a9ae 100%); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.8), inset 0 -2px 3px rgb(0 0 0 / 0.25), 0 6px 16px rgb(0 0 0 / 0.6), 0 0 0 1px #000; cursor: pointer; transition: scale 150ms cubic-bezier(0.2, 0, 0, 1); } .ds-add:active { scale: 0.96; }"
     },
     {
-      "name": "Toast",
-      "kind": "custom",
-      "refersTo": "toast",
-      "description": "Floating confirmation pill above the tab bar.",
-      "html": "<div class=\"ds-toast\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#30d158\" stroke-width=\"2.25\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"m9 12 2 2 4-4\"/></svg>Gasto guardado</div>",
-      "css": ".ds-toast { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px 10px 14px; border-radius: 9999px; background: var(--color-card-2, #2c2c2e); color: #fff; font: 600 15px/20px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, system-ui, sans-serif; box-shadow: 0 8px 24px rgb(0 0 0 / 0.5); transition: opacity 350ms cubic-bezier(0.22, 1, 0.36, 1), transform 350ms cubic-bezier(0.22, 1, 0.36, 1), filter 350ms cubic-bezier(0.22, 1, 0.36, 1); } .ds-toast:hover { transform: translateY(-1px); }"
+      "name": "Payment Mini Cards",
+      "kind": "chip",
+      "refersTo": "payment-mini-card",
+      "description": "Payment methods as miniature black cards with engraved last four; selected gets a platinum ring.",
+      "html": "<div class='ds-pay'><button class='ds-pay-card' aria-pressed='true'><span class='ds-pay-top'><svg width='15' height='15' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'><rect width='20' height='14' x='2' y='5' rx='2'/><line x1='2' x2='22' y1='10' y2='10'/></svg><span>Visa BAC</span></span><span class='ds-pay-num'>•••• 4821</span></button><button class='ds-pay-card' aria-pressed='false'><span class='ds-pay-top'><svg width='15' height='15' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'><rect width='20' height='12' x='2' y='6' rx='2'/><circle cx='12' cy='12' r='2'/><path d='M6 12h.01M18 12h.01'/></svg><span>Efectivo</span></span><span class='ds-pay-num'>&nbsp;</span></button></div>",
+      "css": ".ds-pay { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; max-width: 358px; font-family: -apple-system, system-ui, sans-serif; } .ds-pay-card { display: flex; flex-direction: column; justify-content: space-between; height: 64px; min-width: 0; padding: 8px 10px; border: 0; border-radius: 10px; text-align: left; cursor: pointer; color: var(--color-label-2, #9a9aa1); background-color: #0f0f10; background-image: repeating-linear-gradient(100deg, rgb(255 255 255 / 0.012) 0 1px, transparent 1px 3px), linear-gradient(155deg, #1c1c1e 0%, #0e0e0f 55%, #121213 100%); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.1), inset 0 -1px 0 rgb(0 0 0 / 0.8), 0 10px 28px rgb(0 0 0 / 0.55), 0 0 0 1px #232326; transition: scale 150ms cubic-bezier(0.2, 0, 0, 1); } .ds-pay-card:active { scale: 0.96; } .ds-pay-card:focus-visible { outline: 2px solid var(--color-accent, #dcdce0); outline-offset: 2px; } .ds-pay-card[aria-pressed='true'] { color: var(--color-label, #ececef); box-shadow: 0 0 0 1.5px var(--color-accent, #dcdce0), inset 0 1px 0 rgb(255 255 255 / 0.1), 0 10px 28px rgb(0 0 0 / 0.55); } .ds-pay-card[aria-pressed='true'] svg { color: var(--color-accent, #dcdce0); } .ds-pay-top { display: flex; align-items: center; gap: 6px; font-size: 13px; line-height: 18px; font-weight: 600; white-space: nowrap; overflow: hidden; } .ds-pay-num { font-size: 12px; line-height: 16px; letter-spacing: 0.08em; font-variant-numeric: tabular-nums; color: #d6d6da; text-shadow: 0 -1px 0 rgb(0 0 0 / 0.9), 0 1px 0 rgb(255 255 255 / 0.07); }"
+    },
+    {
+      "name": "Amount Entry",
+      "kind": "input",
+      "refersTo": "amount-entry",
+      "description": "Large light engraved figure typed with the numeric keypad, quiet colón beside it.",
+      "html": "<label class='ds-amount'><span class='ds-amount-colon' aria-hidden='true'>₡</span><input class='ds-amount-input' inputmode='numeric' placeholder='0' value='12.500' aria-label='Monto'></label>",
+      "css": ".ds-amount { display: flex; align-items: baseline; justify-content: center; gap: 4px; font-family: -apple-system, system-ui, sans-serif; font-size: 56px; line-height: 62px; font-weight: 300; letter-spacing: -0.035em; font-variant-numeric: tabular-nums; color: #d6d6da; text-shadow: 0 -1px 0 rgb(0 0 0 / 0.9), 0 1px 0 rgb(255 255 255 / 0.07); } .ds-amount-colon { font-size: 34px; color: var(--color-label-2, #9a9aa1); } .ds-amount-input { width: 6ch; border: 0; background: transparent; color: inherit; font: inherit; letter-spacing: inherit; outline: none; caret-color: var(--color-accent, #dcdce0); } .ds-amount-input::placeholder { color: var(--color-label-3, #7c7c83); } .ds-amount:focus-within .ds-amount-input { text-shadow: inherit; }"
     }
   ],
   "narrative": {
-    "northStar": "The Wallet Pass, Kept Straight",
-    "overview": "This is the iOS dark system executed without a smuggled quirk: a pure black ground, grouped near-black cards, Apple system colors standing in for every category, SF system type with large bold titles, and money set in tabular numerals. The ambition is finish, not novelty. The reference bar is Apple Wallet and Apple Health in dark mode, and the measure of success is that nothing reads as web chrome: no browser-default controls, no misaligned figures, no generic dashboard furniture.\n\nDensity is phone-native (390px wide, one column, 16px gutters). Every screen opens with a large title, then a stack of rounded cards and inset grouped lists separated by hairlines. Color carries meaning, never decoration: blue is the one interactive voice, green/orange/red are the budget state, and the remaining system hues are category identity. Motion is quiet and physical: things slide, count, and blur-swap in place, and every motion collapses to an instant change under reduced motion.\n\nDark only, always. There is no light theme and no light-theme token.",
+    "northStar": "Tarjeta negra",
+    "overview": "The month is a private black metal card held in the hand, not a dashboard tile. The ground is a near-black matte (bg), surfaces are layered graphites, and the one light thing on the screen is platinum: a polished light-metal fill with near-black text that marks every action. Figures are set light-weight and engraved into the metal, with the colón sign stepped back as a quiet secondary mark so the number leads. Raised surfaces carry a machined edge: a 1px light catch on top and a hairline ring around.\n\nColour is withheld until it means something. Budget state (steel, amber, red) and income (sage green) are the only meaningful hues; categories get low-chroma tints (bronze, sage, steel, taupe, champagne…) carried only by icon strokes on graphite plates and by chart segments. The structure under the metal is still the iOS grouped-list grammar: large titles, inset grouped lists with hairlines, a translucent tab bar, bottom sheets, 44px targets. Motion is quiet and physical (slide, count, blur-swap) and collapses to instant under reduced motion.\n\nDark only, always. There is no light theme and no light-theme token. The world explicitly refuses the category's saturated system colours and colour-filled icon tiles.",
     "keyCharacteristics": [
-      "Pure black ground (bg) with three stepped card greys for nesting; depth comes from tone, not shadow.",
-      "Apple system colors map one-to-one to category keys c1 to c10.",
-      "Large bold title per screen; amounts always tabular and bold.",
-      "Inset grouped lists with 0.5px hairlines that start where the text starts.",
-      "One budget color rule shared by every bar, label and banner.",
-      "Translucent blurred tab bar with a centered blue add button."
+      "Matte near-black ground with a graphite ladder (card, card-2, card-3) for nesting.",
+      "Platinum is the single action colour: filled buttons, the add disc, plain text actions, focus ring, caret, toggles on, the selected ring.",
+      "The black card is the signature surface: brushed matte gradient, machined edges, engraved figures, card-field labels.",
+      "Light-weight engraved tabular figures with a quiet ₡.",
+      "Category colour lives in the icon stroke, never as a filled tile.",
+      "One budget colour rule shared by every bar, percentage and \"Quedan\" line."
     ],
     "rules": [
-      { "name": "The One Budget Rule", "body": "Every budget expression (progress bar, \"Quedan\" line, per-category bar, warning banner) uses one ratio rule: base color under 80%, orange from 80%, red at 100% and over. Never pick a budget color by hand.", "section": "colors" },
-      { "name": "The One Blue Rule", "body": "Blue means \"you can act here\". It is not a category accent on chrome, a heading color, or decoration.", "section": "colors" },
-      { "name": "The Category Hue Rule", "body": "System hues other than blue/green/orange/red as state belong to categories. A category's color appears only where that category is identified.", "section": "colors" },
+      { "name": "The Platinum Rule", "body": "Platinum means \"you can act here\" (or \"this is selected / today\"). It is never a heading colour, a category accent or decoration, and no other hue ever marks an action.", "section": "colors" },
+      { "name": "The One Budget Rule", "body": "Every budget expression uses one ratio rule: steel under 80 %, amber from 80 %, red at 100 % and over. Never pick a budget colour by hand; route it through the shared budget colour/tone helpers.", "section": "colors" },
+      { "name": "The Stroke-Only Tint Rule", "body": "Category and account tints colour an icon's stroke on a graphite plate, a chart segment, or a 10px legend swatch. They never fill a tile, a row or a card.", "section": "colors" },
       { "name": "The Tabular Money Rule", "body": "Every amount uses tabular numerals and the shared colón formatter. No exceptions for small or secondary figures.", "section": "typography" },
-      { "name": "The System Style Rule", "body": "Use the named iOS text styles; do not invent intermediate sizes. The two amount roles are the only display sizes outside the iOS scale.", "section": "typography" },
-      { "name": "The Flat Card Rule", "body": "Cards and grouped lists never carry a shadow. If a surface needs to read as nested, step it up one card grey.", "section": "elevation" },
-      { "name": "The Translucent Chrome Rule", "body": "The tab bar is the only blurred surface: rgb(22 22 24 / 0.92) with saturate(180%) blur(20px).", "section": "elevation" }
+      { "name": "The Quiet Colón Rule", "body": "On large non-negative engraved figures the ₡ is set at 0.6em in a muted grey with no engraving, so the digits lead. Signed amounts keep the ₡ inline with the sign.", "section": "typography" },
+      { "name": "The Engraved Light Rule", "body": "Display figures are light (300), never bold; their weight comes from the engraving (dark cut above, faint light catch below), not from stroke thickness.", "section": "typography" },
+      { "name": "The Machined Edge Rule", "body": "A raised surface shows its edge as light from above: a 1px inner highlight on top and a hairline ring or dark lower lip. Depth never comes from a hard offset shadow or a coloured glow.", "section": "elevation" },
+      { "name": "The Translucent Chrome Rule", "body": "The tab bar is the only blurred surface: rgb(7 7 8 / 0.92) with blur(20px).", "section": "elevation" }
     ],
     "dos": [
-      "**Do** open every screen with the Large Title (34px bold) and build below it with cards (14px) and grouped lists.",
-      "**Do** route every budget color through the One Budget Rule (under 80% base, 80% orange, 100% red).",
-      "**Do** set every amount in tabular numerals with the shared colón formatter.",
-      "**Do** nest by stepping card greys (card, card-2, card-3) instead of adding shadows or borders.",
+      "**Do** open every screen with the Large Title (34px bold) and build below it with machined graphite cards (14px) and grouped lists.",
+      "**Do** make platinum the only action colour: filled metal buttons, plain platinum text, platinum focus ring and selection rings.",
+      "**Do** route every budget colour through the One Budget Rule (steel under 80 %, amber from 80 %, red from 100 %).",
+      "**Do** set large figures light (300) and engraved, tabular, with the quiet ₡ on non-negative totals.",
+      "**Do** colour categories through the icon stroke on a graphite plate, using the c1–c10 tints.",
       "**Do** keep every tap target at least 44px and give pressable elements the 0.96 press scale.",
-      "**Do** honor reduced motion: every slide, count, swap and morph becomes instant."
+      "**Do** honour reduced motion: every slide, count, swap and morph becomes instant."
     ],
     "donts": [
-      "**Don't** introduce a light theme or light surfaces.",
-      "**Don't** use blue for anything that is not interactive or the Wallet review marker.",
-      "**Don't** put shadows or borders on cards and lists; only floating layers (sheet, toast, add button, thumbs) cast shadow.",
-      "**Don't** use browser-default controls; every control is an iOS-shaped component (segmented, switch, date pill, keypad).",
-      "**Don't** place a text eyebrow above the large title; that slot holds only the back link.",
-      "**Don't** pick category colors outside the c1 to c10 system hues."
+      "**Don't** introduce a light theme or light surfaces other than platinum controls.",
+      "**Don't** use a saturated system colour (iOS blue, green, orange) anywhere; the state and tint values are deliberately low-chroma.",
+      "**Don't** fill an icon tile, row or card with a category colour.",
+      "**Don't** set display figures bold or give them a coloured glow; weight comes from engraving.",
+      "**Don't** use hard offset shadows; depth is the machined edge, inner highlights and soft black drop shadows.",
+      "**Don't** place an uppercase label above a screen or section title; uppercase tracked text is limited to black-card field labels and the stamp.",
+      "**Don't** use emoji or Unicode glyphs as icons; use lucide line icons."
     ]
   }
 }

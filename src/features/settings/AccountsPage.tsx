@@ -5,6 +5,7 @@ import { ACCOUNT_ICONS } from '../../components/palette';
 import { Sheet } from '../../components/Sheet';
 import { useToast } from '../../components/Toast';
 import { Button, IconTile, Row, Screen, Section } from '../../components/ui';
+import { QuietColon } from '../../components/motion';
 import { crDay } from '../../lib/dates';
 import { formatCRC } from '../../lib/money';
 import { useAccounts, useBalances, useSaveAccount } from '../../lib/queries';
@@ -48,9 +49,11 @@ export function AccountsPage() {
 
   return (
     <Screen title="Cuentas" subtitle={<BackLink />}>
-      <div className="rounded-card bg-card p-4">
-        <p className="text-subhead font-semibold text-label-2">Patrimonio neto</p>
-        <p className={'tnum text-title1 font-bold ' + (net < 0 ? 'text-red' : '')}>{formatCRC(net)}</p>
+      <div className="black-card rounded-[18px] px-5 pt-5 pb-5">
+        <p className="text-headline font-semibold">Patrimonio neto</p>
+        <p className={'tnum mt-3 text-[40px] leading-[46px] font-light tracking-[-0.03em] ' + (net < 0 ? 'text-red' : 'engraved')}>
+          {net < 0 ? formatCRC(net) : <><QuietColon />{formatCRC(net).replace('₡', '')}</>}
+        </p>
       </div>
 
       <Section header="Efectivo y bancos">
@@ -196,14 +199,14 @@ function AccountSheet({
       swipeToClose
       title={initial.id ? 'Editar cuenta' : 'Nueva cuenta'}
       leading={
-        <button type="button" className="min-h-11 text-body text-blue" onClick={onClose}>
+        <button type="button" className="min-h-11 text-body text-accent" onClick={onClose}>
           Cancelar
         </button>
       }
       trailing={
         <button
           type="button"
-          className="press min-h-9 rounded-full bg-blue px-4 text-body font-semibold text-white disabled:bg-fill disabled:text-label-3"
+          className="press metal min-h-9 rounded-full px-4 text-body font-semibold disabled:bg-none disabled:bg-fill disabled:text-label-3 disabled:shadow-none"
           disabled={!valid || save.isPending}
           onClick={submit}
         >
@@ -225,7 +228,7 @@ function AccountSheet({
               onClick={() => set({ type: k.type })}
               className={clsx(
                 'press flex min-w-0 flex-col items-center gap-2 rounded-[12px] px-0.5 pt-3 pb-2.5 text-footnote font-semibold',
-                on ? 'bg-label text-black' : 'bg-card-2 text-label-2',
+                on ? 'metal' : 'bg-card-2 text-label-2',
               )}
             >
               <IconTile icon={ACCOUNT_ICONS[k.type]} color={TYPE_COLOR[k.type]} size={32} />

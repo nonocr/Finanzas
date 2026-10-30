@@ -34,8 +34,8 @@ A personal, colones-first tracker whose Apple Wallet payments arrive by themselv
 - Undecided: product name (placeholder until chosen).
 
 ## Brand Commitments
-- Chosen on purpose (2026-10-29, after three direction rounds): the category standard, executed straight, no smuggled quirk.
-- Quality bar: Apple Wallet and Apple Health on iOS (dark). Native-feeling grouped lists, SF system type, large titles, system colors, translucent tab bar.
+- Chosen by the owner (2026-10-30): the «Tarjeta negra» direction, black and grey like an exclusive black metal card (matte black, layered graphite, platinum as the single action colour).
+- Quality bar: the finish of a black metal card. Native-feeling grouped lists, SF system type, large titles, graphite surfaces, platinum as the only action colour, engraved light figures, translucent tab bar.
 
 ## Evidence on Hand
 No real data, logos or brand assets yet. Do not fabricate testimonials or sample "success" claims.

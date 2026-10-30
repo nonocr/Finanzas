@@ -49,14 +49,14 @@ export function ChangePasswordSheet({ open, onClose }: { open: boolean; onClose:
       swipeToClose
       title="Cambiar contraseña"
       leading={
-        <button type="button" className="min-h-11 text-body text-blue" onClick={onClose}>
+        <button type="button" className="min-h-11 text-body text-accent" onClick={onClose}>
           Cancelar
         </button>
       }
       trailing={
         <button
           type="button"
-          className="press min-h-9 rounded-full bg-blue px-4 text-body font-semibold text-white disabled:bg-fill disabled:text-label-3"
+          className="press metal min-h-9 rounded-full px-4 text-body font-semibold disabled:bg-none disabled:bg-fill disabled:text-label-3 disabled:shadow-none"
           disabled={!valid || busy}
           onClick={submit}
         >

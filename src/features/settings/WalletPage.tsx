@@ -59,7 +59,7 @@ function Steps({ steps }: { steps: ReactNode[] }) {
     <ol className="p-4">
       {steps.map((s, i) => (
         <li key={i} className="flex gap-3 py-2">
-          <span className="tnum grid size-6 shrink-0 place-items-center rounded-full bg-blue text-footnote font-bold text-white">
+          <span className="tnum grid size-6 shrink-0 place-items-center rounded-full bg-accent text-footnote font-bold text-on-accent">
             {i + 1}
           </span>
           <span className="text-subhead leading-6">{s}</span>

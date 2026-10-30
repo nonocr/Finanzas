@@ -7,11 +7,11 @@ export function MonthNav({ month, onChange }: { month: Date; onChange: (m: Date)
   const isCurrent = month.getTime() >= current.getTime();
   const label = `${monthName(month)} ${month.getUTCFullYear()}`;
   return (
-    <div className="flex items-center justify-between rounded-card bg-card px-1">
+    <div className="machined flex items-center justify-between rounded-card bg-card px-1">
       <button
         type="button"
         aria-label="Mes anterior"
-        className="press grid size-11 place-items-center text-blue"
+        className="press grid size-11 place-items-center text-accent"
         onClick={() => onChange(addMonths(month, -1))}
       >
         <ChevronLeft size={22} strokeWidth={2.25} />
@@ -22,7 +22,7 @@ export function MonthNav({ month, onChange }: { month: Date; onChange: (m: Date)
       <button
         type="button"
         aria-label="Mes siguiente"
-        className="press grid size-11 place-items-center text-blue disabled:text-label-3"
+        className="press grid size-11 place-items-center text-accent disabled:text-label-3"
         disabled={isCurrent}
         onClick={() => onChange(addMonths(month, 1))}
       >
