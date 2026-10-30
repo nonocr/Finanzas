@@ -78,7 +78,7 @@ export function LoginPage() {
     const { error } =
       mode === 'login'
         ? await supabase.auth.signInWithPassword({ email: email.trim(), password })
-        : await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo: location.origin });
+        : await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo: `${location.origin}/` });
     setBusy(false);
     if (error) setError(MESSAGES[error.code ?? ''] ?? GENERIC);
     else if (mode === 'forgot') setMode('sent');
