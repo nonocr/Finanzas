@@ -4,7 +4,8 @@ import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import './index.css'
 import App from './App.tsx'
-import { CACHE_MAX_AGE, persister, queryClient, resumePendingMutations, shouldPersistMutation } from './lib/offline'
+import { isDemo } from './lib/api'
+import { CACHE_MAX_AGE, onCacheRestored, persister, queryClient, resumePendingMutations, shouldPersistMutation } from './lib/offline'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -16,8 +17,12 @@ createRoot(document.getElementById('root')!).render(
         buster: 'v1',
         dehydrateOptions: { shouldDehydrateMutation: shouldPersistMutation },
       }}
-      // Al abrir la app: los cambios que quedaron en cola sin conexión se envían (o esperan la señal).
-      onSuccess={resumePendingMutations}
+      // Al abrir la app, los cambios en cola se envían solo cuando App confirma que la sesión es de su dueña
+      // (syncCacheWithSession). La demo no tiene sesión: se reanudan de una vez.
+      onSuccess={() => {
+        onCacheRestored()
+        if (isDemo) resumePendingMutations()
+      }}
     >
       <BrowserRouter>
         <App />

@@ -23,7 +23,8 @@ function parseQueue(text: string): { items: WalletPayment[]; unreadable: number 
   try {
     const whole = JSON.parse(trimmed);
     if (Array.isArray(whole)) return { items: whole.filter(isObject), unreadable: whole.filter((x) => !isObject(x)).length };
-    if (whole && Array.isArray(whole.items)) return { items: whole.items.filter(isObject), unreadable: 0 };
+    if (whole && Array.isArray(whole.items))
+      return { items: whole.items.filter(isObject), unreadable: whole.items.filter((x: unknown) => !isObject(x)).length };
     if (isObject(whole)) return { items: [whole], unreadable: 0 };
   } catch {
     // no es un solo JSON: se lee línea por línea
@@ -70,8 +71,10 @@ Deno.serve(async (req) => {
   for (const [index, item] of items.entries()) {
     const r = await ingestPayment(supabase, auth.userId, item, { requireExternalId: true });
     if (r.ok) r.duplicate ? duplicates++ : saved++;
-    // Un fallo del servidor no debe hacer que el Atajo borre el archivo: se reintenta en el próximo envío.
+    // Un fallo del servidor, o no tener cuentas activas (se arregla en la app), no debe hacer que el Atajo borre el
+    // archivo: se reintenta en el próximo envío y lo ya guardado no se duplica gracias a la huella.
     else if (r.error === 'insert_failed') return json({ ok: false, error: 'insert_failed' }, 500);
+    else if (r.error === 'no_accounts') return json({ ok: false, error: 'no_accounts' }, 409);
     else rejected.push({ index, error: r.error });
   }
 
@@ -79,6 +82,6 @@ Deno.serve(async (req) => {
     await supabase.from('api_tokens').update({ last_used_at: new Date().toISOString() }).eq('id', auth.tokenId);
   }
 
-  // ok:true = el archivo ya se puede borrar. Lo rechazado (monto ilegible, sin cuentas) no mejoraría reenviándolo.
+  // ok:true = el archivo ya se puede borrar. Lo rechazado (monto ilegible) no mejoraría reenviándolo.
   return json({ ok: true, received: items.length, saved, duplicates, rejected, unreadable });
 });

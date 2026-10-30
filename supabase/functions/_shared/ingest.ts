@@ -31,7 +31,9 @@ export async function authorizeWebhook(
 
   const { data } = await supabase.from('api_tokens').select('id, user_id').eq('token_hash', await sha256Hex(token)).maybeSingle();
   if (!data) {
+    // Por IP y, como la IP se puede falsificar, también en total: adivinar un token queda acotado igual.
     if (!(await withinLimit(supabase, `wallet:badtoken:${ip}`, 10, 600))) return tooMany(600);
+    if (!(await withinLimit(supabase, 'wallet:badtoken:total', 100, 600))) return tooMany(600);
     return json({ error: 'invalid_token' }, 401);
   }
   if (!(await withinLimit(supabase, `wallet:token:${data.id}`, opts.perTokenPerMinute, 60))) return tooMany(60);
@@ -53,13 +55,26 @@ export type IngestResult =
   | { ok: true; id: string; status: string; duplicate?: boolean }
   | { ok: false; error: 'invalid_amount' | 'no_accounts' | 'insert_failed' };
 
-/** Fecha del pago si viene y es razonable (no futura, no más vieja que 60 días); si no, ahora. */
-function paymentTime(at: unknown): Date {
-  const now = Date.now();
-  if (typeof at !== 'string' || !at.trim()) return new Date(now);
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d+)?)?(Z|[+-]\d{2}:?\d{2})$/;
+
+/**
+ * Fecha del pago si viene en ISO 8601 con zona y es razonable (no futura, no más vieja que 60 días).
+ * `valid` dice si se pudo usar; si no, el pago queda con la hora de llegada.
+ */
+export function paymentTime(at: unknown, now = Date.now()): { date: Date; valid: boolean } {
+  if (typeof at !== 'string' || !ISO_DATE.test(at.trim())) return { date: new Date(now), valid: false };
   const t = Date.parse(at.trim());
-  if (Number.isNaN(t) || t > now + 5 * 60_000 || t < now - 60 * 86_400_000) return new Date(now);
-  return new Date(t);
+  if (Number.isNaN(t) || t > now + 5 * 60_000 || t < now - 60 * 86_400_000) return { date: new Date(now), valid: false };
+  return { date: new Date(t), valid: true };
+}
+
+/**
+ * Huella estable de un pago de la cola. Con fecha válida, la fecha real; sin ella, el texto tal como vino (no la hora
+ * de llegada, que cambia en cada reenvío y duplicaría el pago).
+ */
+export function paymentFingerprint(p: WalletPayment, amount: number, merchant: string | null, card: string, time: { date: Date; valid: boolean }) {
+  const when = time.valid ? time.date.toISOString() : `sin-fecha:${typeof p.at === 'string' ? p.at.trim().slice(0, 64) : ''}`;
+  return sha256Hex([when, amount, merchant ?? '', card].join('|'));
 }
 
 export async function ingestPayment(
@@ -72,14 +87,15 @@ export async function ingestPayment(
   if (!amount || amount > MAX_AMOUNT_CENTS) return { ok: false, error: 'invalid_amount' };
   const merchant = cleanText(p.merchant, 200);
   const card = cleanText(p.card, 100) ?? '';
-  const occurred = paymentTime(p.at);
+  const time = paymentTime(p.at);
+  const occurred = time.date;
 
   // Los pagos de la cola siempre traen un id estable: reenviarlos no duplica.
   const providedId = cleanText(p.id, 128);
   const externalId = providedId
     ? providedId
     : opts.requireExternalId
-        ? await sha256Hex([occurred.toISOString(), amount, merchant ?? '', card].join('|'))
+        ? await paymentFingerprint(p, amount, merchant, card, time)
         : null;
 
   if (externalId) {

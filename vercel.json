@@ -20,7 +20,7 @@
       ]
     },
     {
-      "source": "/sw.js",
+      "source": "/(sw.js|registerSW.js|manifest.webmanifest|index.html|workbox-(.*).js)",
       "headers": [{ "key": "Cache-Control", "value": "no-cache" }]
     }
   ],

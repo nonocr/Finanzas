@@ -8,6 +8,9 @@ describe('csvCell', () => {
     ['-2+3', "'-2+3"],
     ['@SUM(A1)', "'@SUM(A1)"],
     ['\tTAB', "'\tTAB"],
+    ['  =1+1', "'  =1+1"],
+    ['＝HYPERLINK(1)', "'＝HYPERLINK(1)"],
+    ['　@SUM(A1)', "'　@SUM(A1)"],
   ])('neutraliza la fórmula %s', (input, out) => {
     expect(csvCell(input)).toBe(out);
   });

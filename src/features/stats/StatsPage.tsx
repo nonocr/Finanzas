@@ -138,7 +138,12 @@ export function StatsPage() {
       </Section>
 
       <Section header="Últimos 6 meses">
-        <div className="h-56 px-2 pt-4 pb-2">
+        <div
+          className="h-56 px-2 pt-4 pb-2"
+          role="img"
+          // VoiceOver no puede leer las barras: se le da el resumen en texto.
+          aria-label={trend.map((p) => `${p.name}: gastos ${formatCRC(p.Gastos * 100)}, ingresos ${formatCRC(p.Ingresos * 100)}`).join('. ')}
+        >
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={trend} barGap={2} barCategoryGap="22%">
               <XAxis dataKey="name" tickLine={false} axisLine={false} tick={{ fill: 'rgb(235 235 245 / 0.6)', fontSize: 12 }} />

@@ -52,7 +52,25 @@ export function Segmented<T extends string>({
   }, [value]);
 
   return (
-    <div ref={bar} className={clsx('t-tabs w-full', className)} role="tablist">
+    <div
+      ref={bar}
+      className={clsx('t-tabs w-full', className)}
+      role="tablist"
+      // Teclado: una sola parada de Tab; las flechas (e Inicio/Fin) cambian la opción, como en iOS y en ARIA.
+      onKeyDown={(e) => {
+        const i = options.findIndex((o) => o.value === value);
+        const next =
+          e.key === 'ArrowRight' ? (i + 1) % options.length
+          : e.key === 'ArrowLeft' ? (i - 1 + options.length) % options.length
+          : e.key === 'Home' ? 0
+          : e.key === 'End' ? options.length - 1
+          : -1;
+        if (next < 0) return;
+        e.preventDefault();
+        onChange(options[next].value);
+        bar.current?.querySelectorAll<HTMLElement>('[role="tab"]')[next]?.focus();
+      }}
+    >
       <span ref={pill} className="t-tabs-pill" aria-hidden="true" />
       {options.map((o) => (
         <button
@@ -60,6 +78,7 @@ export function Segmented<T extends string>({
           type="button"
           role="tab"
           aria-selected={o.value === value}
+          tabIndex={o.value === value ? 0 : -1}
           className="t-tab flex-1 text-footnote font-semibold"
           onClick={() => onChange(o.value)}
         >

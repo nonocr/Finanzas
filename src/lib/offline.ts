@@ -36,12 +36,30 @@ export const queryClient = new QueryClient({
 /** Se guardan en el teléfono todos los cambios sin terminar: en pausa o esperando reintento. */
 export const shouldPersistMutation = (m: Mutation) => m.state.status === 'pending';
 
-/** Al abrir la app, retoma los cambios que quedaron sin subir (en pausa o a medio reintento). */
+/** Retoma los cambios que quedaron sin subir (en pausa o a medio reintento). Solo con la sesión de su dueña. */
 export function resumePendingMutations() {
   for (const m of queryClient.getMutationCache().getAll()) {
     if (m.state.status === 'pending') m.continue().catch(() => {});
   }
 }
+
+// La copia local se restaura de forma asíncrona; quien decide qué hacer con ella espera a que termine.
+let markRestored = () => {};
+export const cacheRestored = new Promise<void>((resolve) => (markRestored = resolve));
+export const onCacheRestored = () => markRestored();
+
+// Compuerta de envío: un cambio en cola espera a que haya una sesión completa (con los dos pasos si los tiene).
+// Así, aunque React Query reanude la cola al volver la señal, nada sale con una sesión a medias y nada se pierde
+// por un rechazo de permisos: el cambio sigue en cola hasta que entres del todo.
+let gateOpen = isDemo;
+let openGate = () => {};
+let gate = isDemo ? Promise.resolve() : new Promise<void>((resolve) => (openGate = resolve));
+function setGate(open: boolean) {
+  if (open && !gateOpen) openGate();
+  else if (!open && gateOpen) gate = new Promise<void>((resolve) => (openGate = resolve));
+  gateOpen = open;
+}
+const whenSessionReady = () => gate;
 
 const storage = (() => {
   try {
@@ -54,19 +72,51 @@ const storage = (() => {
   }
 })();
 
-export const persister = createSyncStoragePersister({
-  storage,
-  key: isDemo ? 'finanzas-cache-demo' : 'finanzas-cache',
-});
+const CACHE_KEY = isDemo ? 'finanzas-cache-demo' : 'finanzas-cache';
+/** Usuario al que pertenece la copia local; si entra otra cuenta, la copia no se le muestra. */
+const OWNER_KEY = 'finanzas-cache-owner';
+/** Todo lo que la app guarda en el teléfono sobre la cuenta (la demo tiene su propia clave y no se toca). */
+const LOCAL_KEYS = [CACHE_KEY, OWNER_KEY, 'finanzas-last-account', 'finanzas-home-period'];
 
-/** Borra la copia local (al cerrar sesión). */
+export const persister = createSyncStoragePersister({ storage, key: CACHE_KEY });
+
+/** Borra la copia local de los datos y la cola de cambios (al cerrar sesión o si cambia la cuenta). */
 export function clearOfflineCache() {
   queryClient.clear();
   try {
-    localStorage.removeItem(isDemo ? 'finanzas-cache-demo' : 'finanzas-cache');
+    for (const k of LOCAL_KEYS) localStorage.removeItem(k);
   } catch {
     // nada que borrar
   }
+}
+
+/** Qué hacer con la copia local según quién tiene la sesión. Sin sesión o con otra cuenta: se borra. */
+export function cacheAction(owner: string | null, userId: string | null): 'clear' | 'keep' {
+  return !userId || (owner !== null && owner !== userId) ? 'clear' : 'keep';
+}
+
+/**
+ * Ajusta la copia local a la sesión actual: la borra si no hay sesión o es de otra cuenta, y solo reanuda la cola
+ * de cambios cuando la sesión ya pasó los dos pasos (antes, la base los rechazaría y se perderían).
+ */
+export async function syncCacheWithSession(userId: string | null, fullyAuthenticated: boolean) {
+  if (isDemo) return;
+  await cacheRestored;
+  let owner: string | null = null;
+  try {
+    owner = localStorage.getItem(OWNER_KEY);
+  } catch {
+    // sin almacenamiento: no hay copia que proteger
+  }
+  setGate(Boolean(userId) && fullyAuthenticated);
+  if (cacheAction(owner, userId) === 'clear') clearOfflineCache();
+  if (!userId) return;
+  try {
+    localStorage.setItem(OWNER_KEY, userId);
+  } catch {
+    // modo privado
+  }
+  if (fullyAuthenticated) resumePendingMutations();
 }
 
 const MONEY_KEYS = [['transactions'], ['balances'], ['budget_progress']];
@@ -83,7 +133,10 @@ const inRange = (key: readonly unknown[], at: string) =>
   key[1] === 'pending' || (typeof key[1] === 'string' && typeof key[2] === 'string' && at >= key[1] && at < key[2]);
 
 queryClient.setMutationDefaults(['saveTransaction'], {
-  mutationFn: (tx: Transaction) => api.saveTransaction(tx),
+  mutationFn: async (tx: Transaction) => {
+    await whenSessionReady();
+    return api.saveTransaction(tx);
+  },
   onMutate: async (tx: Transaction) => {
     await queryClient.cancelQueries({ queryKey: ['transactions'] });
     patchTransactionLists((list, key) => {
@@ -96,7 +149,10 @@ queryClient.setMutationDefaults(['saveTransaction'], {
 });
 
 queryClient.setMutationDefaults(['deleteTransaction'], {
-  mutationFn: (id: string) => api.deleteTransaction(id),
+  mutationFn: async (id: string) => {
+    await whenSessionReady();
+    return api.deleteTransaction(id);
+  },
   onMutate: async (id: string) => {
     await queryClient.cancelQueries({ queryKey: ['transactions'] });
     patchTransactionLists((list) => list.filter((t) => t.id !== id));
@@ -105,6 +161,9 @@ queryClient.setMutationDefaults(['deleteTransaction'], {
 });
 
 queryClient.setMutationDefaults(['saveMerchantRule'], {
-  mutationFn: (r: { pattern: string; category_id: string }) => api.saveMerchantRule(r),
+  mutationFn: async (r: { pattern: string; category_id: string }) => {
+    await whenSessionReady();
+    return api.saveMerchantRule(r);
+  },
   onSettled: () => queryClient.invalidateQueries({ queryKey: ['merchant_rules'] }),
 });

@@ -3,7 +3,7 @@ import { useEffect, useState, type ComponentProps, type ReactNode } from 'react'
 import { Button } from '../../components/ui';
 import { cleanCode, needsMfaCode, verifyCode } from '../../lib/mfa';
 import { checkPassword } from '../../lib/password';
-import { supabase } from '../../lib/supabase';
+import { supabase, takePartialSignOut } from '../../lib/supabase';
 
 // Correo + contraseña: funciona dentro de la PWA instalada sin depender de enlaces por correo
 // (en iPhone un enlace abriría Safari y la sesión quedaría fuera de la app).
@@ -72,6 +72,7 @@ export function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [partialSignOut] = useState(takePartialSignOut);
 
   const submit = async () => {
     setBusy(true);
@@ -108,6 +109,12 @@ export function LoginPage() {
       title={mode === 'login' ? 'Finanzas' : 'Restablecer contraseña'}
       subtitle={mode === 'login' ? 'Entra para ver tus gastos.' : 'Te enviaremos un enlace a tu correo para poner una contraseña nueva.'}
     >
+      {partialSignOut && mode === 'login' && (
+        <p className="mt-6 rounded-[12px] bg-orange/15 p-4 text-subhead text-pretty">
+          Cerraste sesión sin conexión, así que solo se cerró en este dispositivo. Para cerrarla en todos, entra con
+          conexión y vuelve a tocar «Cerrar sesión».
+        </p>
+      )}
       <form
         className="mt-8"
         onSubmit={(e) => {
@@ -190,9 +197,12 @@ export function ResetPasswordPage({ onDone }: { onDone: () => void }) {
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
   const [askCode, setAskCode] = useState<boolean | null>(null);
+  const [email, setEmail] = useState<string | null>(null);
 
   useEffect(() => {
     void needsMfaCode().then(setAskCode);
+    // Se muestra a qué cuenta corresponde el enlace: si no es tu correo, no pongas nada y cancela.
+    void supabase.auth.getSession().then(({ data }) => setEmail(data.session?.user.email ?? null));
   }, []);
 
   const strength = checkPassword(next);
@@ -229,7 +239,19 @@ export function ResetPasswordPage({ onDone }: { onDone: () => void }) {
     );
 
   return (
-    <AuthLayout title="Contraseña nueva" subtitle="Mínimo 8 caracteres, con minúscula, mayúscula y número.">
+    <AuthLayout
+      title="Contraseña nueva"
+      subtitle={
+        <>
+          {email && (
+            <>
+              Para <span className="font-semibold text-label">{email}</span>.{' '}
+            </>
+          )}
+          Mínimo 8 caracteres, con minúscula, mayúscula y número.
+        </>
+      }
+    >
       <form
         className="mt-8"
         onSubmit={(e) => {

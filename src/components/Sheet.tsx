@@ -1,7 +1,7 @@
 import { useGSAP } from '@gsap/react';
 import clsx from 'clsx';
 import gsap from 'gsap';
-import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
+import { useEffect, useId, useRef, useState, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 
 /** Movimiento mínimo (px) antes de decidir si el gesto arrastra la hoja o es un toque/desplazamiento. */
@@ -80,6 +80,11 @@ export function Sheet({
   const fling = useRef<{ velocity: number } | null>(null);
   const suppressClick = useRef(false);
   const canSwipe = swipeToClose && dismissible;
+  const titleId = useId();
+  const onCloseRef = useRef(onClose);
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  });
   // Se monta al abrir; se desmonta cuando termina la animación de cierre.
   if (open && !mounted) setMounted(true);
 
@@ -113,15 +118,38 @@ export function Sheet({
 
   useEffect(() => {
     if (!open) return;
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
+    // Accesibilidad: el foco entra a la hoja (al panel, no a un campo: así no se abre el teclado), Tab no se escapa
+    // a la página de atrás y, al cerrar, vuelve a lo que la abrió.
+    const opener = document.activeElement as HTMLElement | null;
+    panelRef.current?.focus({ preventScroll: true });
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onCloseRef.current();
+      if (e.key !== 'Tab' || !panelRef.current) return;
+      const focusable = [
+        ...panelRef.current.querySelectorAll<HTMLElement>('a[href], button:not([disabled]), input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])'),
+      ].filter((el) => el.getClientRects().length);
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      const active = document.activeElement;
+      if (e.shiftKey && (active === first || active === panelRef.current)) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && active === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
     document.addEventListener('keydown', onKey);
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     return () => {
       document.removeEventListener('keydown', onKey);
       document.body.style.overflow = prev;
+      if (opener?.isConnected) opener.focus({ preventScroll: true });
     };
-  }, [open, onClose]);
+    // Solo al abrir/cerrar: si dependiera de onClose (una función nueva en cada render), le quitaría el foco al campo.
+  }, [open]);
 
   // iOS: la página de atrás no debe desplazarse ni rebotar mientras la hoja está abierta, y el contenido de la
   // hoja no rebota al jalarlo hacia abajo estando arriba. Hace falta touchmove no pasivo para poder cancelarlo.
@@ -244,7 +272,7 @@ export function Sheet({
   if (!mounted) return null;
 
   return createPortal(
-    <div ref={root} className="fixed inset-0 z-50" role="dialog" aria-modal="true">
+    <div ref={root} className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-labelledby={title ? titleId : undefined}>
       <div
         ref={scrimRef}
         data-scrim
@@ -254,7 +282,8 @@ export function Sheet({
       <div
         ref={panelRef}
         data-panel
-        className="absolute inset-x-0 bottom-0 mx-auto flex max-w-xl flex-col rounded-t-[12px] bg-card shadow-[0_-8px_30px_rgb(0_0_0/0.5)]"
+        tabIndex={-1}
+        className="absolute inset-x-0 bottom-0 mx-auto flex max-w-xl flex-col rounded-t-[12px] bg-card shadow-[0_-8px_30px_rgb(0_0_0/0.5)] outline-none"
         style={{ maxHeight: 'calc(100dvh - var(--safe-top) - 12px)' }}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
@@ -273,7 +302,9 @@ export function Sheet({
           {(title || leading || trailing) && (
             <div className="grid grid-cols-[1fr_auto_1fr] items-center px-4 pt-2 pb-3">
               <div className="justify-self-start">{leading}</div>
-              <h2 className="text-headline font-semibold">{title}</h2>
+              <h2 id={titleId} className="text-headline font-semibold">
+                {title}
+              </h2>
               <div className="justify-self-end">{trailing}</div>
             </div>
           )}
