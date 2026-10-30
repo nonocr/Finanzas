@@ -11,7 +11,18 @@ node_modules
 dist
 dist-ssr
 *.local
+
+# Secretos: ningún .env entra al repo salvo la plantilla y la config pública de producción
+# (.env.production solo lleva la URL y la anon key, que son públicas; lo verifica scripts/check-secrets.mjs).
 .env
+.env.*
+!.env.example
+!.env.production
+*.pem
+*.key
+*.p12
+supabase/.env*
+.vercel
 
 # Capturas y archivos de trabajo de impeccable (se regeneran)
 .impeccable/review/

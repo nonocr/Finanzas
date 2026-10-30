@@ -5,7 +5,7 @@ import { OfflineBanner } from './components/OfflineBanner';
 import { SettingsButton } from './components/SettingsButton';
 import { TabBar } from './components/TabBar';
 import { ToastProvider } from './components/Toast';
-import { LoginPage } from './features/auth/LoginPage';
+import { LoginPage, MfaPage, ResetPasswordPage } from './features/auth/LoginPage';
 import { BudgetsPage } from './features/budgets/BudgetsPage';
 import { HomePage } from './features/home/HomePage';
 import { AccountsPage } from './features/settings/AccountsPage';
@@ -16,20 +16,31 @@ import { WalletPage } from './features/settings/WalletPage';
 import { EditorProvider } from './features/transactions/editor';
 import { TransactionsPage } from './features/transactions/TransactionsPage';
 import { isDemo } from './lib/api';
-import { supabase } from './lib/supabase';
+import { needsMfaCode } from './lib/mfa';
+import { openedFromRecoveryLink, supabase } from './lib/supabase';
 
 // Recharts es lo más pesado del paquete; solo se carga al abrir Estadísticas.
 const StatsPage = lazy(() => import('./features/stats/StatsPage').then((m) => ({ default: m.StatsPage })));
 
-function useSession() {
-  const [session, setSession] = useState<Session | null | undefined>(isDemo ? null : undefined);
+type Auth = { session: Session | null; mfaPending: boolean };
+
+function useAuth() {
+  const [auth, setAuth] = useState<Auth | undefined>(isDemo ? { session: null, mfaPending: false } : undefined);
+  const [recovery, setRecovery] = useState(openedFromRecoveryLink);
   useEffect(() => {
     if (isDemo) return;
-    supabase.auth.getSession().then(({ data }) => setSession(data.session));
-    const { data } = supabase.auth.onAuthStateChange((_e, s) => setSession(s));
+    // Con la sesión se calcula si falta el código de dos pasos (se lee del token guardado, sin red).
+    const update = async (session: Session | null) =>
+      setAuth({ session, mfaPending: session ? await needsMfaCode() : false });
+    supabase.auth.getSession().then(({ data }) => update(data.session));
+    const { data } = supabase.auth.onAuthStateChange((event, s) => {
+      if (event === 'PASSWORD_RECOVERY') setRecovery(true);
+      // Fuera del callback: Supabase recomienda no llamar a otros métodos de auth dentro de él.
+      setTimeout(() => void update(s), 0);
+    });
     return () => data.subscription.unsubscribe();
   }, []);
-  return session;
+  return { auth, recovery, endRecovery: () => setRecovery(false) };
 }
 
 function ScrollToTop() {
@@ -41,10 +52,14 @@ function ScrollToTop() {
 }
 
 export default function App() {
-  const session = useSession();
+  const { auth, recovery, endRecovery } = useAuth();
 
-  if (!isDemo && session === undefined) return null; // leyendo la sesión guardada
-  if (!isDemo && !session) return <LoginPage />;
+  if (!auth) return null; // leyendo la sesión guardada
+  if (!isDemo) {
+    if (!auth.session) return <LoginPage />;
+    if (recovery) return <ResetPasswordPage onDone={endRecovery} />;
+    if (auth.mfaPending) return <MfaPage />;
+  }
 
   return (
     <ToastProvider>

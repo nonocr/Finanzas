@@ -127,7 +127,7 @@ function CategorySheet({ open, initial, onClose }: { open: boolean; initial: Par
       </div>
       <FormGroup>
         <FormRow label="Nombre" last>
-          <TextInput value={cat.name ?? ''} onChange={(e) => set({ name: e.target.value })} placeholder="Mascotas" />
+          <TextInput value={cat.name ?? ''} maxLength={60} onChange={(e) => set({ name: e.target.value })} placeholder="Mascotas" />
         </FormRow>
       </FormGroup>
 

@@ -1,13 +1,17 @@
-import { ChevronLeft, CreditCard, Download, LogOut, RotateCcw, Smartphone, Tags, Wand2 } from 'lucide-react';
+import { ChevronLeft, CreditCard, Download, KeyRound, LogOut, RotateCcw, ShieldCheck, Smartphone, Tags, Wand2 } from 'lucide-react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useToast } from '../../components/Toast';
 import { IconTile, Row, Screen, Section } from '../../components/ui';
 import { api, isDemo } from '../../lib/api';
+import { csvRow } from '../../lib/csv';
 import { crDayOf, isoDate } from '../../lib/dates';
 import { resetDemo } from '../../lib/demoApi';
 import { clearOfflineCache } from '../../lib/offline';
 import { useAccounts, useCategories } from '../../lib/queries';
 import { supabase } from '../../lib/supabase';
+import { ChangePasswordSheet } from './ChangePasswordSheet';
+import { TwoFactorSheet } from './TwoFactorSheet';
 
 export function BackLink() {
   return (
@@ -18,15 +22,14 @@ export function BackLink() {
   );
 }
 
-const csvCell = (v: string | number | null | undefined) => {
-  const s = v == null ? '' : String(v);
-  return /[",\n;]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
-};
-
 export function MorePage() {
   const { data: accounts = [] } = useAccounts();
   const { data: categories = [] } = useCategories();
   const toast = useToast();
+  const [passwordOpen, setPasswordOpen] = useState(false);
+  const [passwordKey, setPasswordKey] = useState(0);
+  const [twoFactorOpen, setTwoFactorOpen] = useState(false);
+  const [twoFactorKey, setTwoFactorKey] = useState(0);
 
   const exportCsv = async () => {
     const txs = await api.listTransactions({ from: '2000-01-01T00:00:00Z', to: new Date(Date.now() + 86_400_000).toISOString() });
@@ -47,7 +50,7 @@ export function MorePage() {
         t.status,
       ]),
     ];
-    const csv = '﻿' + rows.map((r) => r.map(csvCell).join(',')).join('\n');
+    const csv = '﻿' + rows.map(csvRow).join('\n');
     const file = new File([csv], `movimientos-${isoDate(new Date())}.csv`, { type: 'text/csv' });
     // En iPhone, compartir abre la hoja de iOS (Guardar en Archivos, AirDrop…).
     if (navigator.canShare?.({ files: [file] })) {
@@ -93,7 +96,8 @@ export function MorePage() {
         ) : (
           <Row
             onClick={async () => {
-              await supabase.auth.signOut();
+              // global: invalida la sesión en todos los dispositivos, no solo en este.
+              await supabase.auth.signOut({ scope: 'global' });
               clearOfflineCache(); // la copia local de tus datos no se queda en el teléfono
             }}
             leading={<IconTile icon={LogOut} color="var(--color-red)" />}
@@ -102,6 +106,31 @@ export function MorePage() {
           />
         )}
       </Section>
+
+      {!isDemo && (
+        <Section header="Seguridad">
+          <Row
+            onClick={() => {
+              setPasswordKey((k) => k + 1);
+              setPasswordOpen(true);
+            }}
+            leading={<IconTile icon={KeyRound} color="var(--color-gray)" />}
+            title="Cambiar contraseña"
+            chevron
+          />
+          <Row
+            onClick={() => {
+              setTwoFactorKey((k) => k + 1);
+              setTwoFactorOpen(true);
+            }}
+            leading={<IconTile icon={ShieldCheck} color="var(--color-green)" />}
+            title="Verificación en dos pasos"
+            chevron
+          />
+        </Section>
+      )}
+      <ChangePasswordSheet key={passwordKey} open={passwordOpen} onClose={() => setPasswordOpen(false)} />
+      <TwoFactorSheet key={`2fa-${twoFactorKey}`} open={twoFactorOpen} onClose={() => setTwoFactorOpen(false)} />
 
       {isDemo && (
         <p className="mt-6 px-4 text-footnote text-label-2">

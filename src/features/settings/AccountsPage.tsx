@@ -273,6 +273,7 @@ function AccountSheet({
         <FormRow label="Nombre" last>
           <TextInput
             value={acc.name ?? ''}
+            maxLength={60}
             onChange={(e) => set({ name: e.target.value })}
             placeholder={isCard ? 'Ej. Visa BAC' : ACCOUNT_TYPE_LABEL[type]}
           />
@@ -326,7 +327,7 @@ function AccountSheet({
           {isCard && (
             <FormGroup footer="Solo si en Apple Wallet la tarjeta tiene otro nombre y no muestra los últimos 4 dígitos.">
               <FormRow label="Nombre en Wallet" last>
-                <TextInput value={acc.wallet_name ?? ''} onChange={(e) => set({ wallet_name: e.target.value })} placeholder="Opcional" />
+                <TextInput value={acc.wallet_name ?? ''} maxLength={80} onChange={(e) => set({ wallet_name: e.target.value })} placeholder="Opcional" />
               </FormRow>
             </FormGroup>
           )}
