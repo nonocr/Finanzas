@@ -88,13 +88,8 @@ export function WalletPage() {
 
   return (
     <Screen title="Apple Wallet" subtitle={<BackLink />}>
-      <p className="px-1 text-subhead text-label-2">
-        Una automatización de Atajos envía cada pago con Apple Pay a la app, con el monto, el comercio, la tarjeta y la hora.
-        Si no hay señal, el pago queda guardado en el iPhone y se envía después (con el siguiente pago o al conectarte a Wi‑Fi),
-        sin duplicarse. Solo funciona con pagos hechos desde el iPhone o el Apple Watch.
-      </p>
       {isDemo && (
-        <p className="mt-3 rounded-card bg-orange/15 p-4 text-subhead">
+        <p className="mb-6 rounded-card bg-orange/15 p-4 text-subhead">
           Estás en modo demo: el token sirve para practicar, pero los pagos reales llegan solo cuando conectes Supabase.
         </p>
       )}
@@ -147,16 +142,10 @@ export function WalletPage() {
       <Section header="3. Atajo que envía los pagos">
         <Steps steps={SEND_STEPS} />
       </Section>
-      <Section
-        header="4. Automatización de Wallet"
-        footer="Ten solo una automatización de Wallet para Finanzas; con dos, cada pago llegaría dos veces."
-      >
+      <Section header="4. Automatización de Wallet">
         <Steps steps={WALLET_STEPS} />
       </Section>
-      <Section
-        header="5. Reenviar al conectarte a Wi‑Fi"
-        footer="Opcional pero recomendado: así, si pagaste sin señal, el pago sube apenas llegues a una red. También puedes tocar el atajo a mano en la pestaña Atajos."
-      >
+      <Section header="5. Reenviar al conectarte a Wi‑Fi">
         <Steps steps={WIFI_STEPS} />
       </Section>
     </Screen>
