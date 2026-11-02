@@ -46,6 +46,17 @@ export function crDayOf(iso: string): Date {
   return crDay(new Date(iso));
 }
 
+/** Hora "HH:MM" (24 h) en Costa Rica de un instante, para el campo de hora. */
+export function crTimeOf(iso: string | Date): string {
+  return new Date(new Date(iso).getTime() + CR_OFFSET_MS).toISOString().slice(11, 16);
+}
+
+/** Instante ISO de un día "2026-11-02" y una hora "06:01" en Costa Rica. */
+export function crInstant(date: string, time: string): string {
+  const [h, m] = time.split(':').map(Number);
+  return new Date(crDayStartInstant(new Date(date + 'T00:00:00Z')).getTime() + (h * 60 + m) * 60_000).toISOString();
+}
+
 /** "2026-10-01" para la columna `month` de budgets. */
 export function isoDate(day: Date): string {
   return day.toISOString().slice(0, 10);

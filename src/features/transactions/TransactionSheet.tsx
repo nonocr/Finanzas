@@ -9,7 +9,7 @@ import { ACCOUNT_ICONS } from '../../components/palette';
 import { Sheet } from '../../components/Sheet';
 import { useToast } from '../../components/Toast';
 import { Button } from '../../components/ui';
-import { crDay, crDayOf, crDayStartInstant, isoDate } from '../../lib/dates';
+import { crDay, crDayOf, crInstant, crTimeOf, isoDate } from '../../lib/dates';
 import {
   useAccounts,
   useCategories,
@@ -21,6 +21,9 @@ import type { Account, Transaction, TxType } from '../../lib/types';
 
 const LAST_ACCOUNT_KEY = 'finanzas-last-account';
 const pillDate = new Intl.DateTimeFormat('es-CR', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
+const pillTime = new Intl.DateTimeFormat('es-CR', { hour: 'numeric', minute: '2-digit', timeZone: 'UTC' });
+const PICKER_INPUT =
+  'absolute inset-0 opacity-0 [color-scheme:dark] [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:size-full';
 const readLastAccount = () => {
   try {
     return localStorage.getItem(LAST_ACCOUNT_KEY);
@@ -62,6 +65,8 @@ export function TransactionSheet({
   const [merchant, setMerchant] = useState(tx?.merchant ?? '');
   const [note, setNote] = useState(tx?.note ?? '');
   const [date, setDate] = useState(isoDate(tx ? crDayOf(tx.occurred_at) : crDay()));
+  const [initialTime] = useState(() => crTimeOf(tx ? tx.occurred_at : new Date()));
+  const [time, setTime] = useState(initialTime);
   const [remember, setRemember] = useState(pending && Boolean(tx?.merchant));
 
   const account = accounts.find((a) => a.id === accountId) ?? accounts[0];
@@ -83,12 +88,11 @@ export function TransactionSheet({
   // y se sube en cuanto haya conexión.
   const submit = () => {
     if (!valid || !account) return;
-    const occurred_at =
-      tx && isoDate(crDayOf(tx.occurred_at)) === date
-        ? tx.occurred_at
-        : date === today
-          ? new Date().toISOString()
-          : new Date(crDayStartInstant(new Date(date + 'T00:00:00Z')).getTime() + 12 * 3_600_000).toISOString();
+    // Sin tocar fecha ni hora se conserva el instante original (con sus segundos); una hora futura queda en "ahora".
+    const untouched = time === initialTime && date === (tx ? isoDate(crDayOf(tx.occurred_at)) : today);
+    const now = new Date().toISOString();
+    const chosen = crInstant(date, time);
+    const occurred_at = untouched ? (tx?.occurred_at ?? now) : chosen > now ? now : chosen;
     save.mutate({
       id: tx?.id ?? crypto.randomUUID(),
       type,
@@ -226,7 +230,19 @@ export function TransactionSheet({
               max={today}
               onChange={(e) => e.target.value && setDate(e.target.value)}
               aria-label="Fecha"
-              className="absolute inset-0 opacity-0 [color-scheme:dark] [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:size-full"
+              className={PICKER_INPUT}
+            />
+          </span>
+        </Field>
+        <Field label="Hora">
+          <span className="relative inline-flex">
+            <span className="tnum rounded-[8px] bg-card-3 px-3 py-1.5 text-body">{pillTime.format(new Date(`1970-01-01T${time}:00Z`))}</span>
+            <input
+              type="time"
+              value={time}
+              onChange={(e) => e.target.value && setTime(e.target.value.slice(0, 5))}
+              aria-label="Hora"
+              className={PICKER_INPUT}
             />
           </span>
         </Field>
