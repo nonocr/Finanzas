@@ -19,7 +19,9 @@ export default defineConfig({
     react(),
     tailwindcss(),
     VitePWA({
-      registerType: 'autoUpdate',
+      // La versión nueva espera y la activa src/lib/appUpdate.ts cuando no interrumpe (sin hojas abiertas).
+      registerType: 'prompt',
+      injectRegister: false,
       includeAssets: ['favicon.svg', 'apple-touch-icon.png'],
       manifest: {
         name: 'Finanzas',

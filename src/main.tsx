@@ -5,7 +5,10 @@ import { BrowserRouter } from 'react-router-dom'
 import './index.css'
 import App from './App.tsx'
 import { isDemo } from './lib/api'
+import { startAppUpdates } from './lib/appUpdate'
 import { CACHE_MAX_AGE, onCacheRestored, persister, queryClient, resumePendingMutations, shouldPersistMutation } from './lib/offline'
+
+startAppUpdates()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

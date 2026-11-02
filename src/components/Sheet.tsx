@@ -3,6 +3,7 @@ import clsx from 'clsx';
 import gsap from 'gsap';
 import { useEffect, useId, useRef, useState, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
+import { appUpdates } from '../lib/appUpdate';
 
 /** Movimiento mínimo (px) antes de decidir si el gesto arrastra la hoja o es un toque/desplazamiento. */
 const SLOP = 6;
@@ -118,6 +119,8 @@ export function Sheet({
 
   useEffect(() => {
     if (!open) return;
+    // Con una hoja abierta la app no se recarga para actualizarse: se perdería lo que se está escribiendo.
+    const releaseUpdates = appUpdates.hold();
     // Accesibilidad: el foco entra a la hoja (al panel, no a un campo: así no se abre el teclado), Tab no se escapa
     // a la página de atrás y, al cerrar, vuelve a lo que la abrió.
     const opener = document.activeElement as HTMLElement | null;
@@ -147,6 +150,7 @@ export function Sheet({
       document.removeEventListener('keydown', onKey);
       document.body.style.overflow = prev;
       if (opener?.isConnected) opener.focus({ preventScroll: true });
+      releaseUpdates();
     };
     // Solo al abrir/cerrar: si dependiera de onClose (una función nueva en cada render), le quitaría el foco al campo.
   }, [open]);
