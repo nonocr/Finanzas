@@ -4,12 +4,14 @@ import { Link } from 'react-router-dom';
 import { Donut } from '../../components/Donut';
 import { AnimatedAmount, Segmented, SoftText } from '../../components/motion';
 import { hexOf } from '../../components/palette';
-import { budgetTone, EmptyState, IconTile, ProgressBar, Screen, Section, Skeleton, Stamp } from '../../components/ui';
+import { budgetTone, EmptyState, IconTile, ProgressBar, Screen, Section, Skeleton } from '../../components/ui';
 import { isDemo } from '../../lib/api';
 import { crDay, isoDate, monthName, monthRange, startOfMonth, startOfWeek, weekRange, WEEKDAY_INITIALS } from '../../lib/dates';
 import { formatCRC } from '../../lib/money';
 import { useAccounts, useBudgets, useCategories, usePendingReview, useTransactions } from '../../lib/queries';
 import { spendingByCategory, spendingByDay, totalBudget, totals } from '../../lib/stats';
+import type { Transaction } from '../../lib/types';
+import { useEditor } from '../transactions/editor';
 import { TransactionRow } from '../transactions/TransactionRow';
 
 type Period = 'semana' | 'mes';
@@ -83,6 +85,7 @@ export function HomePage() {
     <Screen
       title="Resumen"
     >
+      {pending.length > 0 && <PendingCard pending={pending} />}
       <Segmented
         options={[
           { value: 'semana', label: 'Semana' },
@@ -146,24 +149,6 @@ export function HomePage() {
         </dl>
       </section>
 
-      {pending.length > 0 && (
-        <Link
-          to="/movimientos?filtro=revisar"
-          className="press machined mt-3 flex min-h-14 items-center gap-3 rounded-card bg-card px-4 py-3"
-        >
-          <IconTile icon={Smartphone} color="var(--color-accent)" size={36} />
-          <span className="min-w-0 flex-1">
-            <span className="block text-body font-semibold">
-              {pending.length === 1 ? '1 pago de Wallet' : `${pending.length} pagos de Wallet`}
-            </span>
-            <span className="tnum block text-subhead text-label-2">
-              <Stamp>Revisar</Stamp>
-              {formatCRC(pending.reduce((s, p) => s + p.amount, 0))} sin categoría
-            </span>
-          </span>
-          <ChevronRight size={18} strokeWidth={2.25} className="text-label-3" />
-        </Link>
-      )}
       <Section
         header="Esta semana"
         className="mt-6"
@@ -224,6 +209,57 @@ export function HomePage() {
         </p>
       )}
     </Screen>
+  );
+}
+
+const MAX_PENDING_SHOWN = 3;
+const pendingTime = new Intl.DateTimeFormat('es-CR', { hour: 'numeric', minute: '2-digit', timeZone: 'America/Costa_Rica' });
+
+/**
+ * Lo primero de la pantalla cuando hay pagos de Wallet sin confirmar: canto de platino, cada pago a un toque
+ * y la acción en metal. Desaparece cuando no queda ninguno.
+ */
+function PendingCard({ pending }: { pending: Transaction[] }) {
+  const { openEdit } = useEditor();
+  const n = pending.length;
+  return (
+    <section className="machined mb-4 rounded-[18px] bg-card p-3.5 shadow-[inset_0_0_0_1px_rgb(220_220_224/0.45)]" aria-label="Pagos por revisar">
+      <div className="flex items-center gap-3">
+        <IconTile icon={Smartphone} color="var(--color-accent)" size={34} />
+        <div className="min-w-0 flex-1">
+          <p className="text-headline font-semibold">
+            {n === 1 ? 'Tienes 1 pago por revisar' : `Tienes ${n} pagos por revisar`}
+          </p>
+          <p className="text-footnote text-label-2">De Apple Wallet, sin categoría</p>
+        </div>
+      </div>
+      {/* Como mucho 3 pagos a la vista: con más, el resto se revisa desde el botón y la tarjeta no crece. */}
+      <ul className="mt-2.5 overflow-hidden rounded-[12px] bg-card-2">
+        {pending.slice(0, MAX_PENDING_SHOWN).map((tx, i) => (
+          <li key={tx.id}>
+            <button
+              type="button"
+              onClick={() => openEdit(tx)}
+              className={'press flex min-h-11 w-full items-center gap-3 px-3.5 py-1.5 text-left ' + (i ? 'shadow-[inset_0_0.5px_0_var(--color-sep)]' : '')}
+            >
+              <span className="min-w-0 flex-1 truncate text-subhead">{tx.merchant ?? 'Pago de Wallet'}</span>
+              <span className="tnum shrink-0 text-footnote text-label-2">{pendingTime.format(new Date(tx.occurred_at))}</span>
+              <span className="tnum text-subhead font-semibold">{formatCRC(-tx.amount)}</span>
+              <ChevronRight size={16} strokeWidth={2.25} className="text-label-3" />
+            </button>
+          </li>
+        ))}
+      </ul>
+      {n === 1 ? (
+        <button type="button" onClick={() => openEdit(pending[0])} className="press metal mt-2.5 min-h-11 w-full rounded-full text-body font-semibold">
+          Revisar ahora
+        </button>
+      ) : (
+        <Link to="/movimientos?filtro=revisar" className="press metal mt-2.5 flex min-h-11 w-full items-center justify-center rounded-full text-body font-semibold">
+          Revisar los {n}
+        </Link>
+      )}
+    </section>
   );
 }
 
