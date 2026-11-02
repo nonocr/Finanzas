@@ -1,4 +1,4 @@
-import { Search, X } from 'lucide-react';
+import { Search, Smartphone, X } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { MonthNav } from '../../components/MonthNav';
@@ -80,6 +80,22 @@ export function TransactionsPage() {
           value={filter}
           onChange={setFilter}
         />
+        {pending.length > 0 && filter !== 'revisar' && (
+          <button
+            type="button"
+            onClick={() => setFilter('revisar')}
+            className="press machined flex min-h-12 w-full items-center gap-3 rounded-[12px] bg-card px-3.5 py-2 text-left shadow-[inset_0_0_0_1px_rgb(220_220_224/0.45)]"
+          >
+            <Smartphone size={20} strokeWidth={2} className="shrink-0 text-accent" />
+            <span className="min-w-0 flex-1 text-body">
+              {pending.length === 1 ? '1 pago de Wallet espera categoría' : `${pending.length} pagos de Wallet esperan categoría`}
+            </span>
+            <span className="text-body font-semibold text-accent">Revisar</span>
+          </button>
+        )}
+        {filter === 'revisar' && pending.length > 0 && (
+          <p className="px-1 text-subhead text-label-2">Toca cada pago, elige su categoría y confírmalo. Puedes cambiarle la hora si hace falta.</p>
+        )}
       </div>
 
       {isLoading && filter !== 'revisar' ? (

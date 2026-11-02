@@ -2,6 +2,7 @@ import clsx from 'clsx';
 import { ChartPie, Gauge, House, List, Plus, type LucideIcon } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { useEditor } from '../features/transactions/editor';
+import { usePendingReview } from '../lib/queries';
 
 const TABS: { to: string; label: string; icon: LucideIcon; end?: boolean }[] = [
   { to: '/', label: 'Resumen', icon: House, end: true },
@@ -10,11 +11,12 @@ const TABS: { to: string; label: string; icon: LucideIcon; end?: boolean }[] = [
   { to: '/presupuesto', label: 'Presupuesto', icon: Gauge },
 ];
 
-function Tab({ to, label, icon: Icon, end }: (typeof TABS)[number]) {
+function Tab({ to, label, icon: Icon, end, badge = 0 }: (typeof TABS)[number] & { badge?: number }) {
   return (
     <NavLink
       to={to}
       end={end}
+      aria-label={badge ? `${label}, ${badge} por revisar` : undefined}
       className={({ isActive }) =>
         clsx(
           'flex min-h-12 flex-1 flex-col items-center justify-center gap-0.5 text-[11px] transition-colors',
@@ -24,7 +26,15 @@ function Tab({ to, label, icon: Icon, end }: (typeof TABS)[number]) {
     >
       {({ isActive }) => (
         <>
-          <Icon size={23} strokeWidth={isActive ? 2 : 1.6} />
+          <span className="relative">
+            <Icon size={23} strokeWidth={isActive ? 2 : 1.6} />
+            {badge > 0 && (
+              // Contador en platino, como un remache: dice cuántos pagos esperan sin depender del rojo.
+              <span className="metal tnum absolute -top-1.5 left-[15px] grid h-[18px] min-w-[18px] place-items-center rounded-full px-1 text-[12px] leading-none font-bold shadow-[0_0_0_2px_#050505]">
+                {badge}
+              </span>
+            )}
+          </span>
           {label}
         </>
       )}
@@ -34,6 +44,7 @@ function Tab({ to, label, icon: Icon, end }: (typeof TABS)[number]) {
 
 export function TabBar() {
   const { openNew } = useEditor();
+  const { data: pending = [] } = usePendingReview();
   return (
     <nav
       className="tabbar fixed inset-x-0 bottom-0 z-40 pb-[var(--safe-bottom)]"
@@ -41,7 +52,7 @@ export function TabBar() {
     >
       <div className="mx-auto flex h-14 max-w-xl items-center px-2">
         <Tab {...TABS[0]} />
-        <Tab {...TABS[1]} />
+        <Tab {...TABS[1]} badge={pending.length} />
         <div className="flex flex-1 justify-center">
           <button
             type="button"
