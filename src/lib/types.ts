@@ -46,6 +46,11 @@ export interface Transaction {
   note: string | null;
   source: TxSource;
   status: TxStatus;
+  /**
+   * Pago de Wallet que llegó sin monto legible: `amount` es 0 (solo se permite por revisar) y aquí queda el texto que
+   * mandó el iPhone ("" si vino vacío). Lo escribe solo el servidor.
+   */
+  amount_raw?: string | null;
 }
 
 export type NewTransaction = Omit<Transaction, 'id' | 'source' | 'status'> & Partial<Pick<Transaction, 'source' | 'status'>>;

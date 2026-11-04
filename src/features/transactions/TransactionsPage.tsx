@@ -88,13 +88,13 @@ export function TransactionsPage() {
           >
             <Smartphone size={20} strokeWidth={2} className="shrink-0 text-accent" />
             <span className="min-w-0 flex-1 text-body">
-              {pending.length === 1 ? '1 pago de Wallet espera categoría' : `${pending.length} pagos de Wallet esperan categoría`}
+              {pending.length === 1 ? '1 pago de Wallet espera revisión' : `${pending.length} pagos de Wallet esperan revisión`}
             </span>
             <span className="text-body font-semibold text-accent">Revisar</span>
           </button>
         )}
         {filter === 'revisar' && pending.length > 0 && (
-          <p className="px-1 text-subhead text-label-2">Toca cada pago, elige su categoría y confírmalo. Puedes cambiarle la hora si hace falta.</p>
+          <p className="px-1 text-subhead text-label-2">Toca cada pago, elige su categoría y confírmalo. Si alguno llegó sin monto, escríbelo ahí mismo.</p>
         )}
       </div>
 

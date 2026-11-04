@@ -60,6 +60,10 @@ export function TransactionRow({
         )
       }
       trailing={
+        // Pago de Wallet que llegó sin monto: se completa al revisarlo.
+        tx.amount === 0 ? (
+          <span className="text-subhead text-label-2">Sin monto</span>
+        ) : (
         <span
           className={
             'tnum font-semibold ' +
@@ -68,6 +72,7 @@ export function TransactionRow({
         >
           {tx.type === 'ingreso' ? formatCRC(tx.amount, { sign: true }) : tx.type === 'gasto' ? formatCRC(-tx.amount) : formatCRC(tx.amount)}
         </span>
+        )
       }
     />
   );
