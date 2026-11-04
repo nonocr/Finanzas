@@ -4,7 +4,7 @@ App personal para registrar gastos e ingresos en colones (efectivo y tarjeta), c
 
 ## Pagos automáticos con Apple Wallet
 
-En la app: Ajustes → Apple Wallet. Ahí creas el token, copias la dirección y sigues los pasos para crear la automatización **Transacción** en la app Atajos. Cada pago con Apple Pay se envía a `wallet-ingest`, que:
+En la app: Ajustes → Apple Wallet. Ahí creas el token, copias la dirección y sigues los pasos para crear la automatización **Transacción** en la app Atajos. Cada pago con Apple Pay se envía a `wallet-sync` (si no hay señal, el Atajo lo guarda y lo reenvía después), que:
 
 - interpreta el monto (`₡12.500,00`, `CRC 12,500.00`…);
 - identifica la tarjeta por su nombre en Wallet o los últimos 4 dígitos (configúralos en Cuentas);
@@ -23,7 +23,7 @@ src/
   lib/             dinero (céntimos), fechas CR, estadísticas, acceso a datos (Supabase o demo)
 supabase/
   migrations/      esquema, RLS, vistas de saldos y presupuesto, datos iniciales por usuario
-  functions/       wallet-ingest (webhook del Atajo) y _shared/money.ts
+  functions/       wallet-sync (webhook del Atajo) y _shared/ (lógica común, money.ts)
 PRODUCT.md         contexto de producto para las skills de diseño
 ```
 

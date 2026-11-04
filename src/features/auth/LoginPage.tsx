@@ -189,7 +189,7 @@ export function MfaPage() {
 }
 
 /** Llegaste desde el enlace del correo: poner una contraseña nueva (y el código, si tienes dos pasos). */
-export function ResetPasswordPage({ onDone }: { onDone: () => void }) {
+export function ResetPasswordPage({ onSaved, onDone }: { onSaved: () => void; onDone: () => void }) {
   const [next, setNext] = useState('');
   const [confirm, setConfirm] = useState('');
   const [code, setCode] = useState('');
@@ -222,18 +222,21 @@ export function ResetPasswordPage({ onDone }: { onDone: () => void }) {
     if (askCode) setAskCode(false);
     const { error } = await supabase.auth.updateUser({ password: next });
     setBusy(false);
-    if (error) setError(MESSAGES[error.code ?? ''] ?? GENERIC);
-    else setDone(true);
+    if (error) return setError(MESSAGES[error.code ?? ''] ?? GENERIC);
+    // La sesión del enlace no se queda abierta en Safari: se cierra aquí (y en el servidor) al terminar.
+    onSaved();
+    setDone(true);
+    await supabase.auth.signOut({ scope: 'local' });
   };
 
   if (done)
     return (
       <AuthLayout
         title="Contraseña nueva lista"
-        subtitle="Ya puedes entrar con ella en la app de tu pantalla de inicio. Esta página de Safari la puedes cerrar."
+        subtitle="Ya puedes entrar con ella en la app de tu pantalla de inicio. Por seguridad, aquí en Safari se cerró la sesión; puedes cerrar esta página."
       >
         <Button variant="tinted" className="mt-8 w-full" onClick={onDone}>
-          Seguir aquí
+          Entrar aquí
         </Button>
       </AuthLayout>
     );

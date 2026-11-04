@@ -1,7 +1,7 @@
 // Utilidades de seguridad de los webhooks del Atajo (corren igual en Deno y en Node).
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { describe, expect, it } from 'vitest';
-import { paymentFingerprint, paymentTime } from '../functions/_shared/ingest';
+import { paymentFingerprint, paymentTime, walletSavedSince } from '../functions/_shared/ingest';
 import { cleanText, clientIp, readBody, withinLimit } from '../functions/_shared/security';
 
 describe('cleanText', () => {
@@ -75,6 +75,29 @@ describe('withinLimit', () => {
   });
   it('si el limitador falla, no deja pasar (un error provocado no salta el límite)', async () => {
     expect(await withinLimit(fake({ data: null, error: { message: 'index row size exceeds' } }), 'k', 1, 60)).toBe(false);
+  });
+});
+
+describe('walletSavedSince (tope diario)', () => {
+  /** Cliente falso que anota los filtros de la consulta y devuelve el resultado dado. */
+  const fake = (result: { count: number | null; error: unknown }) => {
+    const filters: string[] = [];
+    const q = {
+      select: () => q,
+      eq: (c: string, v: string) => (filters.push(`${c}=${v}`), q),
+      gte: (c: string, v: string) => (filters.push(`${c}>=${v}`), Promise.resolve(result)),
+    };
+    return { client: { from: () => q } as unknown as SupabaseClient, filters };
+  };
+  const since = new Date('2026-11-03T16:00:00Z');
+
+  it('cuenta solo los pagos de Wallet del usuario desde la fecha dada', async () => {
+    const { client, filters } = fake({ count: 7, error: null });
+    expect(await walletSavedSince(client, 'u1', since)).toBe(7);
+    expect(filters).toEqual(['user_id=u1', 'source=wallet', `created_at>=${since.toISOString()}`]);
+  });
+  it('si la consulta falla devuelve null (quien llama no sigue sin el conteo)', async () => {
+    expect(await walletSavedSince(fake({ count: null, error: { message: 'timeout' } }).client, 'u1', since)).toBeNull();
   });
 });
 

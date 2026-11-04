@@ -27,7 +27,8 @@ type Auth = { session: Session | null; mfaPending: boolean };
 
 function useAuth() {
   const [auth, setAuth] = useState<Auth | undefined>(isDemo ? { session: null, mfaPending: false } : undefined);
-  const [recovery, setRecovery] = useState(openedFromRecoveryLink);
+  // 'done': la contraseña nueva ya se guardó y la sesión de Safari se cerró; se sigue mostrando la confirmación.
+  const [recovery, setRecovery] = useState<boolean | 'done'>(openedFromRecoveryLink);
   useEffect(() => {
     if (isDemo) return;
     // Con la sesión se calcula si falta el código de dos pasos (se lee del token guardado, sin red).
@@ -46,7 +47,7 @@ function useAuth() {
     });
     return () => data.subscription.unsubscribe();
   }, []);
-  return { auth, recovery, endRecovery: () => setRecovery(false) };
+  return { auth, recovery, finishRecovery: () => setRecovery('done'), endRecovery: () => setRecovery(false) };
 }
 
 function ScrollToTop() {
@@ -58,12 +59,13 @@ function ScrollToTop() {
 }
 
 export default function App() {
-  const { auth, recovery, endRecovery } = useAuth();
+  const { auth, recovery, finishRecovery, endRecovery } = useAuth();
 
   if (!auth) return null; // leyendo la sesión guardada
   if (!isDemo) {
+    if (recovery === 'done' || (recovery && auth.session))
+      return <ResetPasswordPage onSaved={finishRecovery} onDone={endRecovery} />;
     if (!auth.session) return <LoginPage />;
-    if (recovery) return <ResetPasswordPage onDone={endRecovery} />;
     if (auth.mfaPending) return <MfaPage />;
   }
 
