@@ -82,6 +82,7 @@ Deno.serve(async (req) => {
     await supabase.from('api_tokens').update({ last_used_at: new Date().toISOString() }).eq('id', auth.tokenId);
   }
 
-  // ok:true = el archivo ya se puede borrar. Lo rechazado (monto ilegible) no mejoraría reenviándolo.
+  // ok:true = el archivo ya se puede borrar. Un pago sin monto legible ya quedó guardado con monto 0 por revisar;
+  // lo rechazado (sin monto, comercio ni tarjeta) no mejoraría reenviándolo.
   return json({ ok: true, received: items.length, saved, duplicates, rejected, unreadable });
 });

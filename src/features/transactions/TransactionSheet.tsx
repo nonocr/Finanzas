@@ -57,8 +57,10 @@ export function TransactionSheet({
   const toast = useToast();
 
   const pending = tx?.status === 'por_revisar';
+  // Pago de Wallet que llegó sin monto (el datáfono no lo mandó): hay que escribirlo al confirmarlo.
+  const missingAmount = tx?.amount === 0;
   const [type, setType] = useState<TxType>(tx?.type ?? initialType);
-  const [colones, setColones] = useState(tx ? String(Math.round(tx.amount / 100)) : '');
+  const [colones, setColones] = useState(tx && !missingAmount ? String(Math.round(tx.amount / 100)) : '');
   const [categoryId, setCategoryId] = useState<string | null>(tx?.category_id ?? null);
   const [accountId, setAccountId] = useState<string | null>(tx?.account_id ?? readLastAccount());
   const [toAccountId, setToAccountId] = useState<string | null>(tx?.to_account_id ?? null);
@@ -170,7 +172,15 @@ export function TransactionSheet({
         <div className="mb-4 flex items-center gap-3 rounded-[12px] bg-accent/12 px-3.5 py-3 text-subhead text-label">
           <Smartphone size={20} strokeWidth={2} className="shrink-0 text-accent" />
           <span>
-            Llegó de Apple Wallet{tx?.note ? ` (${tx.note.replace(/^Wallet · /, '')})` : ''}. Elige la categoría y confírmalo.
+            Llegó de Apple Wallet{tx?.note ? ` (${tx.note.replace(/^Wallet · /, '')})` : ''}
+            {missingAmount ? (
+              <>
+                {tx?.amount_raw ? ` con un monto que no se pudo leer («${tx.amount_raw}»)` : ' sin el monto (el datáfono no lo mandó)'}.
+                Escribe el monto, elige la categoría y confírmalo.
+              </>
+            ) : (
+              '. Elige la categoría y confírmalo.'
+            )}
           </span>
         </div>
       )}
@@ -184,7 +194,7 @@ export function TransactionSheet({
       )}
 
       <div className="mt-5">
-        <AmountInput value={colones} onChange={setColones} autoFocus={!tx} tone={type === 'ingreso' ? 'ingreso' : undefined} />
+        <AmountInput value={colones} onChange={setColones} autoFocus={!tx || missingAmount}tone={type === 'ingreso' ? 'ingreso' : undefined} />
       </div>
 
       {!isTransfer && (

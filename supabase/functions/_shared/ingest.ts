@@ -77,16 +77,32 @@ export function paymentFingerprint(p: WalletPayment, amount: number, merchant: s
   return sha256Hex([when, amount, merchant ?? '', card].join('|'));
 }
 
+/** Texto del monto tal como llegó (acotado), para ver después qué formato no se pudo leer. "" si vino vacío. */
+export function rawAmount(v: unknown): string {
+  if (v == null) return '';
+  const s = typeof v === 'string' ? v : typeof v === 'number' ? String(v) : JSON.stringify(v);
+  return s.replace(/\s+/g, ' ').trim().slice(0, 64);
+}
+
 export async function ingestPayment(
   supabase: SupabaseClient,
   userId: string,
   p: WalletPayment,
   opts: { requireExternalId?: boolean } = {},
 ): Promise<IngestResult> {
-  const amount = parseAmountToCents(typeof p.amount === 'number' || typeof p.amount === 'string' ? p.amount : null);
-  if (!amount || amount > MAX_AMOUNT_CENTS) return { ok: false, error: 'invalid_amount' };
+  const parsed = parseAmountToCents(typeof p.amount === 'number' || typeof p.amount === 'string' ? p.amount : null);
   const merchant = cleanText(p.merchant, 200);
   const card = cleanText(p.card, 100) ?? '';
+  // Hay datáfonos (buses, algunos comercios) que no le pasan el monto al Atajo. El pago se guarda igual con monto 0,
+  // por revisar, para completarlo en la app; descartarlo lo perdería, porque el Atajo borra la cola al ver "ok".
+  // Solo se descarta si no trae nada con qué reconocerlo.
+  const readable = parsed !== null && parsed <= MAX_AMOUNT_CENTS;
+  const amountRaw = readable ? null : rawAmount(p.amount);
+  if (!readable) {
+    console.warn('wallet: monto ilegible', JSON.stringify({ amount: amountRaw, merchant, card }));
+    if (!merchant && !card) return { ok: false, error: 'invalid_amount' };
+  }
+  const amount = readable ? (parsed ?? 0) : 0;
   const time = paymentTime(p.at);
   const occurred = time.date;
 
@@ -166,9 +182,10 @@ export async function ingestPayment(
       merchant,
       note: card ? `Wallet · ${card}` : 'Wallet',
       source: 'wallet',
-      status: categoryId && matched ? 'confirmada' : 'por_revisar',
+      status: readable && categoryId && matched ? 'confirmada' : 'por_revisar',
       occurred_at: occurred.toISOString(),
       external_id: externalId,
+      amount_raw: amountRaw,
     })
     .select('id, status')
     .single();

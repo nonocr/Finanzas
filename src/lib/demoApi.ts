@@ -24,7 +24,7 @@ interface DemoDb {
 }
 
 const KEY = 'finanzas-demo';
-const VERSION = 3;
+const VERSION = 4;
 const uid = () => crypto.randomUUID();
 
 function load(): DemoDb | null {
@@ -124,6 +124,8 @@ function seed(): DemoDb {
   // Dos pagos recientes de Wallet sin categoría, para la bandeja "por revisar".
   add(today, 13, { amount: 1_575_000, merchant: 'AUTOMERCADO ESCAZU', source: 'wallet', status: 'por_revisar', note: 'Wallet · Visa BAC' });
   add(today, 9, { amount: 390_000, merchant: 'STARBUCKS SAN PEDRO', source: 'wallet', status: 'por_revisar', note: 'Wallet · Visa BAC' });
+  // Y uno que llegó sin monto (el datáfono no lo mandó): hay que completarlo al revisarlo.
+  add(addDays(today, -1), 16, { amount: 0, amount_raw: '', merchant: 'ISHOP MULTIPLAZA', source: 'wallet', status: 'por_revisar', note: 'Wallet · Visa BAC' });
 
   const month = isoDate(startOfMonth(today));
   const budget = (category: string | null, amount: number): Budget => ({
