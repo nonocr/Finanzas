@@ -1,11 +1,23 @@
-// Lógica común de los webhooks de Wallet: autorizar el token y guardar un pago.
-// Lo usan wallet-ingest (un pago, en el momento) y wallet-sync (cola de pagos que no se pudieron enviar).
+// Lógica del webhook de Wallet (wallet-sync): autorizar el token y guardar un pago de la cola.
 import type { SupabaseClient } from 'npm:@supabase/supabase-js@2';
 import { parseAmountToCents } from './money.ts';
 import { cleanText, clientIp, json, tooMany, withinLimit } from './security.ts';
 
-const DEDUPE_WINDOW_MS = 2 * 60 * 1000;
 const MAX_AMOUNT_CENTS = 100_000_000_000_000; // igual que el check de la base
+
+/**
+ * Pagos de Wallet guardados (no duplicados) desde `since`. null si la consulta falla: quien llama no debe seguir,
+ * porque sin el conteo no se puede aplicar el tope diario.
+ */
+export async function walletSavedSince(supabase: SupabaseClient, userId: string, since: Date): Promise<number | null> {
+  const { count, error } = await supabase
+    .from('transactions')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', userId)
+    .eq('source', 'wallet')
+    .gte('created_at', since.toISOString());
+  return error ? null : (count ?? 0);
+}
 
 export async function sha256Hex(text: string): Promise<string> {
   const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
@@ -84,12 +96,7 @@ export function rawAmount(v: unknown): string {
   return s.replace(/\s+/g, ' ').trim().slice(0, 64);
 }
 
-export async function ingestPayment(
-  supabase: SupabaseClient,
-  userId: string,
-  p: WalletPayment,
-  opts: { requireExternalId?: boolean } = {},
-): Promise<IngestResult> {
+export async function ingestPayment(supabase: SupabaseClient, userId: string, p: WalletPayment): Promise<IngestResult> {
   const parsed = parseAmountToCents(typeof p.amount === 'number' || typeof p.amount === 'string' ? p.amount : null);
   const merchant = cleanText(p.merchant, 200);
   const card = cleanText(p.card, 100) ?? '';
@@ -99,30 +106,24 @@ export async function ingestPayment(
   const readable = parsed !== null && parsed <= MAX_AMOUNT_CENTS;
   const amountRaw = readable ? null : rawAmount(p.amount);
   if (!readable) {
-    console.warn('wallet: monto ilegible', JSON.stringify({ amount: amountRaw, merchant, card }));
+    // Solo el texto del monto: el comercio y la tarjeta son datos del pago y no van a los registros.
+    console.warn('wallet: monto ilegible', JSON.stringify({ amount: amountRaw }));
     if (!merchant && !card) return { ok: false, error: 'invalid_amount' };
   }
   const amount = readable ? (parsed ?? 0) : 0;
   const time = paymentTime(p.at);
   const occurred = time.date;
 
-  // Los pagos de la cola siempre traen un id estable: reenviarlos no duplica.
-  const providedId = cleanText(p.id, 128);
-  const externalId = providedId
-    ? providedId
-    : opts.requireExternalId
-        ? await paymentFingerprint(p, amount, merchant, card, time)
-        : null;
+  // Cada pago de la cola tiene un id estable (el del Atajo o su huella): reenviarlo no duplica.
+  const externalId = cleanText(p.id, 128) ?? (await paymentFingerprint(p, amount, merchant, card, time));
 
-  if (externalId) {
-    const { data: existing } = await supabase
-      .from('transactions')
-      .select('id, status')
-      .eq('user_id', userId)
-      .eq('external_id', externalId)
-      .maybeSingle();
-    if (existing) return { ok: true, id: existing.id, status: existing.status, duplicate: true };
-  }
+  const { data: existing } = await supabase
+    .from('transactions')
+    .select('id, status')
+    .eq('user_id', userId)
+    .eq('external_id', externalId)
+    .maybeSingle();
+  if (existing) return { ok: true, id: existing.id, status: existing.status, duplicate: true };
 
   const { data: accounts } = await supabase
     .from('accounts')
@@ -141,23 +142,6 @@ export async function ingestPayment(
     : undefined;
   // Sin coincidencia se usa la primera tarjeta y el movimiento queda por revisar.
   const account = matched ?? accounts.find((a) => a.type === 'credito' || a.type === 'debito') ?? accounts[0];
-
-  // Sin id estable (Atajo básico): evitar duplicados si se dispara dos veces seguidas.
-  if (!externalId) {
-    const since = new Date(Date.now() - DEDUPE_WINDOW_MS).toISOString();
-    let dupQuery = supabase
-      .from('transactions')
-      .select('id, status')
-      .eq('user_id', userId)
-      .eq('account_id', account.id)
-      .eq('amount', amount)
-      .eq('source', 'wallet')
-      .gte('created_at', since)
-      .limit(1);
-    dupQuery = merchant ? dupQuery.eq('merchant', merchant) : dupQuery.is('merchant', null);
-    const { data: dup } = await dupQuery;
-    if (dup?.length) return { ok: true, id: dup[0].id, status: dup[0].status, duplicate: true };
-  }
 
   // Categoría por reglas de comercio (mayor prioridad primero).
   let categoryId: string | null = null;
@@ -191,7 +175,7 @@ export async function ingestPayment(
     .single();
   if (error) {
     // Dos envíos simultáneos del mismo pago: el segundo choca con el índice único.
-    if (externalId && error.code === '23505') {
+    if (error.code === '23505') {
       const { data: existing } = await supabase
         .from('transactions')
         .select('id, status')

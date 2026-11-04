@@ -6,15 +6,18 @@
 // Responde {"ok":true,...} cuando el archivo se procesó entero; el Atajo solo lo borra si ve "ok":true.
 // Cada pago se identifica por su fecha y datos (external_id), así reenviar el archivo nunca duplica.
 //
-// Seguridad: cuerpo de máx. 256 KB y 200 pagos por envío, mismos límites de frecuencia que wallet-ingest,
-// textos acotados y errores sin detalles internos.
+// Seguridad: cuerpo de máx. 256 KB y 200 pagos por envío, límites por IP, por intentos fallidos y por token,
+// tope de pagos nuevos por día, textos acotados y errores sin detalles internos.
 
 import { createClient } from 'npm:@supabase/supabase-js@2';
-import { authorizeWebhook, ingestPayment, type WalletPayment } from '../_shared/ingest.ts';
+import { authorizeWebhook, ingestPayment, walletSavedSince, type WalletPayment } from '../_shared/ingest.ts';
 import { json, readBody } from '../_shared/security.ts';
 
 const MAX_BODY_BYTES = 256 * 1024;
 const MAX_ITEMS = 200;
+// Pagos nuevos por usuario en 24 horas. Una persona no hace tantos; si un token se filtra, no puede llenar la base.
+// Al llegar al tope se corta con 429: el Atajo conserva el archivo y lo que falta entra en el próximo envío.
+const DAILY_MAX_SAVED = 200;
 
 /** Saca los pagos del cuerpo: líneas JSON, arreglo o {items}. Las líneas ilegibles se reportan aparte. */
 function parseQueue(text: string): { items: WalletPayment[]; unreadable: number } {
@@ -65,21 +68,31 @@ Deno.serve(async (req) => {
   // Más pagos de los que caben en un envío: no se procesa nada (el Atajo conserva el archivo).
   if (items.length > MAX_ITEMS) return json({ error: 'too_many_items', max: MAX_ITEMS }, 413);
 
+  let savedToday = items.length ? await walletSavedSince(supabase, auth.userId, new Date(Date.now() - 86_400_000)) : 0;
+  if (savedToday === null) return json({ ok: false, error: 'unavailable' }, 503);
+
+  if (items.length) {
+    await supabase.from('api_tokens').update({ last_used_at: new Date().toISOString() }).eq('id', auth.tokenId);
+  }
+
   let saved = 0;
   let duplicates = 0;
   const rejected: { index: number; error: string }[] = [];
   for (const [index, item] of items.entries()) {
-    const r = await ingestPayment(supabase, auth.userId, item, { requireExternalId: true });
-    if (r.ok) r.duplicate ? duplicates++ : saved++;
+    if (savedToday >= DAILY_MAX_SAVED) {
+      return json({ ok: false, error: 'daily_limit', saved, duplicates }, 429, { 'Retry-After': '3600' });
+    }
+    const r = await ingestPayment(supabase, auth.userId, item);
+    if (r.ok && r.duplicate) duplicates++;
+    else if (r.ok) {
+      saved++;
+      savedToday++;
+    }
     // Un fallo del servidor, o no tener cuentas activas (se arregla en la app), no debe hacer que el Atajo borre el
     // archivo: se reintenta en el próximo envío y lo ya guardado no se duplica gracias a la huella.
     else if (r.error === 'insert_failed') return json({ ok: false, error: 'insert_failed' }, 500);
     else if (r.error === 'no_accounts') return json({ ok: false, error: 'no_accounts' }, 409);
     else rejected.push({ index, error: r.error });
-  }
-
-  if (items.length) {
-    await supabase.from('api_tokens').update({ last_used_at: new Date().toISOString() }).eq('id', auth.tokenId);
   }
 
   // ok:true = el archivo ya se puede borrar. Un pago sin monto legible ya quedó guardado con monto 0 por revisar;
