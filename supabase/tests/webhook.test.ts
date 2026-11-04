@@ -2,7 +2,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { describe, expect, it } from 'vitest';
 import { paymentFingerprint, paymentTime, walletSavedSince } from '../functions/_shared/ingest';
-import { cleanText, clientIp, readBody, withinLimit } from '../functions/_shared/security';
+import { cleanText, clientIp, readBody, secretKey, withinLimit } from '../functions/_shared/security';
 
 describe('cleanText', () => {
   it('recorta, quita caracteres de control y limita la longitud', () => {
@@ -75,6 +75,18 @@ describe('withinLimit', () => {
   });
   it('si el limitador falla, no deja pasar (un error provocado no salta el límite)', async () => {
     expect(await withinLimit(fake({ data: null, error: { message: 'index row size exceeds' } }), 'k', 1, 60)).toBe(false);
+  });
+});
+
+describe('secretKey', () => {
+  const env = (vars: Record<string, string>) => (n: string) => vars[n];
+  it('toma la clave secreta "default" de SUPABASE_SECRET_KEYS', () => {
+    expect(secretKey(env({ SUPABASE_SECRET_KEYS: '{"default":"sb_secret_abc"}' }))).toBe('sb_secret_abc');
+  });
+  it('no cae a la clave antigua ni acepta algo que no sea una clave secreta', () => {
+    expect(secretKey(env({ SUPABASE_SERVICE_ROLE_KEY: 'eyJ.x.y' }))).toBeNull();
+    expect(secretKey(env({ SUPABASE_SECRET_KEYS: '{"default":"eyJ.x.y"}' }))).toBeNull();
+    expect(secretKey(env({ SUPABASE_SECRET_KEYS: 'no es json' }))).toBeNull();
   });
 });
 

@@ -11,7 +11,7 @@
 
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { authorizeWebhook, ingestPayment, walletSavedSince, type WalletPayment } from '../_shared/ingest.ts';
-import { json, readBody } from '../_shared/security.ts';
+import { json, readBody, secretKey } from '../_shared/security.ts';
 
 const MAX_BODY_BYTES = 256 * 1024;
 const MAX_ITEMS = 200;
@@ -54,9 +54,12 @@ function isObject(v: unknown): v is WalletPayment {
 Deno.serve(async (req) => {
   if (req.method !== 'POST') return json({ error: 'method_not_allowed' }, 405, { Allow: 'POST' });
 
-  const supabase = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, {
-    auth: { persistSession: false },
-  });
+  const key = secretKey();
+  if (!key) {
+    console.error('wallet-sync: falta SUPABASE_SECRET_KEYS.default');
+    return json({ ok: false, error: 'unavailable' }, 503);
+  }
+  const supabase = createClient(Deno.env.get('SUPABASE_URL')!, key, { auth: { persistSession: false } });
 
   // Por token: un envío por pago más reenvíos al conectarse a Wi‑Fi; 20 por minuto sobra.
   const auth = await authorizeWebhook(supabase, req, { perTokenPerMinute: 20 });
