@@ -14,10 +14,11 @@ import {
   useCategories,
   useCopyBudgets,
   useDeleteBudget,
+  useLookups,
   useSaveBudget,
   useTransactions,
 } from '../../lib/queries';
-import { totalBudget, totals } from '../../lib/stats';
+import { budgetAlert, spendingByCategory, spentAgainstTotal, totalBudget, totals } from '../../lib/stats';
 import type { Category } from '../../lib/types';
 
 type Editing = { categoryId: string | null; name: string; cents: number; budgetId?: string; key: number } | null;
@@ -37,7 +38,9 @@ export function BudgetsPage() {
 
   const { data: monthTxs = [] } = useTransactions(monthRange(month));
   const total = totalBudget(budgets);
-  const spent = totals(monthTxs).gastos;
+  const { allCategories } = useLookups();
+  const slices = useMemo(() => spendingByCategory(monthTxs, allCategories), [monthTxs, allCategories]);
+  const spent = spentAgainstTotal(total, budgets, slices, totals(monthTxs).gastos);
   const byCat = useMemo(() => new Map(progress.filter((p) => p.category_id).map((p) => [p.category_id!, p])), [progress]);
   const expenseCats = categories.filter((c) => c.kind === 'gasto' && !c.parent_id);
   const withBudget = expenseCats.filter((c) => byCat.has(c.id));
@@ -72,7 +75,9 @@ export function BudgetsPage() {
 
   const onCopy = async () => {
     const n = await copy.mutateAsync({ from: isoDate(prevMonth), to: monthIso });
-    toast(n ? `Copiados ${n} presupuestos` : `No había presupuestos en ${monthName(prevMonth)}`);
+    toast(
+      n === 1 ? 'Se copió 1 presupuesto' : n ? `Se copiaron ${n} presupuestos` : `No había presupuestos en ${monthName(prevMonth)}`,
+    );
   };
 
   return (
@@ -95,7 +100,7 @@ export function BudgetsPage() {
             </p>
             <p className="mt-1 text-footnote text-label-2">
               {total.source === 'suma'
-                ? 'Es la suma de tus categorías. Toca para definir un total propio.'
+                ? 'Es la suma de tus categorías y cuenta solo lo gastado en ellas. Toca para definir un total propio.'
                 : total.source === 'ajustado'
                   ? `Subió a la suma de tus categorías; habías definido ${formatCRC(total.manual!)}.`
                   : 'Definido por ti. Toca para cambiarlo.'}
@@ -110,7 +115,7 @@ export function BudgetsPage() {
         <div className="mt-3 flex gap-3 rounded-card bg-orange/15 p-4">
           <TriangleAlert size={20} strokeWidth={2} className="mt-0.5 shrink-0 text-orange" />
           <p className="text-subhead">
-            {alerts.map((c) => c.name).join(', ')} {alerts.length === 1 ? 'va' : 'van'} por encima del 80% de su presupuesto.
+            {budgetAlert(alerts.map((c) => ({ name: c.name, ratio: byCat.get(c.id)!.spent / byCat.get(c.id)!.limit_amount })))}
           </p>
         </div>
       )}

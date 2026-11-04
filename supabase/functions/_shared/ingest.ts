@@ -96,8 +96,23 @@ export function rawAmount(v: unknown): string {
   return s.replace(/\s+/g, ' ').trim().slice(0, 64);
 }
 
+/**
+ * El monto no es un cargo en colones: trae otra moneda ("$12.50", "USD 12.50", "€5") o es negativo (un reembolso).
+ * El parser lo leería como colones positivos (₡12,50) y podría confirmarse solo con el monto equivocado; así queda
+ * por revisar, sin monto y con el texto original para escribir el monto real.
+ */
+export function notAColonCharge(v: unknown): boolean {
+  if (typeof v === 'number') return v < 0;
+  if (typeof v !== 'string') return false;
+  const s = v.trim();
+  const foreign = /[$€£¥]/.test(s) || /(^|[^\p{L}])(?!crc(?!\p{L}))\p{L}{3}(?!\p{L})/iu.test(s);
+  const negative = /^[-−–(]/.test(s) || /[-−–)]$/.test(s);
+  return foreign || negative;
+}
+
 export async function ingestPayment(supabase: SupabaseClient, userId: string, p: WalletPayment): Promise<IngestResult> {
-  const parsed = parseAmountToCents(typeof p.amount === 'number' || typeof p.amount === 'string' ? p.amount : null);
+  const amountIn = typeof p.amount === 'number' || typeof p.amount === 'string' ? p.amount : null;
+  const parsed = notAColonCharge(amountIn) ? null : parseAmountToCents(amountIn);
   const merchant = cleanText(p.merchant, 200);
   const card = cleanText(p.card, 100) ?? '';
   // Hay datáfonos (buses, algunos comercios) que no le pasan el monto al Atajo. El pago se guarda igual con monto 0,

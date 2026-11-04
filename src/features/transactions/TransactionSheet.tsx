@@ -14,6 +14,7 @@ import {
   useAccounts,
   useCategories,
   useDeleteTransaction,
+  useLookups,
   useSaveMerchantRule,
   useSaveTransaction,
 } from '../../lib/queries';
@@ -71,14 +72,21 @@ export function TransactionSheet({
   const [time, setTime] = useState(initialTime);
   const [remember, setRemember] = useState(pending && Boolean(tx?.merchant));
 
-  const account = accounts.find((a) => a.id === accountId) ?? accounts[0];
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  // Un movimiento de una cuenta archivada conserva su cuenta al editarlo (antes pasaba a la primera de la lista).
+  const { accMap } = useLookups();
+  const choices = useMemo(() => {
+    const ids = [tx?.account_id, tx?.to_account_id].filter((id): id is string => !!id && !accounts.some((a) => a.id === id));
+    return [...accounts, ...ids.map((id) => accMap.get(id)).filter((a): a is Account => !!a)];
+  }, [accounts, accMap, tx]);
+  const account = choices.find((a) => a.id === accountId) ?? accounts[0];
   const cats = useMemo(
     () => categories.filter((c) => c.kind === (type === 'ingreso' ? 'ingreso' : 'gasto') && !c.parent_id),
     [categories, type],
   );
   const cents = Number(colones || '0') * 100;
   const isTransfer = type === 'transferencia';
-  const destination = accounts.find((a) => a.id === toAccountId);
+  const destination = choices.find((a) => a.id === toAccountId);
   const today = isoDate(crDay());
   const valid =
     cents > 0 &&
@@ -185,7 +193,17 @@ export function TransactionSheet({
         </div>
       )}
 
-      {!tx && <Segmented options={TYPE_OPTIONS} value={type} onChange={setType} />}
+      {!tx && (
+        <Segmented
+          options={TYPE_OPTIONS}
+          value={type}
+          onChange={(t) => {
+            // La categoría elegida es de gastos o de ingresos: al cambiar de tipo deja de valer y quedaría escondida.
+            if ((t === 'ingreso') !== (type === 'ingreso')) setCategoryId(null);
+            setType(t);
+          }}
+        />
+      )}
       {isTransfer && (
         <p className="mt-2 px-1 text-footnote text-label-2">
           Para mover plata entre tus cuentas: pagar la tarjeta, sacar efectivo del cajero o pasar a ahorros. No cuenta como gasto ni
@@ -204,13 +222,13 @@ export function TransactionSheet({
       )}
 
       <Group label={isTransfer ? 'Desde' : type === 'ingreso' ? 'Entra a' : 'Pagado con'}>
-        <AccountChips accounts={accounts} selected={account?.id} onSelect={setAccountId} />
+        <AccountChips accounts={choices} selected={account?.id} onSelect={setAccountId} />
       </Group>
 
       {isTransfer && (
         <Group label="Hacia" icon={<ArrowRight size={14} strokeWidth={2.25} />}>
           <AccountChips
-            accounts={accounts.filter((a) => a.id !== account?.id)}
+            accounts={choices.filter((a) => a.id !== account?.id)}
             selected={toAccountId ?? undefined}
             onSelect={setToAccountId}
           />
@@ -277,11 +295,24 @@ export function TransactionSheet({
         </label>
       )}
 
-      {tx && (
-        <Button variant="destructive" className="mt-6 w-full" onClick={destroy} disabled={remove.isPending}>
-          Eliminar movimiento
-        </Button>
-      )}
+      {tx &&
+        (confirmDelete ? (
+          <div className="mt-6 rounded-[12px] bg-red/15 p-4">
+            <p className="text-subhead">¿Eliminar este movimiento? Esto no se puede deshacer.</p>
+            <div className="mt-3 flex gap-2">
+              <Button variant="plain" className="flex-1" onClick={() => setConfirmDelete(false)}>
+                Cancelar
+              </Button>
+              <Button className="flex-1 !bg-red" onClick={destroy} disabled={remove.isPending}>
+                Eliminar
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <Button variant="destructive" className="mt-6 w-full" onClick={() => setConfirmDelete(true)}>
+            Eliminar movimiento
+          </Button>
+        ))}
     </Sheet>
   );
 }

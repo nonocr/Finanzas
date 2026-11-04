@@ -1,5 +1,6 @@
 import clsx from 'clsx';
 import { useEffect, useRef } from 'react';
+import { pastedColones } from '../lib/money';
 
 const groups = new Intl.NumberFormat('es-CR');
 
@@ -51,6 +52,12 @@ export function AmountInput({
         placeholder="0"
         value={pretty(value)}
         onChange={(e) => onChange(e.target.value.replace(/\D/g, '').replace(/^0+/, '').slice(0, 11))}
+        onPaste={(e) => {
+          const v = pastedColones(e.clipboardData.getData('text'));
+          if (v === null) return;
+          e.preventDefault();
+          onChange(v);
+        }}
         onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
         className="min-w-[1ch] bg-transparent text-left outline-none placeholder:text-label-3 [field-sizing:content]"
         style={{ width: `${Math.max(1, pretty(value).length || 1)}ch` }}

@@ -6,7 +6,7 @@ import { Segmented } from '../../components/motion';
 import { EmptyState, Screen, Section, Skeleton } from '../../components/ui';
 import { crDay, crDayOf, dayLabel, isoDate, monthRange, startOfMonth } from '../../lib/dates';
 import { formatCRC } from '../../lib/money';
-import { useAccounts, useCategories, usePendingReview, useTransactions } from '../../lib/queries';
+import { useLookups, usePendingReview, useTransactions } from '../../lib/queries';
 import type { Transaction } from '../../lib/types';
 import { TransactionRow } from './TransactionRow';
 
@@ -23,10 +23,7 @@ export function TransactionsPage() {
   const [query, setQuery] = useState('');
   const { data: monthTxs, isLoading } = useTransactions(monthRange(month));
   const { data: pending = [] } = usePendingReview();
-  const { data: categories = [] } = useCategories();
-  const { data: accounts = [] } = useAccounts();
-  const catMap = useMemo(() => new Map(categories.map((c) => [c.id, c])), [categories]);
-  const accMap = useMemo(() => new Map(accounts.map((a) => [a.id, a])), [accounts]);
+  const { catMap, accMap } = useLookups();
 
   const visible = useMemo(() => {
     let list: Transaction[] = filter === 'revisar' ? pending : (monthTxs ?? []);

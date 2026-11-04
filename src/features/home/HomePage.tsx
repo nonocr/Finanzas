@@ -6,10 +6,17 @@ import { AnimatedAmount, Segmented, SoftText } from '../../components/motion';
 import { hexOf } from '../../components/palette';
 import { budgetTone, EmptyState, IconTile, ProgressBar, Screen, Section, Skeleton } from '../../components/ui';
 import { isDemo } from '../../lib/api';
-import { crDay, isoDate, monthName, monthRange, startOfMonth, startOfWeek, weekRange, WEEKDAY_INITIALS } from '../../lib/dates';
+import { crDay, crDayOf, isoDate, monthName, monthRange, startOfMonth, startOfWeek, weekRange, WEEKDAY_INITIALS } from '../../lib/dates';
 import { formatCRC } from '../../lib/money';
-import { useAccounts, useBudgets, useCategories, usePendingReview, useTransactions } from '../../lib/queries';
-import { spendingByCategory, spendingByDay, totalBudget, totals } from '../../lib/stats';
+import { useBudgets, useLookups, usePendingReview, useTransactions } from '../../lib/queries';
+import {
+  donutCategories,
+  spendingByCategory,
+  spendingByDay,
+  spentAgainstTotal,
+  totalBudget,
+  totals,
+} from '../../lib/stats';
 import type { Transaction } from '../../lib/types';
 import { useEditor } from '../transactions/editor';
 import { TransactionRow } from '../transactions/TransactionRow';
@@ -44,13 +51,9 @@ export function HomePage() {
   const { data: txs, isLoading } = useTransactions(range);
   // La semana tiene su propia consulta: puede empezar en el mes anterior (en Semana es la misma que la de arriba).
   const { data: weekTxs } = useTransactions(weekRange(today));
-  const { data: categories = [] } = useCategories();
-  const { data: accounts = [] } = useAccounts();
+  const { catMap, accMap, allCategories: categories } = useLookups();
   const { data: budgets = [] } = useBudgets(month);
   const { data: pending = [] } = usePendingReview();
-
-  const catMap = useMemo(() => new Map(categories.map((c) => [c.id, c])), [categories]);
-  const accMap = useMemo(() => new Map(accounts.map((a) => [a.id, a])), [accounts]);
   const t = totals(txs ?? []);
   const slices = useMemo(() => spendingByCategory(txs ?? [], categories), [txs, categories]);
   const weekStart = startOfWeek(today);
@@ -59,7 +62,9 @@ export function HomePage() {
 
   // Presupuesto total del mes; en vista semanal se prorratea a 7 días.
   // El total se adapta a las categorías (ver totalBudget).
-  const monthLimit = totalBudget(budgets).limit;
+  const total = totalBudget(budgets);
+  const monthLimit = total.limit;
+  const budgetSpent = spentAgainstTotal(total, budgets, slices, t.gastos);
   const daysInMonth = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth() + 1, 0)).getUTCDate();
   const limit =
     monthLimit === null
@@ -67,11 +72,11 @@ export function HomePage() {
       : period === 'mes'
         ? monthLimit
         : Math.round((monthLimit * 7) / daysInMonth / 100) * 100;
-  const left = limit !== null ? limit - t.gastos : null;
-  const ratio = limit ? t.gastos / limit : null;
+  const left = limit !== null ? limit - budgetSpent : null;
+  const ratio = limit ? budgetSpent / limit : null;
 
   // Orden fijo de categorías para que la dona se transforme al cambiar de periodo.
-  const expenseCats = categories.filter((c) => c.kind === 'gasto' && !c.parent_id);
+  const expenseCats = donutCategories(categories, slices);
   const amountOf = new Map(slices.map((s) => [s.categoryId, s.amount]));
   const segments = [
     ...expenseCats.map((c) => ({ key: c.id, value: amountOf.get(c.id) ?? 0, color: hexOf(c.color) })),
@@ -214,6 +219,14 @@ export function HomePage() {
 
 const MAX_PENDING_SHOWN = 3;
 const pendingTime = new Intl.DateTimeFormat('es-CR', { hour: 'numeric', minute: '2-digit', timeZone: 'America/Costa_Rica' });
+const pendingDate = new Intl.DateTimeFormat('es-CR', { day: 'numeric', month: 'short', timeZone: 'America/Costa_Rica' });
+
+/** Hora si el pago es de hoy; si no, «ayer» o la fecha (antes solo salía la hora y un pago viejo parecía de hoy). */
+function pendingWhen(at: string) {
+  const d = new Date(at);
+  const days = Math.round((crDay().getTime() - crDayOf(at).getTime()) / 86_400_000);
+  return days === 0 ? pendingTime.format(d) : days === 1 ? 'ayer' : pendingDate.format(d);
+}
 
 /**
  * Lo primero de la pantalla cuando hay pagos de Wallet sin confirmar: canto de platino, cada pago a un toque
@@ -243,8 +256,12 @@ function PendingCard({ pending }: { pending: Transaction[] }) {
               className={'press flex min-h-11 w-full items-center gap-3 px-3.5 py-1.5 text-left ' + (i ? 'shadow-[inset_0_0.5px_0_var(--color-sep)]' : '')}
             >
               <span className="min-w-0 flex-1 truncate text-subhead">{tx.merchant ?? 'Pago de Wallet'}</span>
-              <span className="tnum shrink-0 text-footnote text-label-2">{pendingTime.format(new Date(tx.occurred_at))}</span>
-              <span className="tnum text-subhead font-semibold">{formatCRC(-tx.amount)}</span>
+              <span className="tnum shrink-0 text-footnote text-label-2">{pendingWhen(tx.occurred_at)}</span>
+              {tx.amount === 0 ? (
+                <span className="text-subhead text-label-2">Sin monto</span>
+              ) : (
+                <span className="tnum text-subhead font-semibold">{formatCRC(-tx.amount)}</span>
+              )}
               <ChevronRight size={16} strokeWidth={2.25} className="text-label-3" />
             </button>
           </li>

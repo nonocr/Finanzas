@@ -1,5 +1,22 @@
 import { describe, expect, it } from 'vitest';
-import { formatCRC, parseAmountToCents } from './money';
+import { formatCRC, parseAmountToCents, pastedColones } from './money';
+
+describe('pastedColones (pegar en un campo de solo dígitos)', () => {
+  it.each([
+    ['₡12.500,00', '12500'],
+    ['1500,50', '1501'],
+    ['12.5', '13'],
+    ['CRC 12,500.00', '12500'],
+    ['  850 ', '850'],
+  ])('%s → %s (no se multiplica por 100)', (input, out) => {
+    expect(pastedColones(input)).toBe(out);
+  });
+  it('sin monto o fuera de rango devuelve null', () => {
+    expect(pastedColones('abc')).toBeNull();
+    expect(pastedColones('0,40')).toBeNull();
+    expect(pastedColones('999999999999')).toBeNull();
+  });
+});
 
 describe('parseAmountToCents', () => {
   it.each([

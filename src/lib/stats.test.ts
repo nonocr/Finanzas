@@ -1,6 +1,17 @@
 import { describe, expect, it } from 'vitest';
 import { crDay } from './dates';
-import { monthlyTrend, spendingByCategory, spendingByDay, spendingByMethod, topMerchants, totalBudget, totals } from './stats';
+import {
+  budgetAlert,
+  donutCategories,
+  monthlyTrend,
+  spendingByCategory,
+  spendingByDay,
+  spendingByMethod,
+  spentAgainstTotal,
+  topMerchants,
+  totalBudget,
+  totals,
+} from './stats';
 import type { Account, Category, Transaction } from './types';
 
 let n = 0;
@@ -116,5 +127,52 @@ describe('stats', () => {
       { merchant: 'Automercado', amount: 300, count: 2 },
       { merchant: 'Uber', amount: 50, count: 1 },
     ]);
+  });
+});
+
+describe('categorías archivadas en las estadísticas', () => {
+  const comida = cat('comida');
+  const ropa = { ...cat('ropa'), archived: true };
+  const viejo = { ...cat('viejo'), archived: true };
+
+  it('el gasto de una archivada conserva su categoría (no cae en "Sin categoría")', () => {
+    const slices = spendingByCategory([tx({ category_id: 'ropa', amount: 700 }), tx({ amount: 300 })], [comida, ropa]);
+    expect(slices.map((s) => s.categoryId)).toEqual(['ropa', null]);
+  });
+
+  it('la dona muestra las activas siempre y las archivadas solo si tienen gasto', () => {
+    const slices = spendingByCategory([tx({ category_id: 'ropa', amount: 700 })], [comida, ropa, viejo]);
+    expect(donutCategories([comida, ropa, viejo], slices).map((c) => c.id)).toEqual(['comida', 'ropa']);
+  });
+});
+
+describe('gasto contra el total del mes', () => {
+  const slices = spendingByCategory(
+    [tx({ category_id: 'comida', amount: 40_000 }), tx({ category_id: 'casa', amount: 900_000 })],
+    [cat('comida'), cat('casa')],
+  );
+  it('si el total es la suma de categorías, cuenta solo el gasto de esas categorías', () => {
+    const budgets = [{ category_id: 'comida', amount: 50_000 }];
+    expect(spentAgainstTotal(totalBudget(budgets), budgets, slices, 940_000)).toBe(40_000);
+  });
+  it('con un total propio cuenta todo el gasto', () => {
+    const budgets = [
+      { category_id: null, amount: 1_000_000 },
+      { category_id: 'comida', amount: 50_000 },
+    ];
+    expect(spentAgainstTotal(totalBudget(budgets), budgets, slices, 940_000)).toBe(940_000);
+  });
+});
+
+describe('budgetAlert', () => {
+  it('separa lo que llegó al límite de lo que pasa del 80 %', () => {
+    expect(
+      budgetAlert([
+        { name: 'Comida', ratio: 1.3 },
+        { name: 'Casa', ratio: 1 },
+        { name: 'Ropa', ratio: 0.85 },
+      ]),
+    ).toBe('Comida y Casa llegaron al límite de su presupuesto. Ropa va por encima del 80 %.');
+    expect(budgetAlert([{ name: 'Comida', ratio: 1.01 }])).toBe('Comida llegó al límite de su presupuesto.');
   });
 });

@@ -8,8 +8,9 @@ import { Button, IconTile, Row, Screen, Section } from '../../components/ui';
 import { QuietColon } from '../../components/motion';
 import { crDay } from '../../lib/dates';
 import { formatCRC } from '../../lib/money';
-import { useAccounts, useBalances, useSaveAccount } from '../../lib/queries';
+import { useAccounts, useArchivedAccounts, useBalances, useSaveAccount } from '../../lib/queries';
 import { ACCOUNT_TYPE_LABEL, type Account, type AccountType } from '../../lib/types';
+import { Toggle } from '../transactions/TransactionSheet';
 import { BackLink } from './MorePage';
 import { ColonesInput, DayInput, FormGroup, FormHeader, FormRow, TextInput } from './form';
 
@@ -33,6 +34,7 @@ function daysUntil(day: number) {
 
 export function AccountsPage() {
   const { data: accounts = [] } = useAccounts();
+  const { data: archived = [] } = useArchivedAccounts();
   const { data: balances = [] } = useBalances();
   const balanceOf = useMemo(() => new Map(balances.map((b) => [b.account_id, b.balance])), [balances]);
   const [editing, setEditing] = useState<{ acc: Partial<Account>; key: number } | null>(null);
@@ -109,6 +111,25 @@ export function AccountsPage() {
         Agregar tarjeta o cuenta
       </Button>
 
+      {archived.length > 0 && (
+        <Section header="Archivadas" footer="No aparecen al registrar movimientos ni en el patrimonio. Tócalas para reactivarlas.">
+          {archived.map((a) => (
+            <Row
+              key={a.id}
+              onClick={() => openEditor(a)}
+              leading={
+                <span className="opacity-50">
+                  <IconTile icon={ACCOUNT_ICONS[a.type]} color={TYPE_COLOR[a.type]} />
+                </span>
+              }
+              title={<span className="text-label-2">{a.name}</span>}
+              subtitle={ACCOUNT_TYPE_LABEL[a.type] + (a.last4 ? ` · •••${a.last4}` : '')}
+              chevron
+            />
+          ))}
+        </Section>
+      )}
+
       {editing && (
         <AccountSheet
           key={editing.key}
@@ -160,6 +181,9 @@ function AccountSheet({
   // El campo muestra el saldo de HOY; al guardar se ajusta el saldo inicial para que hoy cuadre.
   const startBalance = initial.id ? (currentBalance ?? 0) : (initial.initial_balance ?? 0);
   const [balance, setBalance] = useState<number | null>(startBalance ? Math.abs(startBalance) : null);
+  // El campo muestra el monto sin signo. El signo "raro" (sobregiro, o saldo a favor en la tarjeta) se conserva aparte;
+  // si no, editar solo el nombre de una cuenta en negativo la pasaría a positivo.
+  const [inverted, setInverted] = useState(startBalance !== 0 && Math.sign(startBalance) !== (initial.type === 'credito' ? -1 : 1));
   // Lo opcional queda plegado; se abre solo al editar una cuenta que ya tiene esos datos.
   const [details, setDetails] = useState(
     Boolean(startBalance || initial.credit_limit || initial.cutoff_day || initial.payment_day || initial.wallet_name),
@@ -172,7 +196,7 @@ function AccountSheet({
 
   const submit = async () => {
     if (!valid) return;
-    const desired = (type === 'credito' ? -1 : 1) * (balance ?? 0);
+    const desired = (type === 'credito' ? -1 : 1) * (inverted ? -1 : 1) * (balance ?? 0);
     const initial_balance = initial.id ? (initial.initial_balance ?? 0) + (desired - (currentBalance ?? 0)) : desired;
     await save.mutateAsync({
       ...acc,
@@ -186,9 +210,9 @@ function AccountSheet({
     onClose();
   };
 
-  const archive = async () => {
-    await save.mutateAsync({ id: initial.id, archived: true });
-    toast('Cuenta archivada');
+  const setArchived = async (archived: boolean) => {
+    await save.mutateAsync({ id: initial.id, archived });
+    toast(archived ? 'Cuenta archivada' : 'Cuenta reactivada');
     onClose();
   };
 
@@ -307,11 +331,13 @@ function AccountSheet({
                 : 'Lo que tiene hoy. Cada gasto lo baja y cada ingreso lo sube, también los que llegan de Wallet.'
             }
           >
-            <FormRow label={type === 'credito' ? 'Deuda actual' : 'Saldo actual'} last>
-              <ColonesInput
-                cents={balance}
-                onChange={setBalance}
-              />
+            <FormRow label={type === 'credito' ? (inverted ? 'Saldo a favor' : 'Deuda actual') : 'Saldo actual'}>
+              <ColonesInput cents={balance} onChange={setBalance} />
+            </FormRow>
+            <FormRow label={type === 'credito' ? 'Pagaste de más (saldo a favor)' : 'En negativo (sobregiro)'} last>
+              <span className="flex w-full justify-end">
+                <Toggle checked={inverted} onChange={setInverted} />
+              </span>
             </FormRow>
           </FormGroup>
           {type === 'credito' && (
@@ -337,11 +363,16 @@ function AccountSheet({
         </>
       )}
 
-      {initial.id && (
-        <Button variant="destructive" className="mt-8 w-full" onClick={archive}>
-          Archivar cuenta
-        </Button>
-      )}
+      {initial.id &&
+        (initial.archived ? (
+          <Button variant="tinted" className="mt-8 w-full" onClick={() => setArchived(false)}>
+            Reactivar cuenta
+          </Button>
+        ) : (
+          <Button variant="destructive" className="mt-8 w-full" onClick={() => setArchived(true)}>
+            Archivar cuenta
+          </Button>
+        ))}
     </Sheet>
   );
 }

@@ -8,7 +8,7 @@ import { csvRow } from '../../lib/csv';
 import { crDayOf, isoDate } from '../../lib/dates';
 import { resetDemo } from '../../lib/demoApi';
 import { clearOfflineCache } from '../../lib/offline';
-import { useAccounts, useCategories } from '../../lib/queries';
+import { useAccounts, useLookups } from '../../lib/queries';
 import { markPartialSignOut, supabase } from '../../lib/supabase';
 import { ChangePasswordSheet } from './ChangePasswordSheet';
 import { TwoFactorSheet } from './TwoFactorSheet';
@@ -23,8 +23,9 @@ export function BackLink() {
 }
 
 export function MorePage() {
+  // Con las archivadas: el CSV lleva el nombre de la cuenta y la categoría de cada movimiento, aunque ya no se usen.
+  const { catMap, accMap } = useLookups();
   const { data: accounts = [] } = useAccounts();
-  const { data: categories = [] } = useCategories();
   const toast = useToast();
   const [passwordOpen, setPasswordOpen] = useState(false);
   const [passwordKey, setPasswordKey] = useState(0);
@@ -33,8 +34,8 @@ export function MorePage() {
 
   const exportCsv = async () => {
     const txs = await api.listTransactions({ from: '2000-01-01T00:00:00Z', to: new Date(Date.now() + 86_400_000).toISOString() });
-    const acc = new Map(accounts.map((a) => [a.id, a.name]));
-    const cat = new Map(categories.map((c) => [c.id, c.name]));
+    const acc = new Map([...accMap].map(([id, a]) => [id, a.name]));
+    const cat = new Map([...catMap].map(([id, c]) => [id, c.name]));
     const rows = [
       ['fecha', 'tipo', 'monto', 'cuenta', 'hacia', 'categoria', 'comercio', 'nota', 'origen', 'estado'],
       ...txs.map((t) => [

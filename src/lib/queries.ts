@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMemo } from 'react';
 import { api, type Range } from './api';
 import type { Account, Category, Transaction } from './types';
 
@@ -8,6 +9,22 @@ import type { Account, Category, Transaction } from './types';
 
 export const useAccounts = () => useQuery({ queryKey: ['accounts'], queryFn: api.listAccounts });
 export const useCategories = () => useQuery({ queryKey: ['categories'], queryFn: api.listCategories });
+export const useArchivedAccounts = () =>
+  useQuery({ queryKey: ['accounts', 'archived'], queryFn: api.listArchivedAccounts });
+
+/**
+ * Todas las categorías y cuentas (activas y archivadas) por id, para mostrar movimientos viejos: archivar oculta una
+ * categoría o cuenta al registrar, pero su historial sigue con su nombre.
+ */
+export function useLookups() {
+  const { data: categories = [] } = useCategories();
+  const { data: archivedCats = [] } = useArchivedCategories();
+  const { data: accounts = [] } = useAccounts();
+  const { data: archivedAccs = [] } = useArchivedAccounts();
+  const catMap = useMemo(() => new Map([...archivedCats, ...categories].map((c) => [c.id, c])), [categories, archivedCats]);
+  const accMap = useMemo(() => new Map([...archivedAccs, ...accounts].map((a) => [a.id, a])), [accounts, archivedAccs]);
+  return { catMap, accMap, allCategories: useMemo(() => [...catMap.values()], [catMap]) };
+}
 export const useBalances = () => useQuery({ queryKey: ['balances'], queryFn: api.listBalances });
 
 export const useTransactions = (range: Range) =>

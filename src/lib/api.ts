@@ -21,6 +21,8 @@ export interface Range {
 
 export interface Api {
   listAccounts(): Promise<Account[]>;
+  /** Cuentas archivadas: no se ofrecen al registrar, pero sus movimientos siguen mostrando su nombre. */
+  listArchivedAccounts(): Promise<Account[]>;
   listCategories(): Promise<Category[]>;
   listBalances(): Promise<AccountBalance[]>;
   listTransactions(range: Range): Promise<Transaction[]>;
@@ -55,6 +57,7 @@ async function unwrap<T>(p: PromiseLike<{ data: T | null; error: { message: stri
 
 const supabaseApi: Api = {
   listAccounts: () => unwrap(supabase.from('accounts').select('*').eq('archived', false).order('sort')),
+  listArchivedAccounts: () => unwrap(supabase.from('accounts').select('*').eq('archived', true).order('name')),
   listCategories: () => unwrap(supabase.from('categories').select('*').eq('archived', false).order('sort')),
   listBalances: () => unwrap(supabase.from('account_balances').select('*')),
   listTransactions: (r) =>
