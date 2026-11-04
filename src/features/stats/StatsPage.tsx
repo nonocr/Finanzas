@@ -8,7 +8,7 @@ import { hexOf } from '../../components/palette';
 import { CategoryIcon, EmptyState, Screen, Section } from '../../components/ui';
 import { addMonths, crDay, crDayStartInstant, monthName, startOfMonth } from '../../lib/dates';
 import { formatCRC } from '../../lib/money';
-import { useAccounts, useCategories, useTransactions } from '../../lib/queries';
+import { useLookups, useTransactions } from '../../lib/queries';
 import {
   changeVs,
   monthlyTrend,
@@ -17,6 +17,7 @@ import {
   spendingByMethod,
   topMerchants,
   totals,
+  donutCategories,
 } from '../../lib/stats';
 
 const compact = new Intl.NumberFormat('es-CR', { notation: 'compact', maximumFractionDigits: 1 });
@@ -31,9 +32,7 @@ export function StatsPage() {
     from: crDayStartInstant(firstMonth).toISOString(),
     to: crDayStartInstant(addMonths(month, 1)).toISOString(),
   });
-  const { data: categories = [] } = useCategories();
-  const { data: accounts = [] } = useAccounts();
-  const catMap = useMemo(() => new Map(categories.map((c) => [c.id, c])), [categories]);
+  const { catMap, accMap, allCategories: categories } = useLookups();
 
   const { txs, prevTxs } = useMemo(() => {
     const inMonth = (m: Date) => {
@@ -61,11 +60,11 @@ export function StatsPage() {
       })),
     [all, month],
   );
-  const methods = spendingByMethod(txs, accounts);
+  const methods = spendingByMethod(txs, [...accMap.values()]);
   const methodTotal = methods.efectivo + methods.tarjeta + methods.otro;
   const merchants = topMerchants(txs, 5);
 
-  const expenseCats = categories.filter((c) => c.kind === 'gasto' && !c.parent_id);
+  const expenseCats = donutCategories(categories, slices);
   const amountOf = new Map(slices.map((s) => [s.categoryId, s.amount]));
   const segments = [
     ...expenseCats.map((c) => ({ key: c.id, value: amountOf.get(c.id) ?? 0, color: hexOf(c.color) })),
@@ -99,7 +98,8 @@ export function StatsPage() {
             <dd className={'tnum text-headline font-semibold ' + (t.neto < 0 ? 'text-red' : 'text-label')}>
               <SoftText
                 text={
-                  t.ingresos
+                  // Con ingresos mínimos el porcentaje sale absurdo (−32378 %): solo se muestra si es legible.
+                  t.ingresos && Math.abs(t.neto / t.ingresos) <= 9.99
                     ? `${formatCRC(t.neto)} · ${formatPct(t.neto / t.ingresos)}`
                     : formatCRC(t.neto)
                 }

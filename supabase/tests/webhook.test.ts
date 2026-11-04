@@ -1,7 +1,7 @@
 // Utilidades de seguridad de los webhooks del Atajo (corren igual en Deno y en Node).
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { describe, expect, it } from 'vitest';
-import { paymentFingerprint, paymentTime, walletSavedSince } from '../functions/_shared/ingest';
+import { ingestPayment, notAColonCharge, paymentFingerprint, paymentTime, walletSavedSince } from '../functions/_shared/ingest';
 import { cleanText, clientIp, readBody, secretKey, withinLimit } from '../functions/_shared/security';
 
 describe('cleanText', () => {
@@ -137,5 +137,92 @@ describe('fecha y huella de los pagos de la cola', () => {
     const t1 = paymentTime('2026-10-30T10:01:00-06:00', now);
     const t2 = paymentTime('2026-10-30T10:02:00-06:00', now);
     expect(await paymentFingerprint({}, 100, 'SODA', 'Visa', t1)).not.toBe(await paymentFingerprint({}, 100, 'SODA', 'Visa', t2));
+  });
+});
+
+describe('notAColonCharge (otra moneda o reembolso)', () => {
+  it.each(['$12.50', 'USD 12.50', '12.50 usd', 'US$ 4', '€5,00', '-₡5.000', '−₡5.000', '(₡5.000)', '₡5.000-', -3])('%s sí', (v) => {
+    expect(notAColonCharge(v)).toBe(true);
+  });
+  it.each(['₡12.500,00', 'CRC 12,500.00', '12.500 CRC', '12 500', '3,90', 1500, null, undefined])('%s no', (v) => {
+    expect(notAColonCharge(v)).toBe(false);
+  });
+});
+
+describe('ingestPayment', () => {
+  type Row = Record<string, unknown>;
+  /** Base en memoria con lo justo del cliente de Supabase que usa ingestPayment. */
+  const fakeDb = (init: Record<string, Row[]>) => {
+    const tables: Record<string, Row[]> = { transactions: [], merchant_rules: [], ...structuredClone(init) };
+    let seq = 0;
+    const from = (table: string) => {
+      const filters: [string, unknown][] = [];
+      let toInsert: Row | null = null;
+      const rows = () => tables[table].filter((r) => filters.every(([c, v]) => r[c] === v));
+      const b = {
+        select: () => b,
+        order: () => b,
+        eq: (c: string, v: unknown) => (filters.push([c, v]), b),
+        insert: (row: Row) => ((toInsert = row), b),
+        maybeSingle: async () => ({ data: rows()[0] ?? null, error: null }),
+        single: async () => {
+          if (!toInsert) return { data: rows()[0], error: null };
+          const r = { id: `tx${++seq}`, ...toInsert };
+          tables[table].push(r);
+          return { data: r, error: null };
+        },
+        then: (ok: (v: unknown) => unknown) => Promise.resolve({ data: rows(), error: null }).then(ok),
+      };
+      return b;
+    };
+    return { client: { from } as unknown as SupabaseClient, tables };
+  };
+  const ACCOUNTS = [
+    { id: 'cash', user_id: 'u', type: 'efectivo', name: 'Efectivo', last4: null, wallet_name: null, archived: false },
+    { id: 'bac', user_id: 'u', type: 'credito', name: 'Visa BAC', last4: '4321', wallet_name: null, archived: false },
+    { id: 'bn', user_id: 'u', type: 'debito', name: 'Débito BN', last4: null, wallet_name: 'Mi Débito', archived: false },
+  ];
+  const RULES = [{ user_id: 'u', pattern: 'automercado', category_id: 'super' }];
+
+  it('tarjeta y regla conocidas: se confirma solo, en su cuenta y categoría', async () => {
+    const { client, tables } = fakeDb({ accounts: ACCOUNTS, merchant_rules: RULES });
+    const r = await ingestPayment(client, 'u', { amount: '₡12.500,00', merchant: 'AUTOMERCADO ESCAZU', card: 'Mi Débito', id: 'p1' });
+    expect(r).toMatchObject({ ok: true, status: 'confirmada' });
+    expect(tables.transactions[0]).toMatchObject({ amount: 1_250_000, account_id: 'bn', category_id: 'super', external_id: 'p1' });
+  });
+
+  it('empata la tarjeta por los últimos 4 dígitos', async () => {
+    const { client, tables } = fakeDb({ accounts: ACCOUNTS, merchant_rules: RULES });
+    await ingestPayment(client, 'u', { amount: '1.000', merchant: 'SODA', card: 'BAC Visa •• 4321' });
+    expect(tables.transactions[0]).toMatchObject({ account_id: 'bac', status: 'por_revisar' });
+  });
+
+  it('tarjeta desconocida: primera tarjeta y por revisar, aunque la regla empate', async () => {
+    const { client, tables } = fakeDb({ accounts: ACCOUNTS, merchant_rules: RULES });
+    await ingestPayment(client, 'u', { amount: '1.000', merchant: 'AUTOMERCADO', card: 'Amex' });
+    expect(tables.transactions[0]).toMatchObject({ account_id: 'bac', status: 'por_revisar' });
+  });
+
+  it.each(['$12.50', '-₡5.000'])('%s: monto 0, por revisar, con el texto original', async (amount) => {
+    const { client, tables } = fakeDb({ accounts: ACCOUNTS, merchant_rules: RULES });
+    const r = await ingestPayment(client, 'u', { amount, merchant: 'AUTOMERCADO', card: 'Mi Débito' });
+    expect(r).toMatchObject({ ok: true, status: 'por_revisar' });
+    expect(tables.transactions[0]).toMatchObject({ amount: 0, amount_raw: amount });
+  });
+
+  it('reenviar el mismo pago no lo duplica', async () => {
+    const { client, tables } = fakeDb({ accounts: ACCOUNTS });
+    const p = { amount: '₡900', merchant: 'BUS', at: new Date(Date.now() - 60_000).toISOString() };
+    await ingestPayment(client, 'u', p);
+    expect(await ingestPayment(client, 'u', p)).toMatchObject({ ok: true, duplicate: true });
+    expect(tables.transactions).toHaveLength(1);
+  });
+
+  it('sin monto, comercio ni tarjeta se rechaza; sin cuentas activas avisa', async () => {
+    expect(await ingestPayment(fakeDb({ accounts: ACCOUNTS }).client, 'u', { amount: 'abc' })).toEqual({ ok: false, error: 'invalid_amount' });
+    expect(await ingestPayment(fakeDb({ accounts: [] }).client, 'u', { amount: '₡900', merchant: 'BUS' })).toEqual({
+      ok: false,
+      error: 'no_accounts',
+    });
   });
 });

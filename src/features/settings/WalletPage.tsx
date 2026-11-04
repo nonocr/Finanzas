@@ -74,7 +74,21 @@ export function WalletPage() {
   const create = useCreateApiToken();
   const revoke = useRevokeApiToken();
   const toast = useToast();
-  const [fresh, setFresh] = useState<string | null>(null);
+  // Token recién creado (se muestra una sola vez) y los ids que ya existían, para saber cuál fila es la suya.
+  const [fresh, setFresh] = useState<{ token: string; before: Set<string> } | null>(null);
+  const freshId = fresh ? tokens.find((t) => !fresh.before.has(t.id))?.id : undefined;
+
+  const createToken = async () => {
+    const before = new Set(tokens.map((t) => t.id));
+    setFresh({ token: await create.mutateAsync('Atajo iPhone'), before });
+  };
+
+  const revokeToken = (id: string, name: string) => {
+    if (!confirm(`¿Revocar «${name}»? El Atajo que lo usa deja de registrar pagos hasta que le pongas otro token.`)) return;
+    revoke.mutate(id);
+    // Un token revocado ya no sirve: no se sigue ofreciendo para copiar.
+    if (id === freshId) setFresh(null);
+  };
   const endpoint = WALLET_SYNC_ENDPOINT || 'https://<tu-proyecto>.supabase.co/functions/v1/wallet-sync';
 
   const copy = async (text: string, what: string) => {
@@ -98,8 +112,8 @@ export function WalletPage() {
         {fresh ? (
           <div className="p-4">
             <p className="text-subhead text-label-2">Cópialo ahora; por seguridad no se vuelve a mostrar.</p>
-            <p className="tnum mt-2 rounded-[10px] bg-card-2 p-3 font-mono text-footnote break-all select-all">{fresh}</p>
-            <Button variant="tinted" className="mt-3 w-full" onClick={() => copy(fresh, 'Token')}>
+            <p className="tnum mt-2 rounded-[10px] bg-card-2 p-3 font-mono text-footnote break-all select-all">{fresh.token}</p>
+            <Button variant="tinted" className="mt-3 w-full" onClick={() => copy(fresh.token, 'Token')}>
               <Copy size={18} strokeWidth={2} />
               Copiar token
             </Button>
@@ -118,14 +132,14 @@ export function WalletPage() {
                 : `Creado ${dateFmt.format(new Date(t.created_at))}`
             }
             trailing={
-              <button type="button" className="min-h-11 px-1 text-body text-red" onClick={() => revoke.mutate(t.id)}>
+              <button type="button" className="min-h-11 px-1 text-body text-red" onClick={() => revokeToken(t.id, t.name)}>
                 Revocar
               </button>
             }
           />
         ))}
       </Section>
-      <Button className="mt-3 w-full" disabled={create.isPending} onClick={async () => setFresh(await create.mutateAsync('Atajo iPhone'))}>
+      <Button className="mt-3 w-full" disabled={create.isPending} onClick={createToken}>
         {tokens.length ? 'Crear otro token' : 'Crear token'}
       </Button>
 

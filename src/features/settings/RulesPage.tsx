@@ -64,7 +64,7 @@ export function RulesPage() {
                   <button
                     type="button"
                     aria-label={`Borrar regla ${r.pattern}`}
-                    onClick={() => remove.mutate(r.id)}
+                    onClick={() => confirm(`¿Borrar la regla «${r.pattern}»? Los pagos ya guardados no cambian.`) && remove.mutate(r.id)}
                     className="grid size-11 place-items-center text-red"
                   >
                     <Trash2 size={20} strokeWidth={2} />

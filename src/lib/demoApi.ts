@@ -189,6 +189,7 @@ export function createDemoApi(): Api {
 
   return {
     listAccounts: () => ok(db.accounts.filter((a) => !a.archived).sort((a, b) => a.sort - b.sort)),
+    listArchivedAccounts: () => ok(db.accounts.filter((a) => a.archived).sort((a, b) => a.name.localeCompare(b.name))),
     listCategories: () => ok(db.categories.filter((c) => !c.archived).sort((a, b) => a.sort - b.sort)),
     listBalances: () => ok(balances()),
     listTransactions: (r) =>

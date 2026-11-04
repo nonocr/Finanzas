@@ -1,4 +1,17 @@
-export { parseAmountToCents } from '../../supabase/functions/_shared/money.ts';
+import { parseAmountToCents } from '../../supabase/functions/_shared/money.ts';
+
+export { parseAmountToCents };
+
+/**
+ * Colones enteros (texto de dígitos, máx. 11) de un monto pegado en un campo de solo dígitos: "₡12.500,00" → "12500",
+ * "1500,50" → "1501". Sin esto, el campo quitaba los separadores y multiplicaba por 100. null si no hay monto.
+ */
+export function pastedColones(text: string): string | null {
+  const cents = parseAmountToCents(text);
+  if (cents === null) return null;
+  const colones = String(Math.round(cents / 100));
+  return colones === '0' || colones.length > 11 ? null : colones;
+}
 
 const crc = new Intl.NumberFormat('es-CR', { maximumFractionDigits: 0 });
 const crcCents = new Intl.NumberFormat('es-CR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });

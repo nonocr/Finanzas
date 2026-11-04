@@ -92,6 +92,16 @@ const METHOD: Record<AccountType, PaymentMethod> = {
 };
 
 /** Efectivo contra tarjeta (débito + crédito) y otros medios. */
+/**
+ * Categorías de gasto que forman la dona, en orden fijo: las activas siempre y las archivadas solo si tienen gasto en el
+ * periodo (archivar oculta la categoría al registrar, pero su historial se sigue viendo con su nombre y su color).
+ */
+export function donutCategories(categories: Category[], slices: CategorySlice[]): Category[] {
+  const spent = new Set(slices.filter((s) => s.amount > 0).map((s) => s.categoryId));
+  const top = categories.filter((c) => c.kind === 'gasto' && !c.parent_id);
+  return [...top.filter((c) => !c.archived), ...top.filter((c) => c.archived && spent.has(c.id))];
+}
+
 export function spendingByMethod(txs: Transaction[], accounts: Account[]): Record<PaymentMethod, number> {
   const typeOf = new Map(accounts.map((a) => [a.id, a.type]));
   const out: Record<PaymentMethod, number> = { efectivo: 0, tarjeta: 0, otro: 0 };
@@ -143,6 +153,35 @@ export function totalBudget(budgets: { category_id: string | null; amount: numbe
   if (manual === null) return { limit: sum > 0 ? sum : null, manual, sum, source: sum > 0 ? 'suma' : null };
   if (sum > manual) return { limit: sum, manual, sum, source: 'ajustado' };
   return { limit: manual, manual, sum, source: 'manual' };
+}
+
+/**
+ * Gasto que se compara con el total del mes. Con un total definido por ti cuenta todo el gasto; si el total es solo la
+ * suma de las categorías con presupuesto, cuenta solo el gasto de esas categorías (si no, con una sola categoría
+ * presupuestada todo lo demás parecía un exceso).
+ */
+export function spentAgainstTotal(
+  total: TotalBudget,
+  budgets: { category_id: string | null }[],
+  slices: CategorySlice[],
+  allSpent: number,
+): number {
+  if (total.source !== 'suma') return allSpent;
+  const budgeted = new Set(budgets.map((b) => b.category_id).filter(Boolean));
+  return slices.filter((s) => s.categoryId && budgeted.has(s.categoryId)).reduce((sum, s) => sum + s.amount, 0);
+}
+
+const listNames = (names: string[]) =>
+  names.length <= 1 ? names.join('') : `${names.slice(0, -1).join(', ')} y ${names[names.length - 1]}`;
+
+/** Aviso de presupuesto: separa lo que ya llegó al límite (≥ 100 %) de lo que va por encima del 80 %. */
+export function budgetAlert(items: { name: string; ratio: number }[]): string {
+  const over = items.filter((i) => i.ratio >= 1).map((i) => i.name);
+  const near = items.filter((i) => i.ratio >= 0.8 && i.ratio < 1).map((i) => i.name);
+  const parts: string[] = [];
+  if (over.length) parts.push(`${listNames(over)} ${over.length === 1 ? 'llegó' : 'llegaron'} al límite de su presupuesto.`);
+  if (near.length) parts.push(`${listNames(near)} ${near.length === 1 ? 'va' : 'van'} por encima del 80 %.`);
+  return parts.join(' ');
 }
 
 /** Cambio relativo contra el periodo anterior; null si antes no hubo gasto. */
