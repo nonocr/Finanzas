@@ -7,6 +7,20 @@ export const json = (body: unknown, status = 200, extra: Record<string, string> 
     headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', ...extra },
   });
 
+/**
+ * Clave secreta del proyecto (sb_secret_…, rol service_role) desde SUPABASE_SECRET_KEYS, que Supabase inyecta como
+ * JSON {"default": "sb_secret_…"}. Las claves antiguas basadas en JWT (SUPABASE_SERVICE_ROLE_KEY) están desactivadas.
+ * null si falta o no se puede leer: quien llama responde con error, sin intentar otra clave.
+ */
+export function secretKey(env: (name: string) => string | undefined = (n) => Deno.env.get(n)): string | null {
+  try {
+    const key = (JSON.parse(env('SUPABASE_SECRET_KEYS') ?? '{}') as Record<string, unknown>).default;
+    return typeof key === 'string' && key.startsWith('sb_secret_') ? key : null;
+  } catch {
+    return null;
+  }
+}
+
 export const tooMany = (retryAfterSeconds: number) =>
   json({ error: 'rate_limited' }, 429, { 'Retry-After': String(retryAfterSeconds) });
 

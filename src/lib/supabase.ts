@@ -1,15 +1,16 @@
 import { createClient } from '@supabase/supabase-js';
 
 const url = import.meta.env.VITE_SUPABASE_URL as string | undefined;
-const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
+// Clave publicable (sb_publishable_…): pública por diseño; los datos los protegen RLS y la sesión.
+const publishableKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined;
 
-export const supabaseConfigured = Boolean(url && anonKey);
+export const supabaseConfigured = Boolean(url && publishableKey);
 
 // Se lee antes de crear el cliente: al abrir el enlace de «olvidé mi contraseña», Supabase toma la sesión del
 // fragmento (#access_token=…&type=recovery) y lo borra de la URL.
 export const openedFromRecoveryLink = typeof location !== 'undefined' && location.hash.includes('type=recovery');
 
-export const supabase = createClient(url ?? 'http://localhost', anonKey ?? 'missing', {
+export const supabase = createClient(url ?? 'http://localhost', publishableKey ?? 'missing', {
   auth: {
     persistSession: true,
     autoRefreshToken: true,

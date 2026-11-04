@@ -18,7 +18,7 @@ En esta máquina (Windows), git no está en el PATH de PowerShell. Antepón `$en
 ## Arquitectura
 
 - **Datos:** `src/lib/api.ts` define la interfaz `Api`. Hay dos implementaciones:
-  - Supabase, cuando existen `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` en `.env.local`.
+  - Supabase, cuando existen `VITE_SUPABASE_URL` y `VITE_SUPABASE_PUBLISHABLE_KEY` (`sb_publishable_…`) en `.env.local`. Las claves antiguas `anon`/`service_role` (JWT HS256) están desactivadas y el secreto HS256 revocado: usa solo las claves nuevas (`sb_publishable_`/`sb_secret_`).
   - **Modo demo**, cuando no existen. Está en `src/lib/demoApi.ts`, guarda en localStorage y trae datos sintéticos.
 
   Los componentes nunca llaman a Supabase directo: usan los hooks de `src/lib/queries.ts` (React Query). Si cambias el esquema, actualiza las dos implementaciones y `src/lib/types.ts`.
