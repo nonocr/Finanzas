@@ -10,7 +10,7 @@ adaptive
 React + Vite + TypeScript, Tailwind CSS, PWA (`vite-plugin-pwa`), Supabase (Postgres + Auth + Edge Functions), hosting on Vercel. Motion with GSAP and transitions.dev tokens. The same web app ships as native iOS and Android apps through Capacitor 8 (`ios/`, `android/`, branch `feature/tiendas-multiusuario`), heading to the App Store and Google Play; the PWA stays live on the web.
 
 ## Users
-A single person in Costa Rica (the owner) who tracks her personal money. She mostly uses it on her iPhone, often right after paying for something, and sometimes on a PC to review.
+Anyone in Costa Rica who wants to track their personal money in colones (open sign-up since 2026-11-05; each person sees only their own data). The owner built it for herself and is still the reference user: mostly on her iPhone, often right after paying for something, and sometimes on a PC to review. New users may be on Android or desktop, where the Apple Wallet automation does not exist.
 
 ## Product Purpose
 Record and monitor personal spending by payment method (cash, debit, credit card), income, and a monthly budget, then understand the month at a glance through statistics. Success means she always knows how this month and this week are going without doing any arithmetic.
@@ -26,7 +26,7 @@ A personal, colones-first tracker whose Apple Wallet payments arrive by themselv
 
 ## Capabilities and Constraints
 - Currency: Costa Rican colones (₡) only. Amounts stored as integer céntimos.
-- Single user, data in the cloud, private (row-level security).
+- Multi-user with open sign-up (email + password, email confirmation required), data in the cloud, private per person (row-level security). Each person can export their data and delete their account; public privacy policy at /privacidad.
 - Accounts types: efectivo, débito, crédito, banco, ahorro. Credit cards have cut-off and payment days.
 - Transactions: gasto, ingreso, transferencia (including credit card payments).
 - Monthly budgets per category and in total; recurring income and expenses.

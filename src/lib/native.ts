@@ -6,6 +6,15 @@ export const isNative = Capacitor.isNativePlatform();
 export const platform = Capacitor.getPlatform() as 'ios' | 'android' | 'web';
 
 /**
+ * iPhone o iPad (app nativa o navegador). La automatización de Apple Wallet con Atajos solo existe ahí: en Android o
+ * en una computadora, Ajustes no la ofrece. (El iPad moderno se presenta como Mac; se reconoce por la pantalla táctil.)
+ */
+export const isAppleMobile =
+  platform === 'ios' ||
+  (typeof navigator !== 'undefined' &&
+    (/iPhone|iPad|iPod/.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1)));
+
+/**
  * La app web en producción. La app nativa no tiene dirección propia (capacitor://localhost), así que los enlaces
  * de los correos («olvidé mi contraseña») abren la web: es la única redirección permitida en Supabase.
  */

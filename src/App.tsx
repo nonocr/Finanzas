@@ -7,6 +7,7 @@ import { SettingsButton } from './components/SettingsButton';
 import { TabBar } from './components/TabBar';
 import { ToastProvider } from './components/Toast';
 import { LoginPage, MfaPage, ResetPasswordPage } from './features/auth/LoginPage';
+import { PrivacyPage } from './features/legal/PrivacyPage';
 import { BudgetsPage } from './features/budgets/BudgetsPage';
 import { HomePage } from './features/home/HomePage';
 import { AccountsPage } from './features/settings/AccountsPage';
@@ -30,7 +31,7 @@ type Auth = { session: Session | null; mfaPending: boolean };
 
 function useAuth() {
   const [auth, setAuth] = useState<Auth | undefined>(isDemo ? { session: null, mfaPending: false } : undefined);
-  // 'done': la contraseña nueva ya se guardó y la sesión de Safari se cerró; se sigue mostrando la confirmación.
+  // 'done': la contraseña nueva ya se guardó y la sesión del navegador se cerró; se sigue mostrando la confirmación.
   const [recovery, setRecovery] = useState<boolean | 'done'>(openedFromRecoveryLink);
   useEffect(() => {
     if (isDemo) return;
@@ -63,7 +64,10 @@ function ScrollToTop() {
 
 export default function App() {
   const { auth, recovery, finishRecovery, endRecovery } = useAuth();
+  const { pathname } = useLocation();
 
+  // La política de privacidad es pública: se abre con o sin sesión (la piden las tiendas y la pantalla de registro).
+  if (pathname === '/privacidad') return <PrivacyPage />;
   if (!auth) return null; // leyendo la sesión guardada
   if (!isDemo) {
     if (recovery === 'done' || (recovery && auth.session))
