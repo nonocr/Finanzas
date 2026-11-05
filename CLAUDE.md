@@ -46,10 +46,14 @@ En esta máquina (Windows), git no está en el PATH de PowerShell. Antepón `$en
 ## Diseño
 
 - `PRODUCT.md` tiene la verdad del producto y `DESIGN.md` el sistema visual. Léelos antes de tocar la UI.
-- Mundo visual: **«Tarjeta negra»**, el lujo discreto de una tarjeta de crédito negra de metal. Negros mate y grafitos en capas, **siempre en modo oscuro**. Los tokens están en `src/index.css` (`@theme`), junto con las utilidades `metal`, `machined`, `black-card` y `engraved`.
+- Mundo visual: **«Tarjeta negra»**, el lujo discreto de una tarjeta de crédito negra de metal. Negros mate y grafitos en capas, **siempre en modo oscuro** (también en los temas). Los tokens están en `src/index.css` (`@theme`), junto con las utilidades `metal`, `machined`, `black-card` y `engraved`.
+- **Temas «Tarjetas de metal»** (Ajustes → Tema): Negra, Titanio, Oro, Oro rosa, Zafiro y Esmeralda, todos oscuros. Están en `src/lib/themes.ts` y `src/lib/theme.ts` los aplica a `<html>` antes del primer pintado. Se guardan en este teléfono (`finanzas-theme`).
+  - Ningún color de superficie, texto o acción va escrito literal en un componente: usa las variables (`bg-card`, `text-accent`, `var(--color-muted)`…) o las utilidades `metal`, `metal-disc`, `black-card`, `ring-metal`. Recharts lee los colores de `useTheme()`.
+  - Si cambias los valores de Negra, cámbialos también en `@theme` de `src/index.css`. `scripts/temas.test.mjs` comprueba que cuadren y `src/lib/themes.test.ts`, el contraste AA de cada tema.
+  - En la app nativa, el ícono cambia con el tema mediante un plugin propio, `IconoApp`: `ios/App/App/IconoApp.swift` y `android/…/IconoAppPlugin.java` (en Android, un `activity-alias` por tema que se aplica al salir de la app). Los íconos se dibujan con `scripts/iconos.ps1`.
 - Las categorías guardan una clave `c1…c10` que `src/components/palette.tsx` traduce a tintes de baja saturación (bronce, salvia, acero…). El tinte vive solo en el trazo del ícono, sobre una placa de grafito (`CategoryIcon`/`IconTile`).
 - Reglas que no se rompen:
-  - El **platino** (`accent`, utilidad `metal`) es el único color de acción, con texto casi negro encima.
+  - El **platino** (`accent`, utilidad `metal`), o el metal del tema elegido, es el único color de acción, con texto casi negro encima.
   - El color solo aparece donde significa algo: el estado del presupuesto, los ingresos y el tinte de la categoría.
   - El presupuesto usa una sola regla de color (acero bajo el 80 %, ámbar desde el 80 % y rojo desde el 100 %): `budgetColor`/`budgetTone` en `src/components/ui.tsx`.
   - Los estados se marcan con el sello `Stamp` («Revisar»), no solo con color.

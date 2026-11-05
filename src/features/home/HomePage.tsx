@@ -80,7 +80,7 @@ export function HomePage() {
   const amountOf = new Map(slices.map((s) => [s.categoryId, s.amount]));
   const segments = [
     ...expenseCats.map((c) => ({ key: c.id, value: amountOf.get(c.id) ?? 0, color: hexOf(c.color) })),
-    { key: 'none', value: amountOf.get(null) ?? 0, color: '#48484a' },
+    { key: 'none', value: amountOf.get(null) ?? 0, color: 'var(--color-muted)' },
   ];
 
   const recent = (txs ?? []).slice(0, 5);
@@ -198,7 +198,7 @@ export function HomePage() {
               const c = s.categoryId ? catMap.get(s.categoryId) : undefined;
               return (
                 <li key={s.categoryId ?? 'none'} className="flex items-center gap-2 text-subhead">
-                  <span className="size-2.5 shrink-0 rounded-[3px]" style={{ background: c ? hexOf(c.color) : '#48484a' }} />
+                  <span className="size-2.5 shrink-0 rounded-[3px]" style={{ background: c ? hexOf(c.color) : 'var(--color-muted)' }} />
                   <span className="min-w-0 flex-1 truncate">{c?.name ?? 'Sin categoría'}</span>
                   <span className="tnum text-label-2">{Math.round(s.share * 100)}%</span>
                 </li>
@@ -236,7 +236,7 @@ function PendingCard({ pending }: { pending: Transaction[] }) {
   const { openEdit } = useEditor();
   const n = pending.length;
   return (
-    <section className="machined mb-4 rounded-[18px] bg-card p-3.5 shadow-[inset_0_0_0_1px_rgb(220_220_224/0.45)]" aria-label="Pagos por revisar">
+    <section className="machined mb-4 rounded-[18px] bg-card p-3.5 shadow-[inset_0_0_0_1px_color-mix(in_srgb,var(--color-accent)_45%,transparent)]" aria-label="Pagos por revisar">
       <div className="flex items-center gap-3">
         <IconTile icon={Smartphone} color="var(--color-accent)" size={34} />
         <div className="min-w-0 flex-1">
@@ -300,7 +300,7 @@ function WeekBars({ values, todayIndex }: { values: number[]; todayIndex: number
               className="rounded-t-[4px] rounded-b-[2px] transition-[height] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none"
               style={{
                 height: i > todayIndex ? 4 : Math.max(4, (v / max) * CHART_H),
-                background: i === todayIndex ? 'var(--color-accent)' : i > todayIndex ? 'var(--color-fill)' : '#4a4a4f',
+                background: i === todayIndex ? 'var(--color-accent)' : i > todayIndex ? 'var(--color-fill)' : 'var(--color-muted)',
               }}
               title={formatCRC(v)}
             />

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generado por scripts/iconos.ps1: fondo de los iconos alternos de cada tema. -->
+<resources>
+    <color name="icono_fondo_titanio">#0a0c0e</color>
+    <color name="icono_fondo_oro">#0d0b08</color>
+    <color name="icono_fondo_ororosa">#0e0b0a</color>
+    <color name="icono_fondo_zafiro">#080b12</color>
+    <color name="icono_fondo_esmeralda">#070c0a</color>
+</resources>

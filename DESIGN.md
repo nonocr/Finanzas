@@ -15,8 +15,11 @@ colors:
   label-2: "#9a9aa1"
   label-3: "#7c7c83"
   engraved: "#d6d6da"
+  muted: "#4a4a4f"
   accent: "#dcdce0"
   on-accent: "#0a0a0b"
+  metal-hi: "#f3f3f5"
+  metal-lo: "#c8c8cd"
   steel: "#b4b4ba"
   green: "#a9bfae"
   orange: "#d4a04c"
@@ -248,6 +251,8 @@ Colour is withheld until it means something. Budget state (steel, amber, red) an
 
 Dark only, always. There is no light theme and no light-theme token. The world explicitly refuses the category's saturated system colours and colour-filled icon tiles.
 
+**Metal cards (themes).** The owner can pick the metal of her card in Ajustes → Tema: Negra (the default, platinum), Titanio, Oro, Oro rosa, Zafiro and Esmeralda. A theme only re-tints the graphite ladder (bg, card, card-2, card-3, sep, fills, labels, engraved, muted) toward its hue at very low chroma and swaps the action metal (accent, on-accent, metal-hi, metal-lo). Every theme is still dark, still one action metal, still AA. Meaningful colour never moves with the theme: budget steel/amber/red, income sage, oxide red and the category tints are the same in all six. The app icon follows the theme (same three bars, in that theme's metal). Tokens live in `src/lib/themes.ts` and are written onto `<html>` as the same CSS variables `@theme` declares (which keep Negra's values for first paint); the hex values in this file are Negra's.
+
 **Key Characteristics:**
 - Matte near-black ground with a graphite ladder (card, card-2, card-3) for nesting.
 - Platinum is the single action colour: filled buttons, the add disc, plain text actions, focus ring, caret, toggles on, the selected ring.
@@ -287,7 +292,9 @@ Graphite and platinum, with colour reserved for meaning and kept at low chroma s
 - **Engraved Silver** (engraved): figures cut into metal (card amounts, card fields, last-four digits, the amount being typed).
 
 ### Named Rules
-**The Platinum Rule.** Platinum means "you can act here" (or "this is selected / today"). It is never a heading colour, a category accent or decoration, and no other hue ever marks an action.
+**The Platinum Rule.** Platinum (or the chosen theme's metal) means "you can act here" (or "this is selected / today"). It is never a heading colour, a category accent or decoration, and no other hue ever marks an action. A theme's metal must stay distinguishable from the meaningful colours: Oro's champagne is paler than budget amber, Esmeralda's jade is cooler and lighter than income sage.
+
+**The Token-Only Surface Rule.** No surface, text or action colour is written as a literal in a component: it comes from a theme variable (`--color-*`, `metal`, `metal-disc`, `black-card`, `ring-metal`), so all six cards stay correct. Only meaningful colours (budget, income, categories) and pure black/white shadow light are literal. Recharts, which paints through SVG attributes, reads the tokens from `useTheme()`.
 
 **The One Budget Rule.** Every budget expression uses one ratio rule: steel under 80 %, amber from 80 %, red at 100 % and over. Never pick a budget colour by hand; route it through the shared budget colour/tone helpers.
 

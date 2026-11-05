@@ -114,7 +114,7 @@ export function TransactionsPage() {
           <button
             type="button"
             onClick={() => setFilter('revisar')}
-            className="press machined flex min-h-12 w-full items-center gap-3 rounded-[12px] bg-card px-3.5 py-2 text-left shadow-[inset_0_0_0_1px_rgb(220_220_224/0.45)]"
+            className="press machined flex min-h-12 w-full items-center gap-3 rounded-[12px] bg-card px-3.5 py-2 text-left shadow-[inset_0_0_0_1px_color-mix(in_srgb,var(--color-accent)_45%,transparent)]"
           >
             <Smartphone size={20} strokeWidth={2} className="shrink-0 text-accent" />
             <span className="min-w-0 flex-1 text-body">

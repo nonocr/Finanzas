@@ -95,7 +95,7 @@ export function Segmented<T extends string>({
 
 /** Signo de colón como marca secundaria: más pequeño y gris, para que mande la cifra grabada. */
 export function QuietColon() {
-  return <span className="mr-[0.04em] align-baseline text-[0.6em] text-[#9d9da3] [text-shadow:none]">₡</span>;
+  return <span className="mr-[0.04em] align-baseline text-[0.6em] text-label-2 [text-shadow:none]">₡</span>;
 }
 
 /**

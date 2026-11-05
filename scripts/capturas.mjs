@@ -4,6 +4,7 @@
 // Uso:  node scripts/capturas.mjs <carpeta-salida> [url-base]
 //   Por defecto la base es http://127.0.0.1:5174 (servidor con VITE_DEMO=1, datos de ejemplo, sin datos reales).
 //   CAPTURAS_RUTAS="/,/movimientos"  limita las rutas;  CAPTURAS_TAMANOS="iphone,se"  limita los tamaños.
+//   CAPTURAS_TEMA="oro"  captura con ese tema.
 //
 // Informa por pantalla: desborde horizontal, elementos táctiles de menos de 44 px y textos de menos de 12 px.
 import { spawn } from 'node:child_process';
@@ -82,6 +83,11 @@ const AUDIT = `(() => {
 
 await send('Page.enable');
 await send('Runtime.enable');
+// CAPTURAS_TEMA=oro: captura con ese tema (src/lib/themes.ts), guardándolo antes de que cargue la app.
+if (process.env.CAPTURAS_TEMA)
+  await send('Page.addScriptToEvaluateOnNewDocument', {
+    source: `localStorage.setItem('finanzas-theme', ${JSON.stringify(process.env.CAPTURAS_TEMA)})`,
+  });
 const report = [];
 for (const name of sizeNames) {
   const s = SIZES[name];

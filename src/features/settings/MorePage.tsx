@@ -1,4 +1,4 @@
-import { ChevronLeft, CreditCard, Download, KeyRound, LogOut, Repeat, RotateCcw, ShieldCheck, Smartphone, Tags, Wand2 } from 'lucide-react';
+import { ChevronLeft, CreditCard, Download, KeyRound, LogOut, Palette, Repeat, RotateCcw, ShieldCheck, Smartphone, Tags, Wand2 } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useToast } from '../../components/Toast';
@@ -10,6 +10,7 @@ import { resetDemo } from '../../lib/demoApi';
 import { clearOfflineCache } from '../../lib/offline';
 import { useAccounts, useLookups } from '../../lib/queries';
 import { markPartialSignOut, supabase } from '../../lib/supabase';
+import { useTheme } from '../../lib/theme';
 import { ChangePasswordSheet } from './ChangePasswordSheet';
 import { TwoFactorSheet } from './TwoFactorSheet';
 
@@ -27,6 +28,7 @@ export function MorePage() {
   const { catMap, accMap } = useLookups();
   const { data: accounts = [] } = useAccounts();
   const toast = useToast();
+  const theme = useTheme();
   const [passwordOpen, setPasswordOpen] = useState(false);
   const [passwordKey, setPasswordKey] = useState(0);
   const [twoFactorOpen, setTwoFactorOpen] = useState(false);
@@ -79,6 +81,10 @@ export function MorePage() {
         <Row to="/mas/cuentas" leading={<IconTile icon={CreditCard} color="var(--color-label-2)" />} title="Cuentas y tarjetas" trailing={accounts.length} chevron />
         <Row to="/mas/categorias" leading={<IconTile icon={Tags} color="var(--color-label-2)" />} title="Categorías" chevron />
         <Row to="/mas/reglas" leading={<IconTile icon={Wand2} color="var(--color-label-2)" />} title="Reglas de comercios" chevron />
+      </Section>
+
+      <Section header="Apariencia">
+        <Row to="/mas/tema" leading={<IconTile icon={Palette} color="var(--color-label-2)" />} title="Tema" trailing={theme.name} chevron />
       </Section>
 
       <Section header="Automático">

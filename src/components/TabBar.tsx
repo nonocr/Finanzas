@@ -30,7 +30,7 @@ function Tab({ to, label, icon: Icon, end, badge = 0 }: (typeof TABS)[number] & 
             <Icon size={23} strokeWidth={isActive ? 2 : 1.6} />
             {badge > 0 && (
               // Contador en platino, como un remache: dice cuántos pagos esperan sin depender del rojo.
-              <span className="metal tnum absolute -top-1.5 left-[15px] grid h-[18px] min-w-[18px] place-items-center rounded-full px-1 text-[12px] leading-none font-bold shadow-[0_0_0_2px_#050505]">
+              <span className="metal tnum absolute -top-1.5 left-[15px] grid h-[18px] min-w-[18px] place-items-center rounded-full px-1 text-[12px] leading-none font-bold shadow-[0_0_0_2px_var(--color-bg)]">
                 {badge}
               </span>
             )}
@@ -58,7 +58,7 @@ export function TabBar() {
             type="button"
             onClick={() => openNew()}
             aria-label="Agregar movimiento"
-            className="press grid size-[52px] place-items-center rounded-full text-on-accent shadow-[inset_0_1px_0_rgb(255_255_255/0.8),inset_0_-2px_3px_rgb(0_0_0/0.25),0_6px_16px_rgb(0_0_0/0.6),0_0_0_1px_#000] [background:radial-gradient(120%_120%_at_30%_20%,#ffffff_0%,#d7d7db_45%,#a9a9ae_100%)]"
+            className="press metal-disc grid size-[52px] place-items-center rounded-full"
           >
             <Plus size={26} strokeWidth={2.5} />
           </button>
