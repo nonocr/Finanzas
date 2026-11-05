@@ -26,10 +26,11 @@ import {
 import type { AccountType } from '../lib/types';
 
 // Las categorías guardan una clave de color (c1…c10). En la «tarjeta negra» son tintes de baja saturación (bronce,
-// salvia, acero…) que viven en el trazo del ícono y en los gráficos; no compiten con el ámbar y rojo del presupuesto.
+// orquídea, acero…) que viven en el trazo del ícono y en los gráficos; no compiten con el ámbar y rojo del presupuesto.
+// Ningún tinte es verde: el verde significa «ingreso» (c2 era salvia y se confundía con él en Estadísticas).
 export const CATEGORY_HEX: Record<string, string> = {
   c1: '#b28c62', // bronce
-  c2: '#93a893', // salvia
+  c2: '#c99fbe', // orquídea (antes salvia, #93a893)
   c3: '#8497ab', // acero azul
   c4: '#a08f7e', // topo
   c5: '#bcaa7a', // champán

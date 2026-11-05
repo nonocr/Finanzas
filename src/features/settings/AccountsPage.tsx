@@ -14,8 +14,9 @@ import { Toggle } from '../transactions/TransactionSheet';
 import { BackLink } from './MorePage';
 import { ColonesInput, DayInput, FormGroup, FormHeader, FormRow, TextInput } from './form';
 
+// El efectivo va en topo (el color del billete), no en verde: el verde significa «ingreso».
 const TYPE_COLOR: Record<AccountType, string> = {
-  efectivo: 'var(--color-green)',
+  efectivo: 'var(--color-brown)',
   debito: 'var(--color-blue)',
   credito: 'var(--color-indigo)',
   banco: 'var(--color-teal)',

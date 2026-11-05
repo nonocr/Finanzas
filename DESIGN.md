@@ -30,7 +30,7 @@ colors:
   pink: "#ab8289"
   gray: "#85858b"
   c1-bronce: "#b28c62"
-  c2-salvia: "#93a893"
+  c2-orquidea: "#c99fbe"
   c3-acero-azul: "#8497ab"
   c4-topo: "#a08f7e"
   c5-champan: "#bcaa7a"
@@ -299,6 +299,8 @@ Graphite and platinum, with colour reserved for meaning and kept at low chroma s
 **The Token-Only Surface Rule.** No surface, text or action colour is written as a literal in a component: it comes from a theme variable (`--color-*`, `metal`, `metal-disc`, `black-card`, `ring-metal`), so all six cards stay correct. Only meaningful colours (budget, income, categories) and pure black/white shadow light are literal. Recharts, which paints through SVG attributes, reads the tokens from `useTheme()`.
 
 **The One Budget Rule.** Every budget expression uses one ratio rule: steel under 80 %, amber from 80 %, red at 100 % and over. Never pick a budget colour by hand; route it through the shared budget colour/tone helpers.
+
+**The Green Means Income Rule.** Green is income (and, in the same sense, «good»: a success check, spending down, a feature turned on). No category tint, account tint or chart series is green for anything else. c2 was a sage (#93a893) that read as income next to the income figure in Estadísticas; it is now orchid (#c99fbe), the most distinct tint in the palette. Cash (an expense) uses taupe (brown), in Cuentas and in the payment-method bar. A test keeps every category tint away from the income green.
 
 **The Stroke-Only Tint Rule.** Category and account tints colour an icon's stroke on a graphite plate, a chart segment, or a 10px legend swatch. They never fill a tile, a row or a card.
 

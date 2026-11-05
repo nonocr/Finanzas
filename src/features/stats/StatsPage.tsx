@@ -257,6 +257,7 @@ export function StatsPage() {
 const METHOD_LABEL = { tarjeta: 'Tarjeta', efectivo: 'Efectivo', otro: 'Otros' } as const;
 const METHOD_COLOR = {
   tarjeta: 'var(--color-label)',
-  efectivo: 'var(--color-green)',
+  // Topo, como el efectivo en Cuentas: pagar en efectivo es un gasto, no puede ir en el verde de los ingresos.
+  efectivo: 'var(--color-brown)',
   otro: 'color-mix(in srgb, var(--color-muted) 80%, var(--color-label-3))',
 } as const;
