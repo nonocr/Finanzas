@@ -26,7 +26,8 @@ import {
 const compact = new Intl.NumberFormat('es-CR', { notation: 'compact', maximumFractionDigits: 1 });
 // Mismo signo menos (U+2212) que formatCRC.
 // Recharts pinta con atributos SVG, que no leen variables CSS: sus colores salen del tema en JS.
-// El verde de ingresos no cambia con el tema (es un color con significado).
+// El verde de ingresos no cambia con el tema (es un color con significado). Los gastos van en el claro neutro del tema,
+// no en el metal de la acción: en Esmeralda o Zafiro el metal teñido competiría con el verde de los ingresos.
 const GREEN = '#a9bfae';
 const formatPct = (ratio: number) => `${ratio < 0 ? '−' : ''}${Math.abs(Math.round(ratio * 100))}%`;
 
@@ -167,13 +168,13 @@ export function StatsPage() {
                 tickFormatter={(v: number) => compact.format(v)}
               />
               <Tooltip
-                cursor={{ fill: `rgb(${tk.fillRgb} / 0.1)` }}
+                cursor={{ fill: tk.fill }}
                 contentStyle={{ background: tk.card2, border: `1px solid ${tk.card3}`, borderRadius: 10, fontSize: 13 }}
                 labelStyle={{ color: tk.label, fontWeight: 600, textTransform: 'capitalize' }}
                 formatter={(v) => formatCRC(Number(v) * 100)}
               />
               <Bar dataKey="Ingresos" fill={GREEN} radius={[4, 4, 1, 1]} isAnimationActive={false} />
-              <Bar dataKey="Gastos" fill={tk.accent} radius={[4, 4, 1, 1]} isAnimationActive={false} />
+              <Bar dataKey="Gastos" fill={tk.label} radius={[4, 4, 1, 1]} isAnimationActive={false} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -183,7 +184,7 @@ export function StatsPage() {
             Ingresos
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="size-2.5 rounded-[3px] bg-accent" />
+            <span className="size-2.5 rounded-[3px] bg-label" />
             Gastos
           </span>
         </div>
@@ -255,7 +256,7 @@ export function StatsPage() {
 
 const METHOD_LABEL = { tarjeta: 'Tarjeta', efectivo: 'Efectivo', otro: 'Otros' } as const;
 const METHOD_COLOR = {
-  tarjeta: 'var(--color-accent)',
+  tarjeta: 'var(--color-label)',
   efectivo: 'var(--color-green)',
   otro: 'color-mix(in srgb, var(--color-muted) 80%, var(--color-label-3))',
 } as const;

@@ -1,19 +1,13 @@
 import { describe, expect, it } from 'vitest';
+import { apca, distance, fromHex, parse, wcag, type Lch } from './oklch';
 import { THEMES, themeById } from './themes';
 
-const hex = /^#[0-9a-f]{6}$/;
-
-function luminance(color: string) {
-  const [r, g, b] = [1, 3, 5].map((i) => {
-    const c = parseInt(color.slice(i, i + 2), 16) / 255;
-    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
-  });
-  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
-}
-function contrast(a: string, b: string) {
-  const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
-  return (hi + 0.05) / (lo + 0.05);
-}
+// Colores con significado que no cambian con el tema (src/index.css). El metal de la acción no debe parecerse a ellos.
+const MEANINGFUL: Record<string, Lch> = {
+  'ámbar del presupuesto': fromHex('#d4a04c'),
+  'rojo del presupuesto': fromHex('#e0695a'),
+  'verde de ingresos': fromHex('#a9bfae'),
+};
 
 describe('temas', () => {
   it('Negra es el primero y el de respaldo', () => {
@@ -22,22 +16,53 @@ describe('temas', () => {
     expect(themeById(null).id).toBe('negra');
   });
 
-  it.each(THEMES.map((t) => [t.name, t] as const))('%s: colores válidos y legibles (WCAG AA)', (_, t) => {
-    const k = t.tokens;
-    for (const [name, value] of Object.entries(k)) {
-      if (name === 'fillRgb') expect(value).toMatch(/^\d{1,3} \d{1,3} \d{1,3}$/);
-      else expect(value, name).toMatch(hex);
+  it('cada tema tiene un id, un nombre y un ícono únicos', () => {
+    for (const key of ['id', 'name', 'iconName'] as const) {
+      const values = THEMES.map((t) => t[key]);
+      expect(new Set(values).size, key).toBe(values.length);
     }
-    for (const surface of [k.bg, k.card, k.card2]) {
-      expect(contrast(k.label, surface)).toBeGreaterThanOrEqual(4.5);
-      expect(contrast(k.label2, surface)).toBeGreaterThanOrEqual(4.5);
-    }
-    // Marcadores de posición y chevrones: texto secundario grande o no esencial.
-    expect(contrast(k.label3, k.card)).toBeGreaterThanOrEqual(3.5);
-    // Texto sobre el metal de la acción, en todo el degradado.
-    for (const metal of [k.accent, k.metalHi, k.metalLo]) expect(contrast(k.onAccent, metal)).toBeGreaterThanOrEqual(4.5);
-    // Acciones en texto (Cancelar, Ver todos) sobre las superficies.
-    expect(contrast(k.accent, k.card2)).toBeGreaterThanOrEqual(4.5);
-    expect(contrast(k.engraved, k.card)).toBeGreaterThanOrEqual(4.5);
   });
+
+  it.each(THEMES.map((t) => [t.name, t] as const))('%s: legible (WCAG 2 AA y APCA)', (_, t) => {
+    const k = t.lch;
+    for (const value of Object.values(t.tokens)) expect(() => parse(value)).not.toThrow();
+    // Texto principal.
+    expect(wcag(k.label, k.card)).toBeGreaterThanOrEqual(7);
+    expect(apca(k.label, k.card)).toBeGreaterThanOrEqual(75);
+    // Secundario (subtítulos, fechas, «Quedan…»): AA y APCA de texto grande con margen.
+    for (const surface of [k.bg, k.card, k.card2]) {
+      expect(wcag(k.label2, surface)).toBeGreaterThanOrEqual(4.5);
+      expect(apca(k.label2, surface)).toBeGreaterThanOrEqual(54);
+    }
+    // Terciario (marcadores de posición, chevrones): elemento de interfaz.
+    expect(apca(k.label3, k.card)).toBeGreaterThanOrEqual(30);
+    // Texto de los botones de metal, en todo el degradado.
+    for (const metal of [k.accent, k.metalHi, k.metalLo]) {
+      expect(wcag(k.onAccent, metal)).toBeGreaterThanOrEqual(4.5);
+      expect(apca(k.onAccent, metal)).toBeGreaterThanOrEqual(54);
+    }
+    // Acciones en texto («Cancelar», «Ver todos») y cifras grabadas.
+    expect(apca(k.accent, k.card2)).toBeGreaterThanOrEqual(60);
+    expect(apca(k.engraved, k.card)).toBeGreaterThanOrEqual(60);
+  });
+
+  it('todos los temas tienen el mismo contraste (misma escalera de claridad)', () => {
+    const spread = (f: (t: (typeof THEMES)[number]) => number) => {
+      const values = THEMES.filter((t) => t.id !== 'carbono').map(f);
+      return Math.max(...values) - Math.min(...values);
+    };
+    expect(spread((t) => apca(t.lch.label, t.lch.card))).toBeLessThan(1);
+    expect(spread((t) => apca(t.lch.label2, t.lch.card))).toBeLessThan(1);
+    expect(spread((t) => apca(t.lch.label3, t.lch.card))).toBeLessThan(1);
+  });
+
+  // Solo el metal de la acción (accent): es el que aparece suelto (texto de acciones, interruptores, la barra de hoy).
+  // Los extremos del degradado solo viven dentro de un botón. Los metales grises no entran: no tienen color que
+  // confundir, aunque el verde de ingresos, casi gris, quede cerca en números.
+  it.each(THEMES.filter((t) => t.lch.accent[1] > 0.02).map((t) => [t.name, t] as const))(
+    '%s: el metal no se confunde con los colores con significado',
+    (_, t) => {
+      for (const [name, color] of Object.entries(MEANINGFUL)) expect(distance(t.lch.accent, color), name).toBeGreaterThanOrEqual(0.085);
+    },
+  );
 });

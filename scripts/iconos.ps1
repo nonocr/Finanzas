@@ -1,18 +1,13 @@
 # Dibuja los iconos alternos de la app (uno por tema de src/lib/themes.ts) para iOS y Android.
 # El icono principal (Negra) lo genera `npx @capacitor/assets generate` desde assets/.
-# Uso (Windows PowerShell, desde la raiz del repo):  powershell -ExecutionPolicy Bypass -File scripts/iconos.ps1
-# Los colores repiten `icon` de src/lib/themes.ts: si cambian alla, cambialos aqui y vuelve a correrlo.
+# Uso (Windows PowerShell, desde la raiz del repo):
+#   node scripts/temas-iconos.mjs; powershell -ExecutionPolicy Bypass -File scripts/iconos.ps1
 Add-Type -AssemblyName System.Drawing
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
 
-$temas = @(
-  @{ ios = 'Titanio';   android = 'titanio';   bg = '#0a0c0e'; bars = @('#4e565f', '#e6ecf2', '#9aa5b1') },
-  @{ ios = 'Oro';       android = 'oro';       bg = '#0d0b08'; bars = @('#6a5a3c', '#f0dfb5', '#c4a86c') },
-  @{ ios = 'OroRosa';   android = 'ororosa';   bg = '#0e0b0a'; bars = @('#6b5049', '#f3d9cf', '#c99a8c') },
-  @{ ios = 'Zafiro';    android = 'zafiro';    bg = '#080b12'; bars = @('#3f4c68', '#dfe7f8', '#8ea3cf') },
-  @{ ios = 'Esmeralda'; android = 'esmeralda'; bg = '#070c0a'; bars = @('#3c5a4e', '#d6efe4', '#82b7a0') }
-)
+# Colores calculados por las recetas de src/lib/themes.ts (node scripts/temas-iconos.mjs los escribe).
+$temas = Get-Content -Raw -Encoding UTF8 (Join-Path $PSScriptRoot 'iconos.json') | ConvertFrom-Json
 # Las tres barras de public/favicon.svg (viewBox 64x64).
 $geo = @(
   @{ x = 15;   y = 22; w = 9; h = 24 },

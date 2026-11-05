@@ -35,7 +35,7 @@ A personal, colones-first tracker whose Apple Wallet payments arrive by themselv
 
 ## Brand Commitments
 - Chosen by the owner (2026-10-30): the «Tarjeta negra» direction, black and grey like an exclusive black metal card (matte black, layered graphite, platinum as the single action colour).
-- Personalisation (2026-11-05): the owner chose «Tarjetas de metal», six dark themes (Negra, Titanio, Oro, Oro rosa, Zafiro, Esmeralda) that change the graphite tint and the action metal, plus a matching app icon in the native apps. No light themes, no free colour picker.
+- Personalisation (2026-11-05): the owner chose «Tarjetas de metal», ten dark themes (Negra, Carbono, Titanio, Oro, Oro rosa, Cobre, Sakura, Amatista, Zafiro, Esmeralda) that change the graphite tint and the action metal, plus a matching app icon in the native apps. No light themes, no free colour picker.
 - Quality bar: the finish of a black metal card. Native-feeling grouped lists, SF system type, large titles, graphite surfaces, platinum as the only action colour, engraved light figures, translucent tab bar.
 
 ## Evidence on Hand

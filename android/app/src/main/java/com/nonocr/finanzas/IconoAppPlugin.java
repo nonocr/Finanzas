@@ -20,7 +20,9 @@ import java.util.List;
 @CapacitorPlugin(name = "IconoApp")
 public class IconoAppPlugin extends Plugin {
 
-    private static final List<String> ALIAS = Arrays.asList("Negra", "Titanio", "Oro", "OroRosa", "Zafiro", "Esmeralda");
+    private static final List<String> ALIAS = Arrays.asList(
+        "Negra", "Carbono", "Titanio", "Oro", "OroRosa", "Cobre", "Sakura", "Amatista", "Zafiro", "Esmeralda"
+    );
 
     private String pendiente;
 

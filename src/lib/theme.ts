@@ -23,7 +23,7 @@ function apply(theme: Theme) {
   const root = document.documentElement;
   for (const [name, value] of Object.entries(themeVars(theme.tokens))) root.style.setProperty(name, value);
   root.dataset.theme = theme.id;
-  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme.tokens.bg);
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme.bgHex);
 }
 
 /** Antes de montar React: pinta la app con el tema guardado. */

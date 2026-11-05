@@ -104,6 +104,58 @@
             </intent-filter>
         </activity-alias>
 
+        <activity-alias
+            android:name=".Carbono"
+            android:targetActivity=".MainActivity"
+            android:label="@string/title_activity_main"
+            android:icon="@mipmap/ic_launcher_carbono"
+            android:roundIcon="@mipmap/ic_launcher_carbono_round"
+            android:enabled="false"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".Cobre"
+            android:targetActivity=".MainActivity"
+            android:label="@string/title_activity_main"
+            android:icon="@mipmap/ic_launcher_cobre"
+            android:roundIcon="@mipmap/ic_launcher_cobre_round"
+            android:enabled="false"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".Sakura"
+            android:targetActivity=".MainActivity"
+            android:label="@string/title_activity_main"
+            android:icon="@mipmap/ic_launcher_sakura"
+            android:roundIcon="@mipmap/ic_launcher_sakura_round"
+            android:enabled="false"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".Amatista"
+            android:targetActivity=".MainActivity"
+            android:label="@string/title_activity_main"
+            android:icon="@mipmap/ic_launcher_amatista"
+            android:roundIcon="@mipmap/ic_launcher_amatista_round"
+            android:enabled="false"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"

@@ -14,28 +14,28 @@
 @theme {
   --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', Roboto, system-ui, sans-serif;
 
-  /* Escala de grafitos: los únicos neutros */
-  --color-bg: #050505;
-  --color-card: #111112;
-  --color-card-2: #1b1b1d;
-  --color-card-3: #29292c;
-  --color-fill: rgb(150 150 160 / 0.14);
-  --color-fill-2: rgb(150 150 160 / 0.24);
-  --color-sep: #242427;
-  --color-label: #ececef;
-  --color-label-2: #9a9aa1;
-  --color-label-3: #7c7c83;
+  /* Escala de grafitos: los únicos neutros. Valores de la tarjeta Negra en OKLCH, iguales a src/lib/themes.ts. */
+  --color-bg: oklch(0.115 0.002 286);
+  --color-card: oklch(0.178 0.003 286);
+  --color-card-2: oklch(0.223 0.004 286);
+  --color-card-3: oklch(0.282 0.005 286);
+  --color-fill: oklch(0.65 0.006 286 / 0.14);
+  --color-fill-2: oklch(0.65 0.006 286 / 0.24);
+  --color-sep: oklch(0.262 0.005 286);
+  --color-label: oklch(0.944 0.001 286);
+  --color-label-2: oklch(0.74 0.003 286);
+  --color-label-3: oklch(0.61 0.005 286);
 
   /* Gris neutro de barras sin significado (días pasados, «sin categoría») */
-  --color-muted: #4a4a4f;
+  --color-muted: oklch(0.411 0.007 286);
   /* Cifras grabadas en el metal */
-  --color-engraved: #d6d6da;
+  --color-engraved: oklch(0.877 0.001 286);
 
   /* Acción: platino en Negra (relleno claro con texto casi negro) y su degradado de metal pulido */
-  --color-accent: #dcdce0;
-  --color-on-accent: #0a0a0b;
-  --color-metal-hi: #f3f3f5;
-  --color-metal-lo: #c8c8cd;
+  --color-accent: oklch(0.896 0.004 286);
+  --color-on-accent: oklch(0.145 0.005 286);
+  --color-metal-hi: oklch(0.965 0.001 286);
+  --color-metal-lo: oklch(0.834 0.008 286);
 
   /* Estados y tintes de categoría: baja saturación, para convivir con el metal */
   --color-green: #a9bfae;

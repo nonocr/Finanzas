@@ -12,8 +12,8 @@ colors:
   fill-2: "rgb(150 150 160 / 0.24)"
   sep: "#242427"
   label: "#ececef"
-  label-2: "#9a9aa1"
-  label-3: "#7c7c83"
+  label-2: "#aaaaad"
+  label-3: "#838386"
   engraved: "#d6d6da"
   muted: "#4a4a4f"
   accent: "#dcdce0"
@@ -251,7 +251,9 @@ Colour is withheld until it means something. Budget state (steel, amber, red) an
 
 Dark only, always. There is no light theme and no light-theme token. The world explicitly refuses the category's saturated system colours and colour-filled icon tiles.
 
-**Metal cards (themes).** The owner can pick the metal of her card in Ajustes → Tema: Negra (the default, platinum), Titanio, Oro, Oro rosa, Zafiro and Esmeralda. A theme only re-tints the graphite ladder (bg, card, card-2, card-3, sep, fills, labels, engraved, muted) toward its hue at very low chroma and swaps the action metal (accent, on-accent, metal-hi, metal-lo). Every theme is still dark, still one action metal, still AA. Meaningful colour never moves with the theme: budget steel/amber/red, income sage, oxide red and the category tints are the same in all six. The app icon follows the theme (same three bars, in that theme's metal). Tokens live in `src/lib/themes.ts` and are written onto `<html>` as the same CSS variables `@theme` declares (which keep Negra's values for first paint); the hex values in this file are Negra's.
+**Metal cards (themes).** The owner can pick the metal of her card in Ajustes → Tema: Negra (the default, platinum), Carbono, Titanio, Oro, Oro rosa, Cobre, Sakura, Amatista, Zafiro and Esmeralda. A theme only re-tints the graphite ladder (bg, card, card-2, card-3, sep, fills, labels, engraved, muted) toward its hue and swaps the action metal (accent, on-accent, metal-hi, metal-lo). Every theme is still dark, still one action metal. Meaningful colour never moves with the theme: budget steel/amber/red, income sage, oxide red and the category tints are the same in all ten. The app icon follows the theme (same three bars, in that theme's metal).
+
+Themes are **recipes in OKLCH**, not hand-picked swatches (`src/lib/themes.ts`, maths in `src/lib/oklch.ts`). Every theme shares one lightness ladder per role (Negra's, measured in OKLCH), so contrast is identical across themes; only the hue changes, and chroma is a **percentage of that hue's sRGB maximum** (surfaces 14 % on coloured themes, 3 % on Negra, 9 % on Titanio, 0 on Carbono; text 70 % of the surface tint; the metal 38–54 % by material). Coloured metals sit slightly lower in L (0.855) than the neutral ones (0.896) because colour reads brighter than grey at equal L and high-L blues and pinks have almost no gamut. Carbono is the exception ladder: true black ground for OLED and a dimmer graphite metal. Secondary text was raised from L 0.688 to 0.74 for every theme (APCA 47 → 56 on cards). Tests hold the floor: WCAG AA and APCA on every pair in every theme, equal contrast across themes, and every coloured metal at least ΔE 0.085 (OKLab) from budget amber, oxide red and income sage. The values below are Negra's (as hex for reference; the code uses `oklch()`).
 
 **Key Characteristics:**
 - Matte near-black ground with a graphite ladder (card, card-2, card-3) for nesting.
@@ -292,7 +294,7 @@ Graphite and platinum, with colour reserved for meaning and kept at low chroma s
 - **Engraved Silver** (engraved): figures cut into metal (card amounts, card fields, last-four digits, the amount being typed).
 
 ### Named Rules
-**The Platinum Rule.** Platinum (or the chosen theme's metal) means "you can act here" (or "this is selected / today"). It is never a heading colour, a category accent or decoration, and no other hue ever marks an action. A theme's metal must stay distinguishable from the meaningful colours: Oro's champagne is paler than budget amber, Esmeralda's jade is cooler and lighter than income sage.
+**The Platinum Rule.** Platinum (or the chosen theme's metal) means "you can act here" (or "this is selected / today"). It is never a heading colour, a category accent or decoration, and no other hue ever marks an action. A theme's metal must stay distinguishable from the meaningful colours: Oro's champagne is paler than budget amber, Cobre leans redder than it, Esmeralda's jade is cooler and lighter than income sage. Charts never paint a data series in the action metal: Estadísticas draws expenses (and «Tarjeta») in the theme's light neutral (label) so a tinted metal never competes with income green.
 
 **The Token-Only Surface Rule.** No surface, text or action colour is written as a literal in a component: it comes from a theme variable (`--color-*`, `metal`, `metal-disc`, `black-card`, `ring-metal`), so all six cards stay correct. Only meaningful colours (budget, income, categories) and pure black/white shadow light are literal. Recharts, which paints through SVG attributes, reads the tokens from `useTheme()`.
 
