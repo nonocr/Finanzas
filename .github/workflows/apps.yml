@@ -3,17 +3,11 @@
 # La firma y la subida a TestFlight / Google Play se agregan cuando estén las cuentas de desarrollador.
 name: Apps nativas
 
+# Por ahora solo a mano (Actions → Apps nativas → Run workflow): la dueña decide cuándo compilar las apps, y cada
+# compilación de iOS gasta minutos de macOS. Para compilar en cada push, agrega de nuevo:
+#   push: { branches: [main], paths: ['android/**', 'ios/**', 'capacitor.config.ts', 'package*.json'] }
 on:
   workflow_dispatch:
-  push:
-    branches: [main, feature/tiendas-multiusuario]
-    paths:
-      - 'android/**'
-      - 'ios/**'
-      - 'capacitor.config.ts'
-      - 'package.json'
-      - 'package-lock.json'
-      - '.github/workflows/apps.yml'
 
 permissions:
   contents: read
