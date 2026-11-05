@@ -55,6 +55,12 @@
       "skillPath": "skills/make-interfaces-feel-better/SKILL.md",
       "computedHash": "ee95073d274bd8f792f917a2b2c2963d46c1b31c81723e6ef3c63ffe33bd681c"
     },
+    "oklch-skill": {
+      "source": "jakubkrehel/oklch-skill",
+      "sourceType": "github",
+      "skillPath": "skills/oklch-skill/SKILL.md",
+      "computedHash": "e627c78e72955352f1efff3771e788a9ac174628fe3238738d1ee6912effdefd"
+    },
     "transitions-dev": {
       "source": "Jakubantalik/transitions.dev",
       "sourceType": "github",

@@ -6,9 +6,13 @@ import './index.css'
 import App from './App.tsx'
 import { isDemo } from './lib/api'
 import { startAppUpdates } from './lib/appUpdate'
+import { startNative } from './lib/native'
 import { CACHE_MAX_AGE, onCacheRestored, persister, queryClient, resumePendingMutations, shouldPersistMutation } from './lib/offline'
+import { startTheme } from './lib/theme'
 
+startTheme()
 startAppUpdates()
+startNative()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

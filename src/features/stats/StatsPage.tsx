@@ -10,6 +10,7 @@ import { CategoryIcon, EmptyState, Screen, Section } from '../../components/ui';
 import { addMonths, crDay, crDayStartInstant, monthName, startOfMonth } from '../../lib/dates';
 import { drillHref } from '../../lib/drill';
 import { formatCRC } from '../../lib/money';
+import { useTheme } from '../../lib/theme';
 import { useLookups, useTransactions } from '../../lib/queries';
 import {
   changeVs,
@@ -24,6 +25,11 @@ import {
 
 const compact = new Intl.NumberFormat('es-CR', { notation: 'compact', maximumFractionDigits: 1 });
 // Mismo signo menos (U+2212) que formatCRC.
+// Recharts pinta con atributos SVG, que no leen variables CSS: sus colores salen del tema en JS.
+// Ingresos en verde y gastos en rojo apagado (--color-expense), iguales en todos los temas: son colores con significado.
+// El rojo de los gastos es más oscuro y opaco que el de alarma, para que este siga avisando solo cuando hace falta.
+const GREEN = '#a9bfae';
+const EXPENSE = 'oklch(0.56 0.085 27)';
 const formatPct = (ratio: number) => `${ratio < 0 ? '−' : ''}${Math.abs(Math.round(ratio * 100))}%`;
 
 export function StatsPage() {
@@ -35,6 +41,7 @@ export function StatsPage() {
     to: crDayStartInstant(addMonths(month, 1)).toISOString(),
   });
   const { catMap, accMap, allCategories: categories } = useLookups();
+  const tk = useTheme().tokens;
 
   const { txs, prevTxs } = useMemo(() => {
     const inMonth = (m: Date) => {
@@ -70,7 +77,7 @@ export function StatsPage() {
   const amountOf = new Map(slices.map((s) => [s.categoryId, s.amount]));
   const segments = [
     ...expenseCats.map((c) => ({ key: c.id, value: amountOf.get(c.id) ?? 0, color: hexOf(c.color) })),
-    { key: 'none', value: amountOf.get(null) ?? 0, color: '#48484a' },
+    { key: 'none', value: amountOf.get(null) ?? 0, color: 'var(--color-muted)' },
   ];
 
   return (
@@ -153,22 +160,22 @@ export function StatsPage() {
         >
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={trend} barGap={2} barCategoryGap="22%">
-              <XAxis dataKey="name" tickLine={false} axisLine={false} tick={{ fill: '#9a9aa1', fontSize: 12 }} />
+              <XAxis dataKey="name" tickLine={false} axisLine={false} tick={{ fill: tk.label2, fontSize: 12 }} />
               <YAxis
                 tickLine={false}
                 axisLine={false}
                 width={44}
-                tick={{ fill: '#7c7c83', fontSize: 12 }}
+                tick={{ fill: tk.label3, fontSize: 12 }}
                 tickFormatter={(v: number) => compact.format(v)}
               />
               <Tooltip
-                cursor={{ fill: 'rgb(150 150 160 / 0.1)' }}
-                contentStyle={{ background: '#1b1b1d', border: '1px solid #29292c', borderRadius: 10, fontSize: 13 }}
-                labelStyle={{ color: '#ececef', fontWeight: 600, textTransform: 'capitalize' }}
+                cursor={{ fill: tk.fill }}
+                contentStyle={{ background: tk.card2, border: `1px solid ${tk.card3}`, borderRadius: 10, fontSize: 13 }}
+                labelStyle={{ color: tk.label, fontWeight: 600, textTransform: 'capitalize' }}
                 formatter={(v) => formatCRC(Number(v) * 100)}
               />
-              <Bar dataKey="Ingresos" fill="#a9bfae" radius={[4, 4, 1, 1]} isAnimationActive={false} />
-              <Bar dataKey="Gastos" fill="#dcdce0" radius={[4, 4, 1, 1]} isAnimationActive={false} />
+              <Bar dataKey="Ingresos" fill={GREEN} radius={[4, 4, 1, 1]} isAnimationActive={false} />
+              <Bar dataKey="Gastos" fill={EXPENSE} radius={[4, 4, 1, 1]} isAnimationActive={false} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -178,7 +185,7 @@ export function StatsPage() {
             Ingresos
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="size-2.5 rounded-[3px] bg-accent" />
+            <span className="size-2.5 rounded-[3px] bg-expense" />
             Gastos
           </span>
         </div>
@@ -249,4 +256,10 @@ export function StatsPage() {
 }
 
 const METHOD_LABEL = { tarjeta: 'Tarjeta', efectivo: 'Efectivo', otro: 'Otros' } as const;
-const METHOD_COLOR = { tarjeta: '#dcdce0', efectivo: '#a9bfae', otro: '#5a5a60' } as const;
+// Tarjeta en el metal del tema, efectivo en el mismo metal más oscuro (dos tonos de una familia) y «otros» en un gris
+// apagado: es el tramo menos importante y no debe llevarse la vista. Aquí no hay ingresos cerca: el metal no compite.
+const METHOD_COLOR = {
+  tarjeta: 'var(--color-accent)',
+  efectivo: 'color-mix(in oklch, var(--color-accent) 65%, var(--color-bg))',
+  otro: 'var(--color-muted)',
+} as const;

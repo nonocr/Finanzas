@@ -12,11 +12,14 @@ colors:
   fill-2: "rgb(150 150 160 / 0.24)"
   sep: "#242427"
   label: "#ececef"
-  label-2: "#9a9aa1"
-  label-3: "#7c7c83"
+  label-2: "#aaaaad"
+  label-3: "#838386"
   engraved: "#d6d6da"
+  muted: "#4a4a4f"
   accent: "#dcdce0"
   on-accent: "#0a0a0b"
+  metal-hi: "#f3f3f5"
+  metal-lo: "#c8c8cd"
   steel: "#b4b4ba"
   green: "#a9bfae"
   orange: "#d4a04c"
@@ -248,6 +251,10 @@ Colour is withheld until it means something. Budget state (steel, amber, red) an
 
 Dark only, always. There is no light theme and no light-theme token. The world explicitly refuses the category's saturated system colours and colour-filled icon tiles.
 
+**Metal cards (themes).** The owner can pick the metal of her card in Ajustes → Tema: Negra (the default, platinum), Carbono, Titanio, Oro, Oro rosa, Cobre, Sakura, Amatista, Zafiro and Esmeralda. A theme only re-tints the graphite ladder (bg, card, card-2, card-3, sep, fills, labels, engraved, muted) toward its hue and swaps the action metal (accent, on-accent, metal-hi, metal-lo). Every theme is still dark, still one action metal. Meaningful colour never moves with the theme: budget steel/amber/red, income sage, oxide red and the category tints are the same in all ten. The app icon follows the theme (same three bars, in that theme's metal).
+
+Themes are **recipes in OKLCH**, not hand-picked swatches (`src/lib/themes.ts`, maths in `src/lib/oklch.ts`). Every theme shares one lightness ladder per role (Negra's, measured in OKLCH), so contrast is identical across themes; only the hue changes, and chroma is a **percentage of that hue's sRGB maximum** (surfaces 14 % on coloured themes, 3 % on Negra, 9 % on Titanio, 0 on Carbono; text 70 % of the surface tint; the metal 38–54 % by material). Coloured metals (and Titanio and Carbono) sit lower in L than Negra's platinum: accent 0.82, gradient 0.865 → 0.73, against platinum's 0.896 and 0.965 → 0.834. Colour reads brighter than grey at equal L, and near white the tinted metals washed out to a white sheen the owner disliked (2026-11-05). The stone and copper metals (Oro rosa, Cobre, Sakura, Amatista, Zafiro, Esmeralda) go one step deeper (accent 0.785, gradient 0.815 → 0.72) with more chroma, because at 0.82 they still read pastel; 0.72 is the floor for the dark button label. The three warm ones are spread apart so each stays recognisable: Oro rosa a soft dusty rose (20°), Cobre the intense one (37°, 40° from budget amber), Sakura a cool cherry pink (345°); Amatista (305°) sits between Sakura and Zafiro. A test keeps every pair of coloured metals at least ΔE 0.05 apart. Only platinum keeps the white: its add-disc peak and the 1px top glint on metal controls are white; every other theme takes both from its own metal (`--color-metal-peak`, `--color-metal-glint`). Carbono is the exception ladder: true black ground for OLED and a dimmer graphite metal. Secondary text was raised from L 0.688 to 0.74 for every theme (APCA 47 → 56 on cards). Tests hold the floor: WCAG AA and APCA on every pair in every theme, equal contrast across themes, and every coloured metal at least ΔE 0.085 (OKLab) from budget amber, oxide red and income sage. The values below are Negra's (as hex for reference; the code uses `oklch()`).
+
 **Key Characteristics:**
 - Matte near-black ground with a graphite ladder (card, card-2, card-3) for nesting.
 - Platinum is the single action colour: filled buttons, the add disc, plain text actions, focus ring, caret, toggles on, the selected ring.
@@ -287,9 +294,13 @@ Graphite and platinum, with colour reserved for meaning and kept at low chroma s
 - **Engraved Silver** (engraved): figures cut into metal (card amounts, card fields, last-four digits, the amount being typed).
 
 ### Named Rules
-**The Platinum Rule.** Platinum means "you can act here" (or "this is selected / today"). It is never a heading colour, a category accent or decoration, and no other hue ever marks an action.
+**The Platinum Rule.** Platinum (or the chosen theme's metal) means "you can act here" (or "this is selected / today"). It is never a heading colour, a category accent or decoration, and no other hue ever marks an action. A theme's metal must stay distinguishable from the meaningful colours: Oro's champagne is paler than budget amber, Cobre leans redder than it, Esmeralda's jade is cooler and lighter than income sage. Charts: the 6-month trend paints income in sage and expenses in a muted, darker red (--color-expense, oklch(0.56 0.085 27)), distinct from the alarm red that stays reserved for over-budget, negative balance and destructive actions; both are fixed across themes. The payment-method bar is the one place a data series uses the theme metal (chosen by the owner, 2026-11-05): Tarjeta in the accent, Efectivo in the same metal darker (65 % accent mixed into bg), Otros in dim muted grey so the least important segment never draws the eye. No income sits in that bar, so the tinted metal competes with nothing.
+
+**The Token-Only Surface Rule.** No surface, text or action colour is written as a literal in a component: it comes from a theme variable (`--color-*`, `metal`, `metal-disc`, `black-card`, `ring-metal`), so all six cards stay correct. Only meaningful colours (budget, income, categories) and pure black/white shadow light are literal. Recharts, which paints through SVG attributes, reads the tokens from `useTheme()`.
 
 **The One Budget Rule.** Every budget expression uses one ratio rule: steel under 80 %, amber from 80 %, red at 100 % and over. Never pick a budget colour by hand; route it through the shared budget colour/tone helpers.
+
+**The Green Means Income Rule.** Green is income (and, in the same sense, «good»: a success check, spending down, a feature turned on). No account tint or chart series is green for anything else; cash (an expense) uses taupe (brown) in Cuentas. The one exception is the c2 sage category tint, which reads close to income: the owner chose to keep it (2026-11-05), since every category slice carries its name and icon.
 
 **The Stroke-Only Tint Rule.** Category and account tints colour an icon's stroke on a graphite plate, a chart segment, or a 10px legend swatch. They never fill a tile, a row or a card.
 

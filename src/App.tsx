@@ -7,6 +7,7 @@ import { SettingsButton } from './components/SettingsButton';
 import { TabBar } from './components/TabBar';
 import { ToastProvider } from './components/Toast';
 import { LoginPage, MfaPage, ResetPasswordPage } from './features/auth/LoginPage';
+import { PrivacyPage } from './features/legal/PrivacyPage';
 import { BudgetsPage } from './features/budgets/BudgetsPage';
 import { HomePage } from './features/home/HomePage';
 import { AccountsPage } from './features/settings/AccountsPage';
@@ -14,6 +15,7 @@ import { CategoriesPage } from './features/settings/CategoriesPage';
 import { MorePage } from './features/settings/MorePage';
 import { RecurringPage } from './features/settings/RecurringPage';
 import { RulesPage } from './features/settings/RulesPage';
+import { ThemePage } from './features/settings/ThemePage';
 import { WalletPage } from './features/settings/WalletPage';
 import { EditorProvider } from './features/transactions/editor';
 import { TransactionsPage } from './features/transactions/TransactionsPage';
@@ -29,7 +31,7 @@ type Auth = { session: Session | null; mfaPending: boolean };
 
 function useAuth() {
   const [auth, setAuth] = useState<Auth | undefined>(isDemo ? { session: null, mfaPending: false } : undefined);
-  // 'done': la contraseña nueva ya se guardó y la sesión de Safari se cerró; se sigue mostrando la confirmación.
+  // 'done': la contraseña nueva ya se guardó y la sesión del navegador se cerró; se sigue mostrando la confirmación.
   const [recovery, setRecovery] = useState<boolean | 'done'>(openedFromRecoveryLink);
   useEffect(() => {
     if (isDemo) return;
@@ -62,7 +64,10 @@ function ScrollToTop() {
 
 export default function App() {
   const { auth, recovery, finishRecovery, endRecovery } = useAuth();
+  const { pathname } = useLocation();
 
+  // La política de privacidad es pública: se abre con o sin sesión (la piden las tiendas y la pantalla de registro).
+  if (pathname === '/privacidad') return <PrivacyPage />;
   if (!auth) return null; // leyendo la sesión guardada
   if (!isDemo) {
     if (recovery === 'done' || (recovery && auth.session))
@@ -94,6 +99,7 @@ export default function App() {
           <Route path="/mas/reglas" element={<RulesPage />} />
           <Route path="/mas/fijos" element={<RecurringPage />} />
           <Route path="/mas/wallet" element={<WalletPage />} />
+          <Route path="/mas/tema" element={<ThemePage />} />
           <Route path="*" element={<HomePage />} />
         </Routes>
         <SettingsButton />

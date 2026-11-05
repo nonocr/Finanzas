@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-App personal de finanzas (PWA para iPhone) en colones: gastos, ingresos, presupuesto y estadísticas, con registro automático de pagos de Apple Wallet. Una sola usuaria; la interfaz va en español de Costa Rica.
+App de finanzas personales en colones (web/PWA, y en camino a App Store y Google Play): gastos, ingresos, presupuesto y estadísticas, con registro automático de pagos de Apple Wallet en iPhone. Abierta a cualquiera: cada persona crea su cuenta y solo ve sus datos. La interfaz va en español de Costa Rica.
 
 ## Comandos
 
@@ -28,19 +28,37 @@ En esta máquina (Windows), git no está en el PATH de PowerShell. Antepón `$en
 - **Fechas:** se agrupan en hora de Costa Rica (UTC−6) con `src/lib/dates.ts`. Un "día" es un `Date` a medianoche UTC; `crDayStartInstant` lo convierte al instante real. La semana va de lunes a domingo, con las iniciales L M K J V S D.
 - **Backend:** `supabase/migrations/` contiene tablas, RLS (`user_id = auth.uid()`), las vistas `account_balances` y `budget_progress`, y un trigger que crea categorías y efectivo para cada usuario nuevo. El Atajo de iOS usa `supabase/functions/wallet-sync`, que recibe la cola de pagos (NDJSON) y no duplica gracias a `external_id`. Topes: 200 pagos por envío y 200 pagos nuevos por usuario cada 24 h. La lógica vive en `_shared/ingest.ts`, autentica con un token personal hasheado y se despliega con `--no-verify-jwt`. (`wallet-ingest`, la versión de un pago por petición, se borró el 2026-11-04.)
 - **Auth en producción:** las URLs de redirección son solo la de producción (`https://finanzas-nono-0784.vercel.app/`), sin comodines para versiones de prueba, porque un comodín dejaría que el enlace de recuperación terminara en otro dominio `*.vercel.app`. La base exige SSL.
-- **Login:** correo y contraseña. No se usa enlace mágico porque en iPhone abriría Safari y no la PWA instalada. No se usa código OTP porque el plan gratis no permite editar la plantilla del correo. La confirmación de correo es automática; cuando la dueña cree su cuenta, el registro se cierra (`disable_signup`).
-  - **Olvidé mi contraseña:** el enlace del correo se abre en Safari, que entra a `ResetPasswordPage` (evento `PASSWORD_RECOVERY`); ahí se pone la nueva, la sesión de Safari se cierra sola y luego se entra con ella en la PWA. El enlace vence a los 30 minutos.
+- **Login:** correo y contraseña. No se usa enlace mágico porque en iPhone abriría Safari y no la PWA instalada.
+  - **Crear cuenta** (`LoginPage`, modo `signup`): abierta a cualquiera, con confirmación de correo obligatoria (`mailer_autoconfirm=false`). El enlace del correo abre el navegador; la app NO usa la sesión que trae (`detectSessionInUrl` solo acepta `recovery`), solo muestra «Tu correo quedó confirmado» (`signupLinkNotice`) y se entra con correo y contraseña. Si el correo ya existía, Supabase responde igual (no revela quién tiene cuenta). Si falta confirmar, el login ofrece reenviar el correo.
+  - **Eliminar cuenta** (Ajustes): función `delete_my_account(p_password)` (migración `20261106000000_borrar_cuenta`): pide la contraseña, respeta los dos pasos, 5 intentos cada 15 min, y borra el usuario de `auth.users` (todo lo demás cae en cascada). Devuelve un estado en vez de lanzar error, para que el contador de intentos no se deshaga.
+  - **Privacidad:** `/privacidad` (`PrivacyPage`) es pública, con o sin sesión. Si cambia qué se guarda o con quién se comparte, actualízala.
+  - **Correos:** salen por el Gmail de la dueña (SMTP, 30 por hora). Plantillas en español en `supabase/templates/`; `node scripts/correos.mjs` compara con producción y `--aplicar` las sube (solo con autorización).
+  - **Olvidé mi contraseña:** el enlace del correo se abre en el navegador, que entra a `ResetPasswordPage` (evento `PASSWORD_RECOVERY`); ahí se pone la nueva, la sesión del navegador se cierra sola y luego se entra con ella en la app. El enlace vence a los 30 minutos.
   - **Dos pasos (TOTP):** opcional desde Ajustes → Seguridad (`TwoFactorSheet`, `src/lib/mfa.ts`). La migración `20261102000000_mfa` lo exige también en la base: con un factor verificado, una sesión `aal1` no ve ni escribe nada.
 - **Actualizaciones de la PWA:** el service worker nuevo queda en espera (`registerType: 'prompt'`) y `src/lib/appUpdate.ts` lo activa y recarga la página en cuanto no estorba: sin hojas abiertas (`Sheet` lo retiene) ni cambios en camino (`updateGate.ts`). También busca versión nueva al volver a la app. Así basta abrirla una vez.
+- **Apps nativas (Capacitor 8, rama `feature/tiendas-multiusuario`):** la misma app web, envuelta para App Store y Google Play. `capacitor.config.ts` + carpetas `ios/` (Swift Package Manager, sin CocoaPods) y `android/`. `npm run cap:sync` compila y copia `dist/` a las dos. Lo que cambia dentro de la app nativa vive en `src/lib/native.ts` (`isNative`, `platform`):
+  - Sin service worker: `appUpdate.ts` no corre; las versiones llegan por la tienda.
+  - La sesión de Supabase va a `@capacitor/preferences` (iOS puede borrar el `localStorage` del WebView).
+  - «Olvidé mi contraseña» redirige a la web de producción (`WEB_APP_URL`): la app nativa no tiene dirección propia.
+  - Android: el botón Atrás cierra la hoja abierta (le manda Escape a `Sheet`), luego navega atrás y en la raíz manda la app al fondo. De borde a borde con `EdgeToEdge` + `SystemBars` (`insetsHandling: 'native'`), así `env(safe-area-inset-*)` funciona igual que en iPhone. Sin respaldo en la nube (`allowBackup=false`).
+  - iOS: solo iPhone y vertical, mínimo iOS 16.4 (lo que pide Tailwind 4), interfaz en español y siempre oscura.
+  - Íconos y pantalla de carga: fuentes en `assets/`, se regeneran con `npx @capacitor/assets generate` (borra luego `icons/` y `public/manifest.webmanifest`, que crea para la PWA y no se usan).
+  - El `appId` (`com.nonocr.finanzas`) es provisional hasta la primera subida a una tienda.
+  - Compilación en la nube: `.github/workflows/apps.yml` (APK de prueba y build de simulador iOS, sin firmar). En Windows no hay Xcode ni JDK: no se compila local.
 - **Proyecto Supabase:** `qdrkbocandltwfvofngt` («Finanzas»), en una cuenta distinta a la de los proyectos de trabajo. **No uses el login global de la CLI**: está en la cuenta de trabajo. Usa el token de `supabase/.env.cli` (git lo ignora): `$env:SUPABASE_ACCESS_TOKEN=...` más `--project-ref`. Las migraciones se aplicaron con la Management API (`POST /v1/projects/{ref}/database/query`) y se registraron en `supabase_migrations.schema_migrations`.
 
 ## Diseño
 
 - `PRODUCT.md` tiene la verdad del producto y `DESIGN.md` el sistema visual. Léelos antes de tocar la UI.
-- Mundo visual: **«Tarjeta negra»**, el lujo discreto de una tarjeta de crédito negra de metal. Negros mate y grafitos en capas, **siempre en modo oscuro**. Los tokens están en `src/index.css` (`@theme`), junto con las utilidades `metal`, `machined`, `black-card` y `engraved`.
+- Mundo visual: **«Tarjeta negra»**, el lujo discreto de una tarjeta de crédito negra de metal. Negros mate y grafitos en capas, **siempre en modo oscuro** (también en los temas). Los tokens están en `src/index.css` (`@theme`), junto con las utilidades `metal`, `machined`, `black-card` y `engraved`.
+- **Temas «Tarjetas de metal»** (Ajustes → Tema): Negra, Carbono, Titanio, Oro, Oro rosa, Cobre, Sakura, Amatista, Zafiro y Esmeralda, todos oscuros. `src/lib/theme.ts` los aplica a `<html>` antes del primer pintado y se guardan en este teléfono (`finanzas-theme`).
+  - Cada tema es una **receta en OKLCH** en `src/lib/themes.ts` (skill `oklch-skill`; cálculos en `src/lib/oklch.ts`). Todos comparten la misma escalera de claridad por papel y solo cambia el matiz; el croma va como % del máximo de ese matiz. No pongas colores a mano: ajusta la receta.
+  - Ningún color de superficie, texto o acción va escrito literal en un componente: usa las variables (`bg-card`, `text-accent`, `var(--color-muted)`…) o las utilidades `metal`, `metal-disc`, `black-card`, `ring-metal`. Recharts lee los colores de `useTheme()`. Las gráficas no pintan series con el metal de la acción.
+  - Los valores de Negra se repiten en `@theme` de `src/index.css`. Pruebas: `src/lib/themes.test.ts` (WCAG y APCA de cada tema, mismo contraste en todos, el metal lejos del ámbar, el rojo y el verde con significado) y `scripts/temas.test.mjs` (CSS, íconos y proyectos nativos al día).
+  - En la app nativa, el ícono cambia con el tema mediante un plugin propio, `IconoApp`: `ios/App/App/IconoApp.swift` y `android/…/IconoAppPlugin.java` (en Android, un `activity-alias` por tema que se aplica al salir de la app). Para regenerar los íconos: `node scripts/temas-iconos.mjs` y luego `scripts/iconos.ps1`.
 - Las categorías guardan una clave `c1…c10` que `src/components/palette.tsx` traduce a tintes de baja saturación (bronce, salvia, acero…). El tinte vive solo en el trazo del ícono, sobre una placa de grafito (`CategoryIcon`/`IconTile`).
 - Reglas que no se rompen:
-  - El **platino** (`accent`, utilidad `metal`) es el único color de acción, con texto casi negro encima.
+  - El **platino** (`accent`, utilidad `metal`), o el metal del tema elegido, es el único color de acción, con texto casi negro encima.
   - El color solo aparece donde significa algo: el estado del presupuesto, los ingresos y el tinte de la categoría.
   - El presupuesto usa una sola regla de color (acero bajo el 80 %, ámbar desde el 80 % y rojo desde el 100 %): `budgetColor`/`budgetTone` en `src/components/ui.tsx`.
   - Los estados se marcan con el sello `Stamp` («Revisar»), no solo con color.

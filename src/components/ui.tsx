@@ -151,7 +151,7 @@ export const budgetColor = (ratio: number, base = 'var(--color-steel)') =>
 export const budgetTone = (ratio: number) => (ratio >= 1 ? 'text-red' : ratio >= 0.8 ? 'text-orange' : 'text-steel');
 
 /** Ranura grabada en el metal: el riel de cualquier avance. */
-export const GROOVE = 'overflow-hidden rounded-full bg-[#070708] shadow-[inset_0_1px_1px_rgb(0_0_0/0.9),0_1px_0_rgb(255_255_255/0.05)]';
+export const GROOVE = 'overflow-hidden rounded-full bg-[color-mix(in_srgb,var(--color-bg),var(--color-card)_15%)] shadow-[inset_0_1px_1px_rgb(0_0_0/0.9),0_1px_0_rgb(255_255_255/0.05)]';
 
 export function ProgressBar({ value, color }: { value: number; color?: string }) {
   const pct = Math.max(0, Math.min(1, value));

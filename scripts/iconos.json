@@ -1,0 +1,92 @@
+[
+  {
+    "ios": "Carbono",
+    "android": "carbono",
+    "bg": "#000000",
+    "bars": [
+      "#424242",
+      "#bebebe",
+      "#808080"
+    ]
+  },
+  {
+    "ios": "Titanio",
+    "android": "titanio",
+    "bg": "#0b0c0d",
+    "bars": [
+      "#4e575c",
+      "#e4e9eb",
+      "#8ca2b0"
+    ]
+  },
+  {
+    "ios": "Oro",
+    "android": "oro",
+    "bg": "#0d0c0a",
+    "bars": [
+      "#5c5543",
+      "#f0e7d2",
+      "#b19c6b"
+    ]
+  },
+  {
+    "ios": "OroRosa",
+    "android": "ororosa",
+    "bg": "#100b0b",
+    "bars": [
+      "#6a4d4c",
+      "#eee6e5",
+      "#c48f8e"
+    ]
+  },
+  {
+    "ios": "Cobre",
+    "android": "cobre",
+    "bg": "#0f0b0a",
+    "bars": [
+      "#784637",
+      "#f5e4de",
+      "#ec7957"
+    ]
+  },
+  {
+    "ios": "Sakura",
+    "android": "sakura",
+    "bg": "#0f0b0d",
+    "bars": [
+      "#6e475f",
+      "#f1e4eb",
+      "#d57cb5"
+    ]
+  },
+  {
+    "ios": "Amatista",
+    "android": "amatista",
+    "bg": "#0d0b10",
+    "bars": [
+      "#624681",
+      "#ebe5f3",
+      "#b188df"
+    ]
+  },
+  {
+    "ios": "Zafiro",
+    "android": "zafiro",
+    "bg": "#090c12",
+    "bars": [
+      "#3d5485",
+      "#e4e8f1",
+      "#859ed1"
+    ]
+  },
+  {
+    "ios": "Esmeralda",
+    "android": "esmeralda",
+    "bg": "#0a0d0c",
+    "bars": [
+      "#375e55",
+      "#b9f7e8",
+      "#38b59e"
+    ]
+  }
+]

@@ -1,4 +1,4 @@
-import { ChevronLeft, CreditCard, Download, KeyRound, LogOut, Repeat, RotateCcw, ShieldCheck, Smartphone, Tags, Wand2 } from 'lucide-react';
+import { ChevronLeft, CreditCard, Download, FileText, KeyRound, LogOut, Palette, Repeat, RotateCcw, ShieldCheck, Smartphone, Tags, Trash2, Wand2 } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useToast } from '../../components/Toast';
@@ -8,9 +8,12 @@ import { csvRow } from '../../lib/csv';
 import { crDayOf, isoDate } from '../../lib/dates';
 import { resetDemo } from '../../lib/demoApi';
 import { clearOfflineCache } from '../../lib/offline';
+import { isAppleMobile } from '../../lib/native';
 import { useAccounts, useLookups } from '../../lib/queries';
 import { markPartialSignOut, supabase } from '../../lib/supabase';
+import { useTheme } from '../../lib/theme';
 import { ChangePasswordSheet } from './ChangePasswordSheet';
+import { DeleteAccountSheet } from './DeleteAccountSheet';
 import { TwoFactorSheet } from './TwoFactorSheet';
 
 export function BackLink() {
@@ -27,10 +30,13 @@ export function MorePage() {
   const { catMap, accMap } = useLookups();
   const { data: accounts = [] } = useAccounts();
   const toast = useToast();
+  const theme = useTheme();
   const [passwordOpen, setPasswordOpen] = useState(false);
   const [passwordKey, setPasswordKey] = useState(0);
   const [twoFactorOpen, setTwoFactorOpen] = useState(false);
   const [twoFactorKey, setTwoFactorKey] = useState(0);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteKey, setDeleteKey] = useState(0);
 
   const exportCsv = async () => {
     const txs = await api.listTransactions({ from: '2000-01-01T00:00:00Z', to: new Date(Date.now() + 86_400_000).toISOString() });
@@ -81,8 +87,15 @@ export function MorePage() {
         <Row to="/mas/reglas" leading={<IconTile icon={Wand2} color="var(--color-label-2)" />} title="Reglas de comercios" chevron />
       </Section>
 
+      <Section header="Apariencia">
+        <Row to="/mas/tema" leading={<IconTile icon={Palette} color="var(--color-label-2)" />} title="Tema" trailing={theme.name} chevron />
+      </Section>
+
       <Section header="Automático">
-        <Row to="/mas/wallet" leading={<IconTile icon={Smartphone} color="var(--color-label-2)" />} title="Apple Wallet" subtitle="Registrar pagos con Atajos" chevron />
+        {/* La automatización de Wallet con Atajos solo existe en iPhone y iPad. */}
+        {isAppleMobile && (
+          <Row to="/mas/wallet" leading={<IconTile icon={Smartphone} color="var(--color-label-2)" />} title="Apple Wallet" subtitle="Registrar pagos con Atajos" chevron />
+        )}
         <Row to="/mas/fijos" leading={<IconTile icon={Repeat} color="var(--color-label-2)" />} title="Gastos e ingresos fijos" subtitle="Alquiler, salario, suscripciones" chevron />
       </Section>
 
@@ -138,8 +151,24 @@ export function MorePage() {
           />
         )}
       </Section>
+
+      <Section>
+        <Row to="/privacidad" leading={<IconTile icon={FileText} color="var(--color-label-2)" />} title="Privacidad" chevron />
+        {!isDemo && (
+          <Row
+            onClick={() => {
+              setDeleteKey((k) => k + 1);
+              setDeleteOpen(true);
+            }}
+            leading={<IconTile icon={Trash2} color="var(--color-red)" />}
+            title="Eliminar cuenta"
+            destructive
+          />
+        )}
+      </Section>
       <ChangePasswordSheet key={passwordKey} open={passwordOpen} onClose={() => setPasswordOpen(false)} />
       <TwoFactorSheet key={`2fa-${twoFactorKey}`} open={twoFactorOpen} onClose={() => setTwoFactorOpen(false)} />
+      <DeleteAccountSheet key={`del-${deleteKey}`} open={deleteOpen} onClose={() => setDeleteOpen(false)} onExport={() => void exportCsv()} />
 
       {isDemo && (
         <p className="mt-6 px-4 text-footnote text-label-2">

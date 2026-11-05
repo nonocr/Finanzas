@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Sin respaldo automático en Google Drive: la sesión (tokens) no debe copiarse a otro teléfono. -->
+    <application
+        android:allowBackup="false"
+        android:fullBackupContent="false"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+        <activity
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode|navigation|density"
+            android:name=".MainActivity"
+            android:label="@string/title_activity_main"
+            android:theme="@style/AppTheme.NoActionBarLaunch"
+            android:launchMode="singleTask"
+            android:screenOrientation="portrait"
+            android:exported="true">
+            <!-- Sin LAUNCHER: el ícono del lanzador lo pone uno de los alias de abajo (ver IconoAppPlugin). -->
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+            </intent-filter>
+        </activity>
+
+        <!-- Un ícono por tema; solo uno encendido a la vez. Negra es el de fábrica. -->
+        <activity-alias
+            android:name=".Negra"
+            android:targetActivity=".MainActivity"
+            android:label="@string/title_activity_main"
+            android:icon="@mipmap/ic_launcher"
+            android:roundIcon="@mipmap/ic_launcher_round"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".Titanio"
+            android:targetActivity=".MainActivity"
+            android:label="@string/title_activity_main"
+            android:icon="@mipmap/ic_launcher_titanio"
+            android:roundIcon="@mipmap/ic_launcher_titanio_round"
+            android:enabled="false"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".Oro"
+            android:targetActivity=".MainActivity"
+            android:label="@string/title_activity_main"
+            android:icon="@mipmap/ic_launcher_oro"
+            android:roundIcon="@mipmap/ic_launcher_oro_round"
+            android:enabled="false"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".OroRosa"
+            android:targetActivity=".MainActivity"
+            android:label="@string/title_activity_main"
+            android:icon="@mipmap/ic_launcher_ororosa"
+            android:roundIcon="@mipmap/ic_launcher_ororosa_round"
+            android:enabled="false"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".Zafiro"
+            android:targetActivity=".MainActivity"
+            android:label="@string/title_activity_main"
+            android:icon="@mipmap/ic_launcher_zafiro"
+            android:roundIcon="@mipmap/ic_launcher_zafiro_round"
+            android:enabled="false"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".Esmeralda"
+            android:targetActivity=".MainActivity"
+            android:label="@string/title_activity_main"
+            android:icon="@mipmap/ic_launcher_esmeralda"
+            android:roundIcon="@mipmap/ic_launcher_esmeralda_round"
+            android:enabled="false"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
+            android:name=".Carbono"
+            android:targetActivity=".MainActivity"
+            android:label="@string/title_activity_main"
+            android:icon="@mipmap/ic_launcher_carbono"
+            android:roundIcon="@mipmap/ic_launcher_carbono_round"
+            android:enabled="false"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".Cobre"
+            android:targetActivity=".MainActivity"
+            android:label="@string/title_activity_main"
+            android:icon="@mipmap/ic_launcher_cobre"
+            android:roundIcon="@mipmap/ic_launcher_cobre_round"
+            android:enabled="false"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".Sakura"
+            android:targetActivity=".MainActivity"
+            android:label="@string/title_activity_main"
+            android:icon="@mipmap/ic_launcher_sakura"
+            android:roundIcon="@mipmap/ic_launcher_sakura_round"
+            android:enabled="false"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".Amatista"
+            android:targetActivity=".MainActivity"
+            android:label="@string/title_activity_main"
+            android:icon="@mipmap/ic_launcher_amatista"
+            android:roundIcon="@mipmap/ic_launcher_amatista_round"
+            android:enabled="false"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/file_paths" />
+        </provider>
+    </application>
+
+    <!-- Permissions -->
+
+    <uses-permission android:name="android.permission.INTERNET" />
+</manifest>

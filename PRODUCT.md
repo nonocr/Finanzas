@@ -4,13 +4,13 @@
 
 ## Platform
 
-web
+adaptive
 
 ## Stack
-React + Vite + TypeScript, Tailwind CSS, PWA (`vite-plugin-pwa`), Supabase (Postgres + Auth + Edge Functions), hosting on Vercel. Motion with GSAP and transitions.dev tokens. A native iOS app (Expo / React Native) is a later phase that reuses the same backend.
+React + Vite + TypeScript, Tailwind CSS, PWA (`vite-plugin-pwa`), Supabase (Postgres + Auth + Edge Functions), hosting on Vercel. Motion with GSAP and transitions.dev tokens. The same web app ships as native iOS and Android apps through Capacitor 8 (`ios/`, `android/`, branch `feature/tiendas-multiusuario`), heading to the App Store and Google Play; the PWA stays live on the web.
 
 ## Users
-A single person in Costa Rica (the owner) who tracks her personal money. She mostly uses it on her iPhone, often right after paying for something, and sometimes on a PC to review.
+Anyone in Costa Rica who wants to track their personal money in colones (open sign-up since 2026-11-05; each person sees only their own data). The owner built it for herself and is still the reference user: mostly on her iPhone, often right after paying for something, and sometimes on a PC to review. New users may be on Android or desktop, where the Apple Wallet automation does not exist.
 
 ## Product Purpose
 Record and monitor personal spending by payment method (cash, debit, credit card), income, and a monthly budget, then understand the month at a glance through statistics. Success means she always knows how this month and this week are going without doing any arithmetic.
@@ -19,14 +19,14 @@ Record and monitor personal spending by payment method (cash, debit, credit card
 A personal, colones-first tracker whose Apple Wallet payments arrive by themselves through an iOS Shortcuts "Transaction" automation. Manual entry is only needed for cash and non-Wallet card purchases.
 
 ## Operating Context
-- Installed on the iPhone home screen as a PWA; must feel like an app (standalone, no browser chrome).
+- Installed on the iPhone home screen as a PWA, or as the native app from the App Store / Google Play; either way it must feel like an app (standalone, no browser chrome). On Android, the back button, edge-to-edge system bars and native pickers must behave as Android users expect.
 - Wallet payments come in through a webhook and land in a "por revisar" inbox when the category can't be inferred.
 - Quick entry happens standing in a store or right after paying: one hand, a few seconds.
 - The first thing she wants on open: **statistics for the current month and/or week** (spending by category, trend, vs budget).
 
 ## Capabilities and Constraints
 - Currency: Costa Rican colones (₡) only. Amounts stored as integer céntimos.
-- Single user, data in the cloud, private (row-level security).
+- Multi-user with open sign-up (email + password, email confirmation required), data in the cloud, private per person (row-level security). Each person can export their data and delete their account; public privacy policy at /privacidad.
 - Accounts types: efectivo, débito, crédito, banco, ahorro. Credit cards have cut-off and payment days.
 - Transactions: gasto, ingreso, transferencia (including credit card payments).
 - Monthly budgets per category and in total; recurring income and expenses.
@@ -35,6 +35,7 @@ A personal, colones-first tracker whose Apple Wallet payments arrive by themselv
 
 ## Brand Commitments
 - Chosen by the owner (2026-10-30): the «Tarjeta negra» direction, black and grey like an exclusive black metal card (matte black, layered graphite, platinum as the single action colour).
+- Personalisation (2026-11-05): the owner chose «Tarjetas de metal», ten dark themes (Negra, Carbono, Titanio, Oro, Oro rosa, Cobre, Sakura, Amatista, Zafiro, Esmeralda) that change the graphite tint and the action metal, plus a matching app icon in the native apps. No light themes, no free colour picker.
 - Quality bar: the finish of a black metal card. Native-feeling grouped lists, SF system type, large titles, graphite surfaces, platinum as the only action colour, engraved light figures, translucent tab bar.
 
 ## Evidence on Hand

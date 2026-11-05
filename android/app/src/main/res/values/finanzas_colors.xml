@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Mismo negro que --color-bg de la app (src/index.css). -->
+    <color name="finanzas_fondo">#050505</color>
+</resources>

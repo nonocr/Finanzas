@@ -27,6 +27,7 @@ import type { AccountType } from '../lib/types';
 
 // Las categorías guardan una clave de color (c1…c10). En la «tarjeta negra» son tintes de baja saturación (bronce,
 // salvia, acero…) que viven en el trazo del ícono y en los gráficos; no compiten con el ámbar y rojo del presupuesto.
+// Salvia (c2) es verdoso como los ingresos: la dueña prefirió conservarlo (2026-11-05); la dona lleva nombre e ícono.
 export const CATEGORY_HEX: Record<string, string> = {
   c1: '#b28c62', // bronce
   c2: '#93a893', // salvia
