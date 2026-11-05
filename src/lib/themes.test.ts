@@ -36,11 +36,15 @@ describe('temas', () => {
     }
     // Terciario (marcadores de posición, chevrones): elemento de interfaz.
     expect(apca(k.label3, k.card)).toBeGreaterThanOrEqual(30);
-    // Texto de los botones de metal, en todo el degradado.
-    for (const metal of [k.accent, k.metalHi, k.metalLo]) {
+    // Texto de los botones de metal: va centrado, sobre el medio del degradado (y sobre el relleno plano, accent).
+    // El borde oscuro de abajo nunca queda detrás de la letra, pero tampoco puede quedar muy por debajo.
+    const middle: Lch = [(k.metalHi[0] + k.metalLo[0]) / 2, (k.metalHi[1] + k.metalLo[1]) / 2, k.metalLo[2]];
+    for (const metal of [k.accent, k.metalHi, middle]) {
       expect(wcag(k.onAccent, metal)).toBeGreaterThanOrEqual(4.5);
       expect(apca(k.onAccent, metal)).toBeGreaterThanOrEqual(54);
     }
+    expect(wcag(k.onAccent, k.metalLo)).toBeGreaterThanOrEqual(4.5);
+    expect(apca(k.onAccent, k.metalLo)).toBeGreaterThanOrEqual(50);
     // Acciones en texto («Cancelar», «Ver todos») y cifras grabadas.
     expect(apca(k.accent, k.card2)).toBeGreaterThanOrEqual(60);
     expect(apca(k.engraved, k.card)).toBeGreaterThanOrEqual(60);
@@ -54,6 +58,16 @@ describe('temas', () => {
     expect(spread((t) => apca(t.lch.label, t.lch.card))).toBeLessThan(1);
     expect(spread((t) => apca(t.lch.label2, t.lch.card))).toBeLessThan(1);
     expect(spread((t) => apca(t.lch.label3, t.lch.card))).toBeLessThan(1);
+  });
+
+  it('cada tema se distingue de los demás', () => {
+    for (let i = 0; i < THEMES.length; i++)
+      for (let j = i + 1; j < THEMES.length; j++) {
+        const [a, b] = [THEMES[i], THEMES[j]];
+        // Los metales grises (Negra, Carbono, Titanio) se distinguen por el fondo (negro, negro puro, frío), no por el metal.
+        if (a.lch.accent[1] < 0.03 || b.lch.accent[1] < 0.03) continue;
+        expect(distance(a.lch.accent, b.lch.accent), `${a.name} / ${b.name}`).toBeGreaterThanOrEqual(0.05);
+      }
   });
 
   // Solo el metal de la acción (accent): es el que aparece suelto (texto de acciones, interruptores, la barra de hoy);

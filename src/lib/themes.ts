@@ -78,6 +78,12 @@ const NEUTRAL: Ladder = { ...BASE, accent: 0.896, metalHi: 0.965, metalLo: 0.834
 // Más oscuros que el platino: a L alta el metal de color se lavaba hacia el blanco. metalLo no baja de 0.73 para que
 // el texto oscuro de los botones conserve APCA ≥ 54.
 const COLORED: Ladder = { ...BASE, accent: 0.82, metalHi: 0.865, metalLo: 0.73 };
+/**
+ * Metales de piedra y de cobre (Oro rosa, Cobre, Sakura, Amatista, Zafiro, Esmeralda): aún más bajos y con el
+ * degradado más corto, porque a la claridad de COLORED se veían pastel. Llevan más croma en la receta: lo que hace
+ * «claro» a un color es en buena parte que esté pálido. El borde oscuro (0.72) es el mínimo para el texto oscuro.
+ */
+const DEEP: Ladder = { ...BASE, accent: 0.785, metalHi: 0.815, metalLo: 0.72 };
 /** Carbono: negro puro (en pantallas OLED los píxeles se apagan) y un grafito más bajo y apagado. */
 const CARBON: Ladder = {
   ...COLORED,
@@ -115,14 +121,15 @@ const RECIPES: Recipe[] = [
   { id: 'titanio', name: 'Titanio', hue: 235, tint: 9, metal: 20, ladder: COLORED, iconName: 'Titanio' },
   // Oro (88°) queda lejos del ámbar del presupuesto (77°, mucho más intenso y más oscuro).
   { id: 'oro', name: 'Oro', hue: 88, tint: 14, metal: 45, ladder: COLORED, iconName: 'Oro' },
-  { id: 'oro-rosa', name: 'Oro rosa', hue: 35, tint: 14, metal: 42, ladder: COLORED, iconName: 'OroRosa' },
-  // Cobre: más intenso que el oro rosa y más rojizo que el ámbar del presupuesto (77°), para no confundirse.
-  { id: 'cobre', name: 'Cobre', hue: 45, tint: 14, metal: 54, ladder: COLORED, iconName: 'Cobre' },
-  { id: 'sakura', name: 'Sakura', hue: 355, tint: 14, metal: 40, ladder: COLORED, iconName: 'Sakura' },
-  { id: 'amatista', name: 'Amatista', hue: 305, tint: 14, metal: 45, ladder: COLORED, iconName: 'Amatista' },
-  { id: 'zafiro', name: 'Zafiro', hue: 264, tint: 14, metal: 45, ladder: COLORED, iconName: 'Zafiro' },
+  // Los tres cálidos se separan entre sí (ΔE ≥ 0.06): Oro rosa es el rosa suave, Cobre el intenso entre el rosa y el
+  // ámbar del presupuesto (77°, del que queda a 40°), Sakura el rosa frío de flor de cerezo.
+  { id: 'oro-rosa', name: 'Oro rosa', hue: 20, tint: 14, metal: 36, ladder: DEEP, iconName: 'OroRosa' },
+  { id: 'cobre', name: 'Cobre', hue: 37, tint: 14, metal: 82, ladder: DEEP, iconName: 'Cobre' },
+  { id: 'sakura', name: 'Sakura', hue: 345, tint: 14, metal: 55, ladder: DEEP, iconName: 'Sakura' },
+  { id: 'amatista', name: 'Amatista', hue: 305, tint: 14, metal: 70, ladder: DEEP, iconName: 'Amatista' },
+  { id: 'zafiro', name: 'Zafiro', hue: 264, tint: 14, metal: 55, ladder: DEEP, iconName: 'Zafiro' },
   // Esmeralda: jade (178°) intenso, para no confundirse con el salvia de los ingresos (152°, casi gris), que es de su familia.
-  { id: 'esmeralda', name: 'Esmeralda', hue: 178, tint: 14, metal: 72, ladder: COLORED, iconName: 'Esmeralda' },
+  { id: 'esmeralda', name: 'Esmeralda', hue: 178, tint: 14, metal: 85, ladder: DEEP, iconName: 'Esmeralda' },
 ];
 
 export type ThemeTokens = {
