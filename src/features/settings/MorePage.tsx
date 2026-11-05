@@ -1,4 +1,4 @@
-import { ChevronLeft, CreditCard, Download, FileText, KeyRound, LogOut, Palette, Repeat, RotateCcw, ShieldCheck, Smartphone, Tags, Trash2, Wand2 } from 'lucide-react';
+import { ChevronLeft, CreditCard, Download, EyeOff, FileText, KeyRound, LayoutList, LogOut, Palette, Repeat, RotateCcw, ShieldCheck, Smartphone, Tags, Trash2, Wand2 } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useToast } from '../../components/Toast';
@@ -12,6 +12,8 @@ import { isAppleMobile } from '../../lib/native';
 import { useAccounts, useLookups } from '../../lib/queries';
 import { markPartialSignOut, supabase } from '../../lib/supabase';
 import { useTheme } from '../../lib/theme';
+import { usePrefs, useSavePrefs } from '../../lib/usePrefs';
+import { Toggle } from '../transactions/TransactionSheet';
 import { ChangePasswordSheet } from './ChangePasswordSheet';
 import { DeleteAccountSheet } from './DeleteAccountSheet';
 import { TwoFactorSheet } from './TwoFactorSheet';
@@ -31,6 +33,8 @@ export function MorePage() {
   const { data: accounts = [] } = useAccounts();
   const toast = useToast();
   const theme = useTheme();
+  const prefs = usePrefs();
+  const savePrefs = useSavePrefs();
   const [passwordOpen, setPasswordOpen] = useState(false);
   const [passwordKey, setPasswordKey] = useState(0);
   const [twoFactorOpen, setTwoFactorOpen] = useState(false);
@@ -89,6 +93,13 @@ export function MorePage() {
 
       <Section header="Apariencia">
         <Row to="/mas/tema" leading={<IconTile icon={Palette} color="var(--color-label-2)" />} title="Tema" trailing={theme.name} chevron />
+        <Row to="/mas/resumen" leading={<IconTile icon={LayoutList} color="var(--color-label-2)" />} title="Resumen" subtitle="Qué ver y en qué orden" chevron />
+        <Row
+          leading={<IconTile icon={EyeOff} color="var(--color-label-2)" />}
+          title="Modo discreto"
+          subtitle="Oculta los montos hasta tocarlos"
+          trailing={<Toggle checked={prefs.discreet} onChange={(v) => savePrefs.mutate({ discreet: v })} label="Modo discreto" />}
+        />
       </Section>
 
       <Section header="Automático">

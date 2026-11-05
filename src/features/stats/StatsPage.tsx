@@ -140,7 +140,7 @@ export function StatsPage() {
                   <CategoryIcon icon={c?.icon ?? null} color={c?.color ?? null} />
                   <div className="flex min-h-11 min-w-0 flex-1 items-center gap-3 py-2.5 pr-3 shadow-[inset_0_-0.5px_0_var(--color-sep)] group-last:shadow-none">
                     <span className="min-w-0 flex-1 truncate text-body">{c?.name ?? 'Sin categoría'}</span>
-                    <span className="tnum text-subhead text-label-2">{Math.round(s.share * 100)}%</span>
+                    <span className="tnum not-money text-subhead text-label-2">{Math.round(s.share * 100)}%</span>
                     <span className="tnum w-24 text-right text-body font-semibold">{formatCRC(s.amount)}</span>
                     <ChevronRight size={16} strokeWidth={2.25} className="shrink-0 text-label-3" />
                   </div>
@@ -217,7 +217,7 @@ export function StatsPage() {
                       {METHOD_LABEL[k]}
                     </dt>
                     <dd className="tnum text-subhead font-semibold">{formatCRC(methods[k])}</dd>
-                    <dd className="tnum text-footnote text-label-2">{Math.round((methods[k] / methodTotal) * 100)}%</dd>
+                    <dd className="tnum not-money text-footnote text-label-2">{Math.round((methods[k] / methodTotal) * 100)}%</dd>
                   </div>
                 ))}
               </dl>
@@ -236,7 +236,7 @@ export function StatsPage() {
               to={drillHref({ kind: 'comercio', merchant: m.merchant }, month)}
               className="group flex items-center gap-3 pl-4 transition-colors active:bg-card-2"
             >
-              <span className="tnum w-5 text-center text-subhead font-semibold text-label-3">{i + 1}</span>
+              <span className="tnum not-money w-5 text-center text-subhead font-semibold text-label-3">{i + 1}</span>
               <div className="flex min-h-11 min-w-0 flex-1 items-center gap-3 py-2.5 pr-3 shadow-[inset_0_-0.5px_0_var(--color-sep)] group-last:shadow-none">
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-body">{m.merchant}</span>

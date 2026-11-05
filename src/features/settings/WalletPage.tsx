@@ -59,7 +59,7 @@ function Steps({ steps }: { steps: ReactNode[] }) {
     <ol className="p-4">
       {steps.map((s, i) => (
         <li key={i} className="flex gap-3 py-2">
-          <span className="tnum grid size-6 shrink-0 place-items-center rounded-full bg-accent text-footnote font-bold text-on-accent">
+          <span className="tnum not-money grid size-6 shrink-0 place-items-center rounded-full bg-accent text-footnote font-bold text-on-accent">
             {i + 1}
           </span>
           <span className="text-subhead leading-6">{s}</span>
@@ -112,7 +112,7 @@ export function WalletPage() {
         {fresh ? (
           <div className="p-4">
             <p className="text-subhead text-label-2">Cópialo ahora; por seguridad no se vuelve a mostrar.</p>
-            <p className="tnum mt-2 rounded-[10px] bg-card-2 p-3 font-mono text-footnote break-all select-all">{fresh.token}</p>
+            <p className="tnum not-money mt-2 rounded-[10px] bg-card-2 p-3 font-mono text-footnote break-all select-all">{fresh.token}</p>
             <Button variant="tinted" className="mt-3 w-full" onClick={() => copy(fresh.token, 'Token')}>
               <Copy size={18} strokeWidth={2} />
               Copiar token

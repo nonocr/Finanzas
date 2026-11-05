@@ -175,7 +175,8 @@ export function BudgetsPage() {
   );
 }
 
-function BudgetRow({ cat, spent, limit, onClick }: { cat: Category; spent: number; limit: number; onClick: () => void }) {
+/** Una categoría con su presupuesto: también la usa la sección «Presupuestos» del Resumen. */
+export function BudgetRow({ cat, spent, limit, onClick }: { cat: Category; spent: number; limit: number; onClick: () => void }) {
   const ratio = spent / limit;
   return (
     <button type="button" onClick={onClick} className="group flex w-full items-center gap-3 pl-4 text-left active:bg-card-2">

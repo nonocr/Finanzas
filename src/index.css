@@ -391,6 +391,29 @@
   }
 }
 
+/* ---------------------------------------------------------------------------
+   Modo discreto (Ajustes → Modo discreto, src/lib/prefs.ts): los montos (toda cifra de dinero lleva .tnum) se
+   difuminan hasta tocar uno; entonces se ven todos por un minuto. Las cifras que no son dinero (conteos, horas,
+   porcentajes, códigos) llevan .not-money y se quedan a la vista. Dentro de una hoja no: ahí la persona está
+   escribiendo o revisando un movimiento a propósito. Las cifras de los ejes y la burbuja de los gráficos también.
+   --------------------------------------------------------------------------- */
+html[data-discreet] .tnum,
+html[data-discreet] .recharts-yAxis .recharts-text,
+html[data-discreet] .recharts-tooltip-wrapper {
+  transition: filter var(--duration-fast) var(--ease-smooth-out);
+}
+html[data-discreet]:not([data-revealed]) .tnum:not(.not-money, [role='dialog'] .tnum),
+html[data-discreet]:not([data-revealed]) .recharts-yAxis .recharts-text,
+html[data-discreet]:not([data-revealed]) .recharts-tooltip-wrapper {
+  filter: blur(7px);
+  cursor: pointer;
+}
+@media (prefers-reduced-motion: reduce) {
+  html[data-discreet] .tnum {
+    transition: none;
+  }
+}
+
 /* Barra de pestañas translúcida al estilo iOS */
 .tabbar {
   background: color-mix(in srgb, var(--color-bg) 92%, transparent);

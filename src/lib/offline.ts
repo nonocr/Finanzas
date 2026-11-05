@@ -4,6 +4,7 @@
 //   se guardan junto con la caché y se reanudan solas al volver la señal, aunque la app se haya cerrado.
 // - Las listas se actualizan al instante (optimista) para que el movimiento se vea aunque no haya subido.
 import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister';
+import { PREFS_KEY } from './prefs';
 import { type Mutation, MutationCache, onlineManager, QueryClient } from '@tanstack/react-query';
 import { api, isDemo } from './api';
 import { isNetworkError } from './network';
@@ -34,7 +35,9 @@ export const queryClient = new QueryClient({
 });
 
 /** Se guardan en el teléfono todos los cambios sin terminar: en pausa o esperando reintento. */
-export const shouldPersistMutation = (m: Mutation) => m.state.status === 'pending';
+// Solo las que se pueden retomar tras cerrar la app (tienen mutationKey y setMutationDefaults abajo); las demás, como
+// guardar preferencias, se aplican al instante en el teléfono y no hace falta reintentarlas.
+export const shouldPersistMutation = (m: Mutation) => m.state.status === 'pending' && !!m.options.mutationKey;
 
 /** Retoma los cambios que quedaron sin subir (en pausa o a medio reintento). Solo con la sesión de su dueña. */
 export function resumePendingMutations() {
@@ -76,7 +79,7 @@ const CACHE_KEY = isDemo ? 'finanzas-cache-demo' : 'finanzas-cache';
 /** Usuario al que pertenece la copia local; si entra otra cuenta, la copia no se le muestra. */
 const OWNER_KEY = 'finanzas-cache-owner';
 /** Todo lo que la app guarda en el teléfono sobre la cuenta (la demo tiene su propia clave y no se toca). */
-const LOCAL_KEYS = [CACHE_KEY, OWNER_KEY, 'finanzas-last-account', 'finanzas-home-period'];
+const LOCAL_KEYS = [CACHE_KEY, OWNER_KEY, 'finanzas-last-account', 'finanzas-home-period', PREFS_KEY];
 
 export const persister = createSyncStoragePersister({ storage, key: CACHE_KEY });
 

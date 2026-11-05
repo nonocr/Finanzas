@@ -3,7 +3,8 @@ import { Check } from 'lucide-react';
 import type { CSSProperties } from 'react';
 import { Screen } from '../../components/ui';
 import { isNative, platform } from '../../lib/native';
-import { setTheme, useTheme } from '../../lib/theme';
+import { useTheme } from '../../lib/theme';
+import { useSavePrefs } from '../../lib/usePrefs';
 import { THEMES, themeVars, type Theme } from '../../lib/themes';
 import { BackLink } from './MorePage';
 
@@ -20,13 +21,13 @@ function Mark({ theme }: { theme: Theme }) {
 }
 
 /** Cada tema es una tarjeta en miniatura pintada con sus propios colores (las variables viven en el botón). */
-function ThemeCard({ theme, selected }: { theme: Theme; selected: boolean }) {
+function ThemeCard({ theme, selected, onPick }: { theme: Theme; selected: boolean; onPick: () => void }) {
   return (
     <button
       type="button"
       role="radio"
       aria-checked={selected}
-      onClick={() => setTheme(theme.id)}
+      onClick={onPick}
       style={themeVars(theme.tokens) as CSSProperties}
       className={clsx(
         'press black-card relative flex aspect-[1.586] w-full flex-col justify-between rounded-[14px] p-3 text-left',
@@ -48,6 +49,7 @@ function ThemeCard({ theme, selected }: { theme: Theme; selected: boolean }) {
 
 export function ThemePage() {
   const current = useTheme();
+  const save = useSavePrefs();
   const iconNote = !isNative
     ? ''
     : platform === 'ios'
@@ -58,7 +60,7 @@ export function ThemePage() {
     <Screen title="Tema" subtitle={<BackLink />}>
       <div role="radiogroup" aria-label="Tarjeta" className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         {THEMES.map((t) => (
-          <ThemeCard key={t.id} theme={t} selected={t.id === current.id} />
+          <ThemeCard key={t.id} theme={t} selected={t.id === current.id} onPick={() => save.mutate({ theme: t.id })} />
         ))}
       </div>
       <p className="mt-4 px-1 text-footnote text-label-2">

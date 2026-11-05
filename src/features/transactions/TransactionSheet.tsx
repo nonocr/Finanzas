@@ -464,12 +464,13 @@ function Field({ label, last, children }: { label: string; last?: boolean; child
   );
 }
 
-export function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
+export function Toggle({ checked, onChange, label }: { checked: boolean; onChange: (v: boolean) => void; label?: string }) {
   return (
     <button
       type="button"
       role="switch"
       aria-checked={checked}
+      aria-label={label}
       onClick={() => onChange(!checked)}
       className={clsx(
         'relative h-[31px] w-[51px] shrink-0 rounded-full transition-colors duration-200',

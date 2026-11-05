@@ -1,6 +1,6 @@
 import { ChevronRight, Smartphone } from 'lucide-react';
-import { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useMemo, useState, type ReactNode } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Donut } from '../../components/Donut';
 import { AnimatedAmount, Segmented, SoftText } from '../../components/motion';
 import { hexOf } from '../../components/palette';
@@ -8,7 +8,9 @@ import { budgetTone, EmptyState, IconTile, ProgressBar, Screen, Section, Skeleto
 import { isDemo } from '../../lib/api';
 import { crDay, crDayOf, isoDate, monthName, monthRange, startOfMonth, startOfWeek, weekRange, WEEKDAY_INITIALS } from '../../lib/dates';
 import { formatCRC } from '../../lib/money';
-import { useBudgets, useLookups, usePendingReview, useTransactions } from '../../lib/queries';
+import type { HomeSection } from '../../lib/prefs';
+import { useBudgetProgress, useBudgets, useLookups, usePendingReview, useTransactions } from '../../lib/queries';
+import { usePrefs } from '../../lib/usePrefs';
 import {
   donutCategories,
   spendingByCategory,
@@ -18,6 +20,7 @@ import {
   totals,
 } from '../../lib/stats';
 import type { Transaction } from '../../lib/types';
+import { BudgetRow } from '../budgets/BudgetsPage';
 import { useEditor } from '../transactions/editor';
 import { TransactionRow } from '../transactions/TransactionRow';
 
@@ -44,6 +47,8 @@ export function HomePage() {
       // preferencia opcional
     }
   };
+  const layout = usePrefs().home;
+  const navigate = useNavigate();
 
   const today = crDay();
   const range = period === 'semana' ? weekRange(today) : monthRange(today);
@@ -53,6 +58,7 @@ export function HomePage() {
   const { data: weekTxs } = useTransactions(weekRange(today));
   const { catMap, accMap, allCategories: categories } = useLookups();
   const { data: budgets = [] } = useBudgets(month);
+  const { data: progress = [] } = useBudgetProgress(month);
   const { data: pending = [] } = usePendingReview();
   const t = totals(txs ?? []);
   const slices = useMemo(() => spendingByCategory(txs ?? [], categories), [txs, categories]);
@@ -84,85 +90,41 @@ export function HomePage() {
   ];
 
   const recent = (txs ?? []).slice(0, 5);
-  const title = period === 'mes' ? `Gastado en ${monthName(today)}` : 'Gastado esta semana';
+  const when = period === 'mes' ? `en ${monthName(today)}` : 'esta semana';
 
-  return (
-    <Screen
-      title="Resumen"
-    >
-      {pending.length > 0 && <PendingCard pending={pending} />}
-      <Segmented
-        options={[
-          { value: 'semana', label: 'Semana' },
-          { value: 'mes', label: 'Mes' },
-        ]}
-        value={period}
-        onChange={setPeriod}
-      />
+  // La cifra grande de la tarjeta (Ajustes → Resumen). «Lo que queda» necesita un presupuesto: sin él, lo gastado.
+  const figure = layout.card === 'disponible' && left === null ? 'gastado' : layout.card;
+  const card =
+    figure === 'disponible'
+      ? { title: `Disponible ${when}`, cents: left!, fields: ['ingresos', 'balance'] as const }
+      : figure === 'balance'
+        ? { title: `Balance ${when}`, cents: t.neto, fields: ['gastado', 'ingresos'] as const }
+        : { title: `Gastado ${when}`, cents: t.gastos, fields: ['ingresos', 'balance'] as const };
+  const FIELD = {
+    gastado: { label: 'GASTADO', cents: t.gastos, sign: false },
+    ingresos: { label: 'INGRESOS', cents: t.ingresos, sign: false },
+    balance: { label: 'BALANCE', cents: t.neto, sign: true },
+  };
 
-      {/* La tarjeta negra: el periodo en metal mate, la cifra grabada y el presupuesto como ranura. */}
-      <section className="black-card mt-5 rounded-[18px] px-5 pt-5 pb-4">
-        <div className="flex items-baseline justify-between gap-3">
-          <p className="text-headline font-semibold">
-            <SoftText text={title} />
-          </p>
-          {ratio !== null && (
-            <p className={'tnum text-subhead font-semibold ' + budgetTone(ratio)}>
-              <SoftText text={`${Math.round(ratio * 100)} %`} align="end" />
-            </p>
-          )}
-        </div>
-        {isLoading ? (
-          <Skeleton className="mt-4 h-12 w-52" />
-        ) : (
-          <AnimatedAmount quietCurrency cents={t.gastos} className="engraved mt-4 block text-[48px] leading-[52px] font-light tracking-[-0.035em]" />
-        )}
-        {left !== null && limit !== null ? (
-          <>
-            <p className="mt-2 text-subhead text-label-2">
-              <SoftText
-                text={
-                  left >= 0
-                    ? `Quedan ${formatCRC(left)} de ${formatCRC(limit)}`
-                    : `Te pasaste ${formatCRC(-left)} de ${formatCRC(limit)}`
-                }
-              />
-            </p>
-            <div className="mt-3">
-              <ProgressBar value={ratio ?? 0} />
-            </div>
-          </>
-        ) : (
-          <Link to="/presupuesto" className="mt-1 inline-flex min-h-11 items-center text-subhead font-semibold text-accent">
-            Definir un presupuesto
-          </Link>
-        )}
-        {/* Campos de tarjeta: etiqueta grabada pequeña y valor. */}
-        <dl className="mt-5 grid grid-cols-2 gap-3">
-          <div>
-            <dt className="text-caption font-semibold tracking-[0.12em] text-label-2">INGRESOS</dt>
-            <dd className="tnum engraved mt-1 text-headline font-medium">
-              <SoftText text={formatCRC(t.ingresos)} />
-            </dd>
-          </div>
-          <div>
-            <dt className="text-caption font-semibold tracking-[0.12em] text-label-2">BALANCE</dt>
-            <dd className={'tnum mt-1 text-headline font-medium ' + (t.neto < 0 ? 'text-red' : 'engraved')}>
-              <SoftText text={formatCRC(t.neto, { sign: true })} />
-            </dd>
-          </div>
-        </dl>
-      </section>
+  // Presupuestos por categoría, los más cerca del límite primero.
+  const budgetRows = progress
+    .filter((p) => p.category_id && p.limit_amount > 0 && catMap.get(p.category_id))
+    .sort((a, b) => b.spent / b.limit_amount - a.spent / a.limit_amount)
+    .slice(0, 4);
 
+  const sections: Record<HomeSection, ReactNode> = {
+    semana: (
       <Section
+        key="semana"
         header="Esta semana"
-        className="mt-6"
         action={<span className="tnum text-body text-label-2">{formatCRC(days.reduce((a, b) => a + b, 0))}</span>}
       >
         <WeekBars values={days} todayIndex={todayIdx} />
       </Section>
-
+    ),
+    recientes: (
       <Section
+        key="recientes"
         header="Recientes"
         action={
           <Link to="/movimientos" className="inline-flex min-h-11 items-center text-body text-accent">
@@ -184,8 +146,9 @@ export function HomePage() {
           />
         )}
       </Section>
-
-      <Section header="Por categoría">
+    ),
+    categorias: (
+      <Section key="categorias" header="Por categoría">
         <div className="flex items-center gap-5 p-4">
           <Donut segments={segments} size={148} thickness={18}>
             <span className="text-caption text-label-2">Total</span>
@@ -200,13 +163,112 @@ export function HomePage() {
                 <li key={s.categoryId ?? 'none'} className="flex items-center gap-2 text-subhead">
                   <span className="size-2.5 shrink-0 rounded-[3px]" style={{ background: c ? hexOf(c.color) : 'var(--color-muted)' }} />
                   <span className="min-w-0 flex-1 truncate">{c?.name ?? 'Sin categoría'}</span>
-                  <span className="tnum text-label-2">{Math.round(s.share * 100)}%</span>
+                  <span className="tnum not-money text-label-2">{Math.round(s.share * 100)}%</span>
                 </li>
               );
             })}
           </ul>
         </div>
       </Section>
+    ),
+    presupuestos: (
+      <Section
+        key="presupuestos"
+        header="Presupuestos"
+        action={
+          <Link to="/presupuesto" className="inline-flex min-h-11 items-center text-body text-accent">
+            Ver todos
+          </Link>
+        }
+      >
+        {budgetRows.length ? (
+          budgetRows.map((p) => (
+            <BudgetRow
+              key={p.budget_id}
+              cat={catMap.get(p.category_id!)!}
+              spent={p.spent}
+              limit={p.limit_amount}
+              onClick={() => navigate('/presupuesto')}
+            />
+          ))
+        ) : (
+          <EmptyState title="Sin presupuestos por categoría" body="Defínelos en Presupuesto para ver aquí cómo vas." />
+        )}
+      </Section>
+    ),
+  };
+
+  return (
+    <Screen title="Resumen">
+      {layout.showPending && pending.length > 0 && <PendingCard pending={pending} />}
+      <Segmented
+        options={[
+          { value: 'semana', label: 'Semana' },
+          { value: 'mes', label: 'Mes' },
+        ]}
+        value={period}
+        onChange={setPeriod}
+      />
+
+      {/* La tarjeta negra: el periodo en metal mate, la cifra grabada y el presupuesto como ranura. */}
+      <section className="black-card mt-5 rounded-[18px] px-5 pt-5 pb-4">
+        <div className="flex items-baseline justify-between gap-3">
+          <p className="text-headline font-semibold">
+            <SoftText text={card.title} />
+          </p>
+          {ratio !== null && (
+            <p className={'tnum not-money text-subhead font-semibold ' + budgetTone(ratio)}>
+              <SoftText text={`${Math.round(ratio * 100)} %`} align="end" />
+            </p>
+          )}
+        </div>
+        {isLoading ? (
+          <Skeleton className="mt-4 h-12 w-52" />
+        ) : (
+          <AnimatedAmount
+            quietCurrency={card.cents >= 0}
+            cents={card.cents}
+            className={
+              'mt-4 block text-[48px] leading-[52px] font-light tracking-[-0.035em] ' + (card.cents < 0 ? 'text-red' : 'engraved')
+            }
+          />
+        )}
+        {left !== null && limit !== null ? (
+          <>
+            <p className="tnum mt-2 text-subhead text-label-2">
+              <SoftText
+                text={
+                  figure === 'disponible'
+                    ? `Gastado ${formatCRC(budgetSpent)} de ${formatCRC(limit)}`
+                    : left >= 0
+                      ? `Quedan ${formatCRC(left)} de ${formatCRC(limit)}`
+                      : `Te pasaste ${formatCRC(-left)} de ${formatCRC(limit)}`
+                }
+              />
+            </p>
+            <div className="mt-3">
+              <ProgressBar value={ratio ?? 0} />
+            </div>
+          </>
+        ) : (
+          <Link to="/presupuesto" className="mt-1 inline-flex min-h-11 items-center text-subhead font-semibold text-accent">
+            Definir un presupuesto
+          </Link>
+        )}
+        {/* Campos de tarjeta: etiqueta grabada pequeña y valor. */}
+        <dl className="mt-5 grid grid-cols-2 gap-3">
+          {card.fields.map((f) => (
+            <div key={f}>
+              <dt className="text-caption font-semibold tracking-[0.12em] text-label-2">{FIELD[f].label}</dt>
+              <dd className={'tnum mt-1 text-headline font-medium ' + (FIELD[f].cents < 0 ? 'text-red' : 'engraved')}>
+                <SoftText text={formatCRC(FIELD[f].cents, { sign: FIELD[f].sign })} />
+              </dd>
+            </div>
+          ))}
+        </dl>
+      </section>
+
+      <div className="mt-6">{layout.order.filter((s) => !layout.hidden.includes(s)).map((s) => sections[s])}</div>
 
       {isDemo && (
         <p className="mt-4 px-4 text-footnote text-label-2">
@@ -256,7 +318,7 @@ function PendingCard({ pending }: { pending: Transaction[] }) {
               className={'press flex min-h-11 w-full items-center gap-3 px-3.5 py-1.5 text-left ' + (i ? 'shadow-[inset_0_0.5px_0_var(--color-sep)]' : '')}
             >
               <span className="min-w-0 flex-1 truncate text-subhead">{tx.merchant ?? 'Pago de Wallet'}</span>
-              <span className="tnum shrink-0 text-footnote text-label-2">{pendingWhen(tx.occurred_at)}</span>
+              <span className="tnum not-money shrink-0 text-footnote text-label-2">{pendingWhen(tx.occurred_at)}</span>
               {tx.amount === 0 ? (
                 <span className="text-subhead text-label-2">Sin monto</span>
               ) : (

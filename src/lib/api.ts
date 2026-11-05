@@ -54,6 +54,9 @@ export interface Api {
   deleteRecurring(id: string): Promise<void>;
   /** Inserta los movimientos cuyo id aún no existe y devuelve cuántos entraron (los repetidos se ignoran). */
   insertMissingTransactions(txs: Transaction[]): Promise<number>;
+  /** Preferencias de la persona tal como estén guardadas (las valida normalizePrefs); {} si nunca guardó. */
+  getPrefs(): Promise<unknown>;
+  savePrefs(prefs: object): Promise<void>;
 }
 
 async function unwrap<T>(p: PromiseLike<{ data: T | null; error: { message: string } | null }>): Promise<T> {
@@ -142,6 +145,14 @@ const supabaseApi: Api = {
       supabase.from('transactions').upsert(txs, { onConflict: 'id', ignoreDuplicates: true }).select('id'),
     );
     return rows.length;
+  },
+  getPrefs: async () => {
+    const row = await unwrap(supabase.from('user_settings').select('prefs').maybeSingle());
+    return (row as { prefs: unknown } | null)?.prefs ?? {};
+  },
+  // Una fila por persona: el dueño lo pone la base (user_id = auth.uid()), así que no se manda.
+  savePrefs: async (prefs) => {
+    await unwrap(supabase.from('user_settings').upsert({ prefs, updated_at: new Date().toISOString() }, { onConflict: 'user_id' }));
   },
 };
 

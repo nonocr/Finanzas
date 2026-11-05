@@ -136,7 +136,7 @@ export function TwoFactorSheet({ open, onClose }: { open: boolean; onClose: () =
               className="flex min-h-11 w-full items-center gap-3 px-4 text-left active:bg-card"
               onClick={() => void navigator.clipboard?.writeText(enrollment.secret).then(() => toast('Clave copiada'))}
             >
-              <span className="tnum min-w-0 flex-1 truncate font-mono text-subhead">{enrollment.secret}</span>
+              <span className="tnum not-money min-w-0 flex-1 truncate font-mono text-subhead">{enrollment.secret}</span>
               <Copy size={18} strokeWidth={2.25} className="shrink-0 text-accent" />
             </button>
           </FormGroup>
@@ -145,7 +145,7 @@ export function TwoFactorSheet({ open, onClose }: { open: boolean; onClose: () =
               <TextInput
                 inputMode="numeric"
                 autoComplete="one-time-code"
-                className="tnum tracking-[0.2em]"
+                className="tnum not-money tracking-[0.2em]"
                 placeholder="000000"
                 value={code}
                 onChange={(e) => setCode(cleanCode(e.target.value))}

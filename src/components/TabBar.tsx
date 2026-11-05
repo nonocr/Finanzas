@@ -30,7 +30,7 @@ function Tab({ to, label, icon: Icon, end, badge = 0 }: (typeof TABS)[number] & 
             <Icon size={23} strokeWidth={isActive ? 2 : 1.6} />
             {badge > 0 && (
               // Contador en platino, como un remache: dice cuántos pagos esperan sin depender del rojo.
-              <span className="metal tnum absolute -top-1.5 left-[15px] grid h-[18px] min-w-[18px] place-items-center rounded-full px-1 text-[12px] leading-none font-bold shadow-[0_0_0_2px_var(--color-bg)]">
+              <span className="metal tnum not-money absolute -top-1.5 left-[15px] grid h-[18px] min-w-[18px] place-items-center rounded-full px-1 text-[12px] leading-none font-bold shadow-[0_0_0_2px_var(--color-bg)]">
                 {badge}
               </span>
             )}

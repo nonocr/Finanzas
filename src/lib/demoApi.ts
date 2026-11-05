@@ -28,6 +28,7 @@ interface DemoDb {
 }
 
 const KEY = 'finanzas-demo';
+const DEMO_PREFS_KEY = 'finanzas-demo-prefs';
 const VERSION = 5;
 const uid = () => crypto.randomUUID();
 
@@ -332,6 +333,21 @@ export function createDemoApi(): Api {
       db.transactions.push(...structuredClone(fresh));
       commit();
       return fresh.length;
+    },
+    // En la demo las preferencias viven en este navegador, como el resto de los datos.
+    async getPrefs() {
+      try {
+        return JSON.parse(localStorage.getItem(DEMO_PREFS_KEY) ?? '{}');
+      } catch {
+        return {};
+      }
+    },
+    async savePrefs(prefs) {
+      try {
+        localStorage.setItem(DEMO_PREFS_KEY, JSON.stringify(prefs));
+      } catch {
+        // modo privado
+      }
     },
   };
 }

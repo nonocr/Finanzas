@@ -16,12 +16,14 @@ import { MorePage } from './features/settings/MorePage';
 import { RecurringPage } from './features/settings/RecurringPage';
 import { RulesPage } from './features/settings/RulesPage';
 import { ThemePage } from './features/settings/ThemePage';
+import { HomeLayoutPage } from './features/settings/HomeLayoutPage';
 import { WalletPage } from './features/settings/WalletPage';
 import { EditorProvider } from './features/transactions/editor';
 import { TransactionsPage } from './features/transactions/TransactionsPage';
 import { isDemo } from './lib/api';
 import { needsMfaCode } from './lib/mfa';
 import { syncCacheWithSession } from './lib/offline';
+import { PrefsSync } from './lib/usePrefs';
 import { openedFromRecoveryLink, supabase } from './lib/supabase';
 
 // Recharts es lo más pesado del paquete; solo se carga al abrir Estadísticas.
@@ -80,6 +82,7 @@ export default function App() {
     <ToastProvider>
       <EditorProvider>
         <ScrollToTop />
+        <PrefsSync />
         <RecurringRunner />
         <Routes>
           <Route path="/" element={<HomePage />} />
@@ -100,6 +103,7 @@ export default function App() {
           <Route path="/mas/fijos" element={<RecurringPage />} />
           <Route path="/mas/wallet" element={<WalletPage />} />
           <Route path="/mas/tema" element={<ThemePage />} />
+          <Route path="/mas/resumen" element={<HomeLayoutPage />} />
           <Route path="*" element={<HomePage />} />
         </Routes>
         <SettingsButton />

@@ -8,9 +8,11 @@ import { isDemo } from './lib/api'
 import { startAppUpdates } from './lib/appUpdate'
 import { startNative } from './lib/native'
 import { CACHE_MAX_AGE, onCacheRestored, persister, queryClient, resumePendingMutations, shouldPersistMutation } from './lib/offline'
+import { startPrefs } from './lib/prefs'
 import { startTheme } from './lib/theme'
 
 startTheme()
+startPrefs()
 startAppUpdates()
 startNative()
 

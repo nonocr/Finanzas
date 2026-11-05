@@ -62,7 +62,7 @@ function CodeField({ value, onChange }: { value: string; onChange: (v: string) =
       inputMode="numeric"
       autoComplete="one-time-code"
       placeholder="Código de 6 dígitos"
-      className="tnum min-h-[50px] w-full bg-transparent px-4 text-body tracking-[0.2em] outline-none placeholder:tracking-normal placeholder:text-label-3"
+      className="tnum not-money min-h-[50px] w-full bg-transparent px-4 text-body tracking-[0.2em] outline-none placeholder:tracking-normal placeholder:text-label-3"
       value={value}
       onChange={(e) => onChange(cleanCode(e.target.value))}
     />
