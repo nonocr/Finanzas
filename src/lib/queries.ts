@@ -1,6 +1,7 @@
 import { type QueryClient, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import { api, type Range } from './api';
+import { fetchUsdRate } from './fx';
 import { applyRecurring } from './recurring';
 import type { Account, Category, Recurring, Transaction } from './types';
 
@@ -102,6 +103,19 @@ export function useCreateApiToken() {
   const onSuccess = useInvalidate([['api_tokens']]);
   return useMutation({ mutationFn: api.createApiToken, onSuccess });
 }
+
+/**
+ * Tipo de cambio del dólar (BCCR, venta). Se pide solo al registrar en dólares; dura una hora y sin señal se usa
+ * el último guardado. null si Hacienda no responde: el campo queda para escribirlo a mano.
+ */
+export const useUsdRate = (enabled: boolean) =>
+  useQuery({
+    queryKey: ['fx', 'USD'],
+    queryFn: () => fetchUsdRate(),
+    enabled,
+    staleTime: 60 * 60 * 1000,
+    networkMode: 'online',
+  });
 
 export const useRecurring = () => useQuery({ queryKey: ['recurring'], queryFn: api.listRecurring });
 

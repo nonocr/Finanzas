@@ -53,6 +53,13 @@ export interface Transaction {
   amount_raw?: string | null;
   /** Gasto o ingreso fijo que lo generó (src/lib/recurring.ts). */
   recurring_id?: string | null;
+  /**
+   * Pagado en dólares: `amount` son los colones convertidos y aquí queda lo que se pagó de verdad (céntimos de dólar)
+   * con el tipo de cambio usado. Los tres van juntos o ninguno.
+   */
+  original_currency?: 'USD' | null;
+  original_amount?: number | null;
+  fx_rate?: number | null;
 }
 
 export interface Recurring {

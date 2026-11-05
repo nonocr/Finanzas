@@ -13,6 +13,7 @@ import type {
   Recurring,
   Transaction,
 } from './types';
+import { usdToColonCents } from './fx';
 import { dueDates } from './recurring';
 
 interface DemoDb {
@@ -127,6 +128,11 @@ function seed(): DemoDb {
   // Dos pagos recientes de Wallet sin categoría, para la bandeja "por revisar".
   add(today, 13, { amount: 1_575_000, merchant: 'AUTOMERCADO ESCAZU', source: 'wallet', status: 'por_revisar', note: 'Wallet · Visa BAC' });
   add(today, 9, { amount: 390_000, merchant: 'STARBUCKS SAN PEDRO', source: 'wallet', status: 'por_revisar', note: 'Wallet · Visa BAC' });
+  // Una compra en dólares: cuenta en colones y guarda lo pagado con el tipo de cambio.
+  add(addDays(today, -2), 21, {
+    amount: usdToColonCents(1999, 455), category_id: c['Entretenimiento'], merchant: 'Steam',
+    original_currency: 'USD', original_amount: 1999, fx_rate: 455,
+  });
   // Y uno que llegó sin monto (el datáfono no lo mandó): hay que completarlo al revisarlo.
   add(addDays(today, -1), 16, { amount: 0, amount_raw: '', merchant: 'ISHOP MULTIPLAZA', source: 'wallet', status: 'por_revisar', note: 'Wallet · Visa BAC' });
 
