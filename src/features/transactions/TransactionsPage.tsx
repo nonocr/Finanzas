@@ -1,13 +1,14 @@
-import { Search, Smartphone, X } from 'lucide-react';
+import { Search, Smartphone, Store, X } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { MonthNav } from '../../components/MonthNav';
 import { Segmented } from '../../components/motion';
-import { EmptyState, Screen, Section, Skeleton } from '../../components/ui';
+import { CategoryIcon, EmptyState, IconTile, Screen, Section, Skeleton } from '../../components/ui';
 import { crDay, crDayOf, dayLabel, isoDate, monthRange, startOfMonth } from '../../lib/dates';
+import { type Drill, matchesDrill, readDrill, readMonth } from '../../lib/drill';
 import { formatCRC } from '../../lib/money';
 import { useLookups, usePendingReview, useTransactions } from '../../lib/queries';
-import type { Transaction } from '../../lib/types';
+import type { Category, Transaction } from '../../lib/types';
 import { TransactionRow } from './TransactionRow';
 
 type Filter = 'todos' | 'gastos' | 'ingresos' | 'revisar';
@@ -17,16 +18,39 @@ const norm = (s: string) => s.normalize('NFD').replace(/\p{Diacritic}/gu, '').to
 export function TransactionsPage() {
   const [params, setParams] = useSearchParams();
   const filter = (params.get('filtro') as Filter) || 'todos';
-  const setFilter = (f: Filter) => setParams(f === 'todos' ? {} : { filtro: f }, { replace: true });
+  // Cambiar de pestaña no borra la categoría o el comercio que se tocó en Estadísticas.
+  const setFilter = (f: Filter) =>
+    setParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        if (f === 'todos') next.delete('filtro');
+        else next.set('filtro', f);
+        return next;
+      },
+      { replace: true },
+    );
+  const drill = useMemo(() => readDrill(params), [params]);
+  const clearDrill = () =>
+    setParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        next.delete('categoria');
+        next.delete('comercio');
+        next.delete('mes');
+        return next;
+      },
+      { replace: true },
+    );
 
-  const [month, setMonth] = useState(() => startOfMonth(crDay()));
+  const [month, setMonth] = useState(() => readMonth(params) ?? startOfMonth(crDay()));
   const [query, setQuery] = useState('');
   const { data: monthTxs, isLoading } = useTransactions(monthRange(month));
   const { data: pending = [] } = usePendingReview();
-  const { catMap, accMap } = useLookups();
+  const { catMap, accMap, allCategories } = useLookups();
 
   const visible = useMemo(() => {
     let list: Transaction[] = filter === 'revisar' ? pending : (monthTxs ?? []);
+    if (drill) list = list.filter((t) => matchesDrill(t, drill, allCategories));
     if (filter === 'gastos') list = list.filter((t) => t.type === 'gasto');
     if (filter === 'ingresos') list = list.filter((t) => t.type === 'ingreso');
     const q = norm(query.trim());
@@ -37,7 +61,7 @@ export function TransactionsPage() {
       });
     }
     return list;
-  }, [filter, pending, monthTxs, query, catMap, accMap]);
+  }, [filter, pending, monthTxs, drill, query, catMap, accMap, allCategories]);
 
   const groups = useMemo(() => {
     const byDay = new Map<string, Transaction[]>();
@@ -52,6 +76,15 @@ export function TransactionsPage() {
     <Screen title="Movimientos">
       <div className="space-y-3">
         {filter !== 'revisar' && <MonthNav month={month} onChange={setMonth} />}
+        {drill && (
+          <DrillChip
+            drill={drill}
+            category={drill.kind === 'categoria' && drill.categoryId ? catMap.get(drill.categoryId) : undefined}
+            spent={visible.filter((t) => t.type === 'gasto').reduce((s, t) => s + t.amount, 0)}
+            count={visible.length}
+            onClear={clearDrill}
+          />
+        )}
         <label className="flex min-h-11 items-center gap-2 rounded-[10px] bg-fill px-2.5">
           <Search size={18} strokeWidth={2} className="shrink-0 text-label-2" />
           <input
@@ -109,12 +142,16 @@ export function TransactionsPage() {
                 ? 'Nada coincide con tu búsqueda'
                 : filter === 'revisar'
                   ? 'Todo al día'
-                  : 'Sin movimientos este mes'
+                  : drill
+                    ? 'Nada aquí este mes'
+                    : 'Sin movimientos este mes'
             }
             body={
               query
                 ? 'Prueba con otro nombre o cambia el filtro.'
-                : filter === 'revisar'
+                : drill && filter !== 'revisar'
+                  ? 'Cambia de mes o quita el filtro para ver todo.'
+                  : filter === 'revisar'
                   ? 'Los pagos que lleguen de Apple Wallet sin categoría aparecerán aquí.'
                   : 'Toca + para registrar un gasto o ingreso.'
             }
@@ -137,5 +174,41 @@ export function TransactionsPage() {
         })
       )}
     </Screen>
+  );
+}
+
+/** Lo que se tocó en Estadísticas, con lo que suma en el mes y la equis para volver a ver todo. */
+function DrillChip({
+  drill,
+  category,
+  spent,
+  count,
+  onClear,
+}: {
+  drill: Drill;
+  category: Category | undefined;
+  spent: number;
+  count: number;
+  onClear: () => void;
+}) {
+  const name = drill.kind === 'comercio' ? drill.merchant : (category?.name ?? 'Sin categoría');
+  return (
+    <div className="machined flex min-h-14 items-center gap-3 rounded-[12px] bg-card py-2 pr-1 pl-3">
+      {drill.kind === 'comercio' ? (
+        <IconTile icon={Store} color="var(--color-label-2)" />
+      ) : (
+        <CategoryIcon icon={category?.icon ?? null} color={category?.color ?? null} />
+      )}
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-body font-semibold">{name}</p>
+        <p className="tnum text-footnote text-label-2">
+          {count === 1 ? '1 movimiento' : `${count} movimientos`}
+          {spent > 0 && ` · ${formatCRC(-spent)}`}
+        </p>
+      </div>
+      <button type="button" aria-label={`Quitar el filtro ${name}`} onClick={onClear} className="press grid size-11 shrink-0 place-items-center text-label-2">
+        <X size={18} strokeWidth={2.25} />
+      </button>
+    </div>
   );
 }

@@ -31,7 +31,7 @@ A personal, colones-first tracker whose Apple Wallet payments arrive by themselv
 - Transactions: gasto, ingreso, transferencia (including credit card payments).
 - Monthly budgets per category and in total; recurring income and expenses.
 - UI language: Spanish (Costa Rica).
-- Undecided: product name (placeholder until chosen).
+- Product name: «Finanzas» (chosen by the owner, 2026-11-05).
 
 ## Brand Commitments
 - Chosen by the owner (2026-10-30): the «Tarjeta negra» direction, black and grey like an exclusive black metal card (matte black, layered graphite, platinum as the single action colour).
