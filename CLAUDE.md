@@ -32,6 +32,15 @@ En esta máquina (Windows), git no está en el PATH de PowerShell. Antepón `$en
   - **Olvidé mi contraseña:** el enlace del correo se abre en Safari, que entra a `ResetPasswordPage` (evento `PASSWORD_RECOVERY`); ahí se pone la nueva, la sesión de Safari se cierra sola y luego se entra con ella en la PWA. El enlace vence a los 30 minutos.
   - **Dos pasos (TOTP):** opcional desde Ajustes → Seguridad (`TwoFactorSheet`, `src/lib/mfa.ts`). La migración `20261102000000_mfa` lo exige también en la base: con un factor verificado, una sesión `aal1` no ve ni escribe nada.
 - **Actualizaciones de la PWA:** el service worker nuevo queda en espera (`registerType: 'prompt'`) y `src/lib/appUpdate.ts` lo activa y recarga la página en cuanto no estorba: sin hojas abiertas (`Sheet` lo retiene) ni cambios en camino (`updateGate.ts`). También busca versión nueva al volver a la app. Así basta abrirla una vez.
+- **Apps nativas (Capacitor 8, rama `feature/tiendas-multiusuario`):** la misma app web, envuelta para App Store y Google Play. `capacitor.config.ts` + carpetas `ios/` (Swift Package Manager, sin CocoaPods) y `android/`. `npm run cap:sync` compila y copia `dist/` a las dos. Lo que cambia dentro de la app nativa vive en `src/lib/native.ts` (`isNative`, `platform`):
+  - Sin service worker: `appUpdate.ts` no corre; las versiones llegan por la tienda.
+  - La sesión de Supabase va a `@capacitor/preferences` (iOS puede borrar el `localStorage` del WebView).
+  - «Olvidé mi contraseña» redirige a la web de producción (`WEB_APP_URL`): la app nativa no tiene dirección propia.
+  - Android: el botón Atrás cierra la hoja abierta (le manda Escape a `Sheet`), luego navega atrás y en la raíz manda la app al fondo. De borde a borde con `EdgeToEdge` + `SystemBars` (`insetsHandling: 'native'`), así `env(safe-area-inset-*)` funciona igual que en iPhone. Sin respaldo en la nube (`allowBackup=false`).
+  - iOS: solo iPhone y vertical, mínimo iOS 16.4 (lo que pide Tailwind 4), interfaz en español y siempre oscura.
+  - Íconos y pantalla de carga: fuentes en `assets/`, se regeneran con `npx @capacitor/assets generate` (borra luego `icons/` y `public/manifest.webmanifest`, que crea para la PWA y no se usan).
+  - El `appId` (`com.nonocr.finanzas`) es provisional hasta la primera subida a una tienda.
+  - Compilación en la nube: `.github/workflows/apps.yml` (APK de prueba y build de simulador iOS, sin firmar). En Windows no hay Xcode ni JDK: no se compila local.
 - **Proyecto Supabase:** `qdrkbocandltwfvofngt` («Finanzas»), en una cuenta distinta a la de los proyectos de trabajo. **No uses el login global de la CLI**: está en la cuenta de trabajo. Usa el token de `supabase/.env.cli` (git lo ignora): `$env:SUPABASE_ACCESS_TOKEN=...` más `--project-ref`. Las migraciones se aplicaron con la Management API (`POST /v1/projects/{ref}/database/query`) y se registraron en `supabase_migrations.schema_migrations`.
 
 ## Diseño

@@ -1,0 +1,96 @@
+# Compila las apps nativas (Capacitor) en la nube: Android en Linux y iOS en macOS (esta máquina es Windows).
+# Por ahora son compilaciones de prueba sin firmar: comprueban que todo compila y dejan el APK para instalarlo a mano.
+# La firma y la subida a TestFlight / Google Play se agregan cuando estén las cuentas de desarrollador.
+name: Apps nativas
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, feature/tiendas-multiusuario]
+    paths:
+      - 'android/**'
+      - 'ios/**'
+      - 'capacitor.config.ts'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/apps.yml'
+
+permissions:
+  contents: read
+
+# Un push nuevo cancela la compilación anterior de la misma rama (los minutos de macOS cuentan 10 veces).
+concurrency:
+  group: apps-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      # Acciones fijadas por commit (no por etiqueta, que se puede mover): v4 al 2026-11-05.
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+
+      - name: Instalar dependencias (sin scripts de terceros)
+        run: npm ci --ignore-scripts
+
+      - name: Compilar la app web
+        run: npm run build
+
+      - name: Copiar la app web al proyecto Android
+        run: npx cap sync android
+
+      - name: Compilar el APK de prueba
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: finanzas-android-debug
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 14
+
+  ios:
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Instalar dependencias (sin scripts de terceros)
+        run: npm ci --ignore-scripts
+
+      - name: Compilar la app web
+        run: npm run build
+
+      - name: Copiar la app web al proyecto iOS
+        run: npx cap sync ios
+
+      # Para el simulador y sin firma: comprueba que el proyecto de Xcode compila sin necesitar la cuenta de Apple.
+      - name: Compilar para el simulador
+        run: |
+          xcodebuild build \
+            -project ios/App/App.xcodeproj \
+            -scheme App \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO

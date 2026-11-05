@@ -1,4 +1,6 @@
+import { Preferences } from '@capacitor/preferences';
 import { createClient } from '@supabase/supabase-js';
+import { isNative } from './native';
 
 const url = import.meta.env.VITE_SUPABASE_URL as string | undefined;
 // Clave publicable (sb_publishable_…): pública por diseño; los datos los protegen RLS y la sesión.
@@ -10,8 +12,17 @@ export const supabaseConfigured = Boolean(url && publishableKey);
 // fragmento (#access_token=…&type=recovery) y lo borra de la URL.
 export const openedFromRecoveryLink = typeof location !== 'undefined' && location.hash.includes('type=recovery');
 
+// En la app nativa la sesión va al almacenamiento del sistema (UserDefaults / SharedPreferences): iOS puede borrar
+// el localStorage del WebView si falta espacio, y eso cerraría la sesión sin aviso.
+const nativeStorage = {
+  getItem: async (key: string) => (await Preferences.get({ key })).value,
+  setItem: (key: string, value: string) => Preferences.set({ key, value }),
+  removeItem: (key: string) => Preferences.remove({ key }),
+};
+
 export const supabase = createClient(url ?? 'http://localhost', publishableKey ?? 'missing', {
   auth: {
+    storage: isNative ? nativeStorage : undefined,
     persistSession: true,
     autoRefreshToken: true,
     // La app solo recibe sesiones por enlace en «olvidé mi contraseña». Cualquier otro #access_token=… (por ejemplo,

@@ -2,6 +2,7 @@ import { Wallet } from 'lucide-react';
 import { useEffect, useState, type ComponentProps, type ReactNode } from 'react';
 import { Button } from '../../components/ui';
 import { cleanCode, needsMfaCode, verifyCode } from '../../lib/mfa';
+import { isNative, platform, WEB_APP_URL } from '../../lib/native';
 import { checkPassword } from '../../lib/password';
 import { supabase, takePartialSignOut } from '../../lib/supabase';
 
@@ -80,7 +81,7 @@ export function LoginPage() {
     const { error } =
       mode === 'login'
         ? await supabase.auth.signInWithPassword({ email: email.trim(), password })
-        : await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo: `${location.origin}/` });
+        : await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo: isNative ? WEB_APP_URL : `${location.origin}/` });
     setBusy(false);
     if (error) setError(MESSAGES[error.code ?? ''] ?? GENERIC);
     else if (mode === 'forgot') setMode('sent');
@@ -96,7 +97,7 @@ export function LoginPage() {
     return (
       <AuthLayout
         title="Revisa tu correo"
-        subtitle={`Si ${email.trim()} tiene cuenta, te llegará un enlace para poner una contraseña nueva. Ábrelo en este iPhone; se abrirá en Safari.`}
+        subtitle={`Si ${email.trim()} tiene cuenta, te llegará un enlace para poner una contraseña nueva. ${platform === 'android' ? 'Ábrelo en este teléfono; se abrirá en el navegador.' : 'Ábrelo en este iPhone; se abrirá en Safari.'}`}
       >
         <Button variant="tinted" className="mt-8 w-full" onClick={() => go('login')}>
           Volver a entrar

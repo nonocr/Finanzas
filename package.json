@@ -8,11 +8,17 @@
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview",
+    "cap:sync": "npm run build && cap sync",
     "test": "vitest run",
     "test:e2e": "playwright test",
     "check:secrets": "node scripts/check-secrets.mjs --history"
   },
   "dependencies": {
+    "@capacitor/android": "^8.6.0",
+    "@capacitor/app": "^8.1.2",
+    "@capacitor/core": "^8.6.0",
+    "@capacitor/ios": "^8.6.0",
+    "@capacitor/preferences": "^8.0.1",
     "@gsap/react": "^2.1.2",
     "@supabase/supabase-js": "^2.118.0",
     "@tanstack/query-sync-storage-persister": "^5.105.0",
@@ -27,6 +33,7 @@
     "recharts": "^3.10.1"
   },
   "devDependencies": {
+    "@capacitor/cli": "^8.6.0",
     "@electric-sql/pglite": "^0.5.13",
     "@playwright/test": "1.64.1",
     "@tailwindcss/vite": "^4.3.3",

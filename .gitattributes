@@ -1,3 +1,6 @@
 * text=auto eol=lf
 *.png binary
 *.exe binary
+# Los .bat de Windows (gradlew.bat) necesitan CRLF.
+*.bat text eol=crlf
+*.jar binary
