@@ -1,5 +1,6 @@
-import { TrendingDown, TrendingUp } from 'lucide-react';
+import { ChevronRight, TrendingDown, TrendingUp } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { Donut } from '../../components/Donut';
 import { MonthNav } from '../../components/MonthNav';
@@ -7,6 +8,7 @@ import { AnimatedAmount, SoftText } from '../../components/motion';
 import { hexOf } from '../../components/palette';
 import { CategoryIcon, EmptyState, Screen, Section } from '../../components/ui';
 import { addMonths, crDay, crDayStartInstant, monthName, startOfMonth } from '../../lib/dates';
+import { drillHref } from '../../lib/drill';
 import { formatCRC } from '../../lib/money';
 import { useLookups, useTransactions } from '../../lib/queries';
 import {
@@ -123,14 +125,19 @@ export function StatsPage() {
             {slices.map((s) => {
               const c = s.categoryId ? catMap.get(s.categoryId) : undefined;
               return (
-                <div key={s.categoryId ?? 'none'} className="group flex items-center gap-3 pl-4">
+                <Link
+                  key={s.categoryId ?? 'none'}
+                  to={drillHref({ kind: 'categoria', categoryId: s.categoryId }, month)}
+                  className="group flex items-center gap-3 pl-4 transition-colors active:bg-card-2"
+                >
                   <CategoryIcon icon={c?.icon ?? null} color={c?.color ?? null} />
-                  <div className="flex min-h-11 min-w-0 flex-1 items-center gap-3 py-2.5 pr-4 shadow-[inset_0_-0.5px_0_var(--color-sep)] group-last:shadow-none">
+                  <div className="flex min-h-11 min-w-0 flex-1 items-center gap-3 py-2.5 pr-3 shadow-[inset_0_-0.5px_0_var(--color-sep)] group-last:shadow-none">
                     <span className="min-w-0 flex-1 truncate text-body">{c?.name ?? 'Sin categoría'}</span>
                     <span className="tnum text-subhead text-label-2">{Math.round(s.share * 100)}%</span>
                     <span className="tnum w-24 text-right text-body font-semibold">{formatCRC(s.amount)}</span>
+                    <ChevronRight size={16} strokeWidth={2.25} className="shrink-0 text-label-3" />
                   </div>
-                </div>
+                </Link>
               );
             })}
           </>
@@ -217,9 +224,13 @@ export function StatsPage() {
           <EmptyState title="Sin comercios este mes" />
         ) : (
           merchants.map((m, i) => (
-            <div key={m.merchant} className="group flex items-center gap-3 pl-4">
+            <Link
+              key={m.merchant}
+              to={drillHref({ kind: 'comercio', merchant: m.merchant }, month)}
+              className="group flex items-center gap-3 pl-4 transition-colors active:bg-card-2"
+            >
               <span className="tnum w-5 text-center text-subhead font-semibold text-label-3">{i + 1}</span>
-              <div className="flex min-h-11 min-w-0 flex-1 items-center gap-3 py-2.5 pr-4 shadow-[inset_0_-0.5px_0_var(--color-sep)] group-last:shadow-none">
+              <div className="flex min-h-11 min-w-0 flex-1 items-center gap-3 py-2.5 pr-3 shadow-[inset_0_-0.5px_0_var(--color-sep)] group-last:shadow-none">
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-body">{m.merchant}</span>
                   <span className="block text-footnote text-label-2">
@@ -227,8 +238,9 @@ export function StatsPage() {
                   </span>
                 </span>
                 <span className="tnum text-body font-semibold">{formatCRC(m.amount)}</span>
+                <ChevronRight size={16} strokeWidth={2.25} className="shrink-0 text-label-3" />
               </div>
-            </div>
+            </Link>
           ))
         )}
       </Section>

@@ -11,19 +11,30 @@ import { useToast } from '../../components/Toast';
 import { Button } from '../../components/ui';
 import { crDay, crDayOf, crInstant, crTimeOf, isoDate } from '../../lib/dates';
 import {
+  centsToUsdInput,
+  formatRate,
+  isSaneRate,
+  parseRateInput,
+  parseUsdAmount,
+  usdInputToCents,
+  usdToColonCents,
+} from '../../lib/fx';
+import { formatCRC } from '../../lib/money';
+import {
   useAccounts,
   useCategories,
   useDeleteTransaction,
   useLookups,
   useSaveMerchantRule,
   useSaveTransaction,
+  useUsdRate,
 } from '../../lib/queries';
 import type { Account, Transaction, TxType } from '../../lib/types';
 
 const LAST_ACCOUNT_KEY = 'finanzas-last-account';
 const pillDate = new Intl.DateTimeFormat('es-CR', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
 const pillTime = new Intl.DateTimeFormat('es-CR', { hour: 'numeric', minute: '2-digit', timeZone: 'UTC' });
-const PICKER_INPUT =
+export const PICKER_INPUT =
   'absolute inset-0 opacity-0 [color-scheme:dark] [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:size-full';
 const readLastAccount = () => {
   try {
@@ -60,8 +71,15 @@ export function TransactionSheet({
   const pending = tx?.status === 'por_revisar';
   // Pago de Wallet que llegó sin monto (el datáfono no lo mandó): hay que escribirlo al confirmarlo.
   const missingAmount = tx?.amount === 0;
+  // Cargo en dólares que el servidor no pudo convertir (Hacienda no respondió): se abre en dólares con el monto leído.
+  const rawUsd = missingAmount ? parseUsdAmount(tx?.amount_raw) : null;
+  const savedUsd = tx?.original_currency === 'USD' && tx.original_amount ? tx.original_amount : null;
   const [type, setType] = useState<TxType>(tx?.type ?? initialType);
   const [colones, setColones] = useState(tx && !missingAmount ? String(Math.round(tx.amount / 100)) : '');
+  const [currency, setCurrency] = useState<'CRC' | 'USD'>(savedUsd || rawUsd ? 'USD' : 'CRC');
+  const [usdText, setUsdText] = useState(savedUsd || rawUsd ? centsToUsdInput((savedUsd ?? rawUsd)!) : '');
+  // null = sin tocar: se usa el tipo de cambio guardado con el movimiento o, si es nuevo, el del día.
+  const [rateText, setRateText] = useState<string | null>(savedUsd && tx?.fx_rate ? String(tx.fx_rate).replace('.', ',') : null);
   const [categoryId, setCategoryId] = useState<string | null>(tx?.category_id ?? null);
   const [accountId, setAccountId] = useState<string | null>(tx?.account_id ?? readLastAccount());
   const [toAccountId, setToAccountId] = useState<string | null>(tx?.to_account_id ?? null);
@@ -84,8 +102,14 @@ export function TransactionSheet({
     () => categories.filter((c) => c.kind === (type === 'ingreso' ? 'ingreso' : 'gasto') && !c.parent_id),
     [categories, type],
   );
-  const cents = Number(colones || '0') * 100;
   const isTransfer = type === 'transferencia';
+  const inUsd = currency === 'USD' && !isTransfer;
+  const { data: liveRate, isFetching: fetchingRate } = useUsdRate(inUsd && rateText === null);
+  const rateShown = rateText ?? (liveRate ? String(liveRate.rate).replace('.', ',') : '');
+  const rate = parseRateInput(rateShown);
+  const rateOk = rate !== null && isSaneRate(rate);
+  const usdCents = usdInputToCents(usdText);
+  const cents = inUsd ? (rateOk ? usdToColonCents(usdCents, rate) : 0) : Number(colones || '0') * 100;
   const destination = choices.find((a) => a.id === toAccountId);
   const today = isoDate(crDay());
   const valid =
@@ -115,6 +139,9 @@ export function TransactionSheet({
       occurred_at,
       source: tx?.source ?? 'manual',
       status: 'confirmada',
+      original_currency: inUsd ? 'USD' : null,
+      original_amount: inUsd ? usdCents : null,
+      fx_rate: inUsd ? rate : null,
     });
     if (pending && remember && categoryId && tx?.merchant) {
       saveRule.mutate({ pattern: tx.merchant.trim().toUpperCase(), category_id: categoryId });
@@ -181,7 +208,12 @@ export function TransactionSheet({
           <Smartphone size={20} strokeWidth={2} className="shrink-0 text-accent" />
           <span>
             Llegó de Apple Wallet{tx?.note ? ` (${tx.note.replace(/^Wallet · /, '')})` : ''}
-            {missingAmount ? (
+            {savedUsd || rawUsd ? (
+              <>
+                {' '}en dólares{savedUsd && tx?.fx_rate ? `, convertido a ${formatRate(tx.fx_rate)} por dólar` : ''}. Revisa el tipo de
+                cambio, elige la categoría y confírmalo.
+              </>
+            ) : missingAmount ? (
               <>
                 {tx?.amount_raw ? ` con un monto que no se pudo leer («${tx.amount_raw}»)` : ' sin el monto (el datáfono no lo mandó)'}.
                 Escribe el monto, elige la categoría y confírmalo.
@@ -212,8 +244,63 @@ export function TransactionSheet({
       )}
 
       <div className="mt-5">
-        <AmountInput value={colones} onChange={setColones} autoFocus={!tx || missingAmount}tone={type === 'ingreso' ? 'ingreso' : undefined} />
+        {inUsd ? (
+          <AmountInput
+            currency="USD"
+            value={usdText}
+            onChange={setUsdText}
+            autoFocus={(!tx || missingAmount) && !rawUsd}
+            tone={type === 'ingreso' ? 'ingreso' : undefined}
+          />
+        ) : (
+          <AmountInput value={colones} onChange={setColones} autoFocus={!tx || missingAmount} tone={type === 'ingreso' ? 'ingreso' : undefined} />
+        )}
       </div>
+
+      {!isTransfer && (
+        <div className="mx-auto mt-3 w-56">
+          <Segmented
+            options={[
+              { value: 'CRC', label: 'Colones' },
+              { value: 'USD', label: 'Dólares' },
+            ]}
+            value={currency}
+            onChange={setCurrency}
+          />
+        </div>
+      )}
+
+      {inUsd && (
+        <>
+          <div className="mt-4 overflow-hidden rounded-[12px] bg-card-2">
+            <Field label="Tipo de cambio">
+              <input
+                inputMode="decimal"
+                value={rateShown}
+                onChange={(e) => setRateText(e.target.value.replace(/[^\d.,]/g, '').slice(0, 9))}
+                placeholder={fetchingRate ? 'Buscando…' : '₡0,00'}
+                aria-label="Tipo de cambio, colones por dólar"
+                className="tnum w-full bg-transparent text-right text-body outline-none placeholder:text-label-3"
+                autoComplete="off"
+              />
+            </Field>
+            <Field label="En colones" last>
+              <span className="tnum text-body font-semibold">{cents > 0 ? formatCRC(cents) : '—'}</span>
+            </Field>
+          </div>
+          <p className="mt-2 px-4 text-footnote text-pretty text-label-2">
+            {rateShown && !rateOk
+              ? 'Ese tipo de cambio no parece correcto: escribe cuántos colones vale un dólar.'
+              : rateText !== null || savedUsd
+                ? 'Tu banco puede cobrar unos colones distinto. Si tienes el monto exacto, corrige el tipo de cambio.'
+                : liveRate
+                  ? `Tipo de cambio de venta del BCCR (${liveRate.date.split('-').reverse().join('/')}). Tu banco puede cobrar unos colones distinto.`
+                  : fetchingRate
+                    ? 'Buscando el tipo de cambio del BCCR…'
+                    : 'No se pudo obtener el tipo de cambio. Escríbelo a mano.'}
+          </p>
+        </>
+      )}
 
       {!isTransfer && (
         <Group label="Categoría">
@@ -329,7 +416,7 @@ function Group({ label, icon, children }: { label: string; icon?: React.ReactNod
   );
 }
 
-function AccountChips({
+export function AccountChips({
   accounts,
   selected,
   onSelect,

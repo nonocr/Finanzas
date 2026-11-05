@@ -10,8 +10,11 @@ import type {
   BudgetProgress,
   Category,
   MerchantRule,
+  Recurring,
   Transaction,
 } from './types';
+import { usdToColonCents } from './fx';
+import { dueDates } from './recurring';
 
 interface DemoDb {
   version: number;
@@ -21,10 +24,11 @@ interface DemoDb {
   budgets: Budget[];
   rules: MerchantRule[];
   tokens: ApiToken[];
+  recurring: Recurring[];
 }
 
 const KEY = 'finanzas-demo';
-const VERSION = 4;
+const VERSION = 5;
 const uid = () => crypto.randomUUID();
 
 function load(): DemoDb | null {
@@ -124,6 +128,11 @@ function seed(): DemoDb {
   // Dos pagos recientes de Wallet sin categoría, para la bandeja "por revisar".
   add(today, 13, { amount: 1_575_000, merchant: 'AUTOMERCADO ESCAZU', source: 'wallet', status: 'por_revisar', note: 'Wallet · Visa BAC' });
   add(today, 9, { amount: 390_000, merchant: 'STARBUCKS SAN PEDRO', source: 'wallet', status: 'por_revisar', note: 'Wallet · Visa BAC' });
+  // Una compra en dólares: cuenta en colones y guarda lo pagado con el tipo de cambio.
+  add(addDays(today, -2), 21, {
+    amount: usdToColonCents(1999, 455), category_id: c['Entretenimiento'], merchant: 'Steam',
+    original_currency: 'USD', original_amount: 1999, fx_rate: 455,
+  });
   // Y uno que llegó sin monto (el datáfono no lo mandó): hay que completarlo al revisarlo.
   add(addDays(today, -1), 16, { amount: 0, amount_raw: '', merchant: 'ISHOP MULTIPLAZA', source: 'wallet', status: 'por_revisar', note: 'Wallet · Visa BAC' });
 
@@ -146,7 +155,21 @@ function seed(): DemoDb {
     { id: uid(), pattern: 'UBER', category_id: c['Transporte'], priority: 0 },
   ];
 
-  return { version: VERSION, accounts, categories, transactions, budgets, rules, tokens: [] };
+  // Los mismos fijos que trae el historial de ejemplo; la próxima fecha es la primera después de hoy, así que no se
+  // repiten los movimientos ya sembrados.
+  const fixed = (name: string, type: Recurring['type'], amount: number, account: Account, category: string, frequency: Recurring['frequency'], anchor: number): Recurring => {
+    const prev = addMonths(startOfMonth(today), -1);
+    const { next } = dueDates({ next_date: isoDate(prev), frequency, anchor_day: anchor }, today);
+    return { id: uid(), name, type, amount, account_id: account.id, category_id: c[category], frequency, next_date: isoDate(next), anchor_day: anchor, active: true };
+  };
+  const recurring = [
+    fixed('Planilla', 'ingreso', 68_000_000, debito, 'Salario', 'quincenal', 15),
+    fixed('Alquiler', 'gasto', 32_000_000, debito, 'Casa', 'mensual', 1),
+    fixed('Kölbi Internet', 'gasto', 1_490_000, visa, 'Suscripciones', 'mensual', 12),
+    fixed('Netflix', 'gasto', 699_000, visa, 'Suscripciones', 'mensual', 18),
+  ];
+
+  return { version: VERSION, accounts, categories, transactions, budgets, rules, tokens: [], recurring };
 }
 
 export function createDemoApi(): Api {
@@ -287,6 +310,28 @@ export function createDemoApi(): Api {
     async revokeApiToken(id) {
       db.tokens = db.tokens.filter((t) => t.id !== id);
       commit();
+    },
+    listRecurring: () => ok([...db.recurring].sort((a, b) => a.next_date.localeCompare(b.next_date))),
+    async saveRecurring({ id, ...r }) {
+      if (id) db.recurring = db.recurring.map((x) => (x.id === id ? { ...x, ...r } : x));
+      else
+        db.recurring.push({
+          id: uid(), name: '', type: 'gasto', amount: 0, account_id: db.accounts[0].id, category_id: null,
+          frequency: 'mensual', next_date: isoDate(crDay()), anchor_day: null, active: true, ...r,
+        });
+      commit();
+    },
+    async deleteRecurring(id) {
+      // Igual que en la base (on delete set null): los movimientos generados se quedan.
+      db.recurring = db.recurring.filter((r) => r.id !== id);
+      db.transactions = db.transactions.map((t) => (t.recurring_id === id ? { ...t, recurring_id: null } : t));
+      commit();
+    },
+    async insertMissingTransactions(txs) {
+      const fresh = txs.filter((t) => !db.transactions.some((x) => x.id === t.id));
+      db.transactions.push(...structuredClone(fresh));
+      commit();
+      return fresh.length;
     },
   };
 }

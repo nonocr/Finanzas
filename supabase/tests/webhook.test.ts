@@ -203,11 +203,46 @@ describe('ingestPayment', () => {
     expect(tables.transactions[0]).toMatchObject({ account_id: 'bac', status: 'por_revisar' });
   });
 
-  it.each(['$12.50', '-₡5.000'])('%s: monto 0, por revisar, con el texto original', async (amount) => {
+  const noRate = { usdRate: async () => null };
+  const rate = { usdRate: async () => ({ rate: 454.41, date: '2026-11-05' }) };
+
+  it.each(['-₡5.000', '€5,00', 'C$ 100'])('%s: monto 0, por revisar, con el texto original', async (amount) => {
     const { client, tables } = fakeDb({ accounts: ACCOUNTS, merchant_rules: RULES });
-    const r = await ingestPayment(client, 'u', { amount, merchant: 'AUTOMERCADO', card: 'Mi Débito' });
+    const r = await ingestPayment(client, 'u', { amount, merchant: 'AUTOMERCADO', card: 'Mi Débito' }, rate);
     expect(r).toMatchObject({ ok: true, status: 'por_revisar' });
     expect(tables.transactions[0]).toMatchObject({ amount: 0, amount_raw: amount });
+    expect(tables.transactions[0].original_currency).toBeUndefined();
+  });
+
+  it('en dólares se convierte con el tipo de cambio y guarda lo pagado', async () => {
+    const { client, tables } = fakeDb({ accounts: ACCOUNTS, merchant_rules: RULES });
+    const r = await ingestPayment(client, 'u', { amount: 'US$12.99', merchant: 'AUTOMERCADO', card: 'Mi Débito', id: 'usd1' }, rate);
+    // Tarjeta y regla conocidas: se confirma igual que un pago en colones.
+    expect(r).toMatchObject({ ok: true, status: 'confirmada' });
+    expect(tables.transactions[0]).toMatchObject({
+      amount: 590_279, // 12,99 × 454,41 = ₡5.902,79
+      amount_raw: null,
+      original_currency: 'USD',
+      original_amount: 1299,
+      fx_rate: 454.41,
+    });
+  });
+
+  it('en dólares sin tipo de cambio: como antes, monto 0 por revisar con el texto', async () => {
+    const { client, tables } = fakeDb({ accounts: ACCOUNTS, merchant_rules: RULES });
+    const r = await ingestPayment(client, 'u', { amount: '$12.50', merchant: 'AUTOMERCADO', card: 'Mi Débito' }, noRate);
+    expect(r).toMatchObject({ ok: true, status: 'por_revisar' });
+    expect(tables.transactions[0]).toMatchObject({ amount: 0, amount_raw: '$12.50' });
+    expect(tables.transactions[0].original_currency).toBeUndefined();
+  });
+
+  it('un pago en dólares reenviado otro día (otro tipo de cambio) no se duplica', async () => {
+    const { client, tables } = fakeDb({ accounts: ACCOUNTS });
+    const p = { amount: '$5.00', merchant: 'APPLE', at: new Date(Date.now() - 60_000).toISOString() };
+    await ingestPayment(client, 'u', p, rate);
+    const r = await ingestPayment(client, 'u', p, { usdRate: async () => ({ rate: 470, date: '2026-11-06' }) });
+    expect(r).toMatchObject({ ok: true, duplicate: true });
+    expect(tables.transactions).toHaveLength(1);
   });
 
   it('reenviar el mismo pago no lo duplica', async () => {

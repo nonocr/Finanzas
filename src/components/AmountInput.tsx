@@ -1,6 +1,7 @@
 import clsx from 'clsx';
 import { useEffect, useRef } from 'react';
-import { pastedColones } from '../lib/money';
+import { centsToUsdInput, sanitizeUsdInput } from '../lib/fx';
+import { parseAmountToCents, pastedColones } from '../lib/money';
 
 const groups = new Intl.NumberFormat('es-CR');
 
@@ -17,13 +18,17 @@ export function AmountInput({
   autoFocus,
   tone,
   label = 'Monto',
+  currency = 'CRC',
 }: {
   value: string;
   onChange: (digits: string) => void;
   autoFocus?: boolean;
   tone?: 'ingreso';
   label?: string;
+  /** En dólares el valor lleva coma decimal ("12,99"); en colones son colones enteros. */
+  currency?: 'CRC' | 'USD';
 }) {
+  const usd = currency === 'USD';
   const input = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -34,6 +39,7 @@ export function AmountInput({
   }, [autoFocus]);
 
   const empty = value === '';
+  const shown = usd ? value : pretty(value);
   return (
     <label
       className={clsx(
@@ -41,26 +47,32 @@ export function AmountInput({
         empty ? 'text-label-3' : tone === 'ingreso' ? 'text-green' : 'engraved',
       )}
     >
-      <span aria-hidden="true" className="text-[34px] text-label-2">₡</span>
+      <span aria-hidden="true" className="text-[34px] text-label-2">
+        {usd ? 'US$' : '₡'}
+      </span>
       <input
         ref={input}
-        aria-label={label}
-        inputMode="numeric"
-        pattern="[0-9]*"
+        aria-label={usd ? `${label} en dólares` : label}
+        inputMode={usd ? 'decimal' : 'numeric'}
+        pattern={usd ? undefined : '[0-9]*'}
         autoComplete="off"
         enterKeyHint="done"
         placeholder="0"
-        value={pretty(value)}
-        onChange={(e) => onChange(e.target.value.replace(/\D/g, '').replace(/^0+/, '').slice(0, 11))}
+        value={shown}
+        onChange={(e) =>
+          onChange(usd ? sanitizeUsdInput(e.target.value) : e.target.value.replace(/\D/g, '').replace(/^0+/, '').slice(0, 11))
+        }
         onPaste={(e) => {
-          const v = pastedColones(e.clipboardData.getData('text'));
+          const text = e.clipboardData.getData('text');
+          const usdCents = usd ? parseAmountToCents(text) : null;
+          const v = usd ? (usdCents ? centsToUsdInput(usdCents) : null) : pastedColones(text);
           if (v === null) return;
           e.preventDefault();
           onChange(v);
         }}
         onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
         className="min-w-[1ch] bg-transparent text-left outline-none placeholder:text-label-3 [field-sizing:content]"
-        style={{ width: `${Math.max(1, pretty(value).length || 1)}ch` }}
+        style={{ width: `${Math.max(1, shown.length || 1)}ch` }}
       />
     </label>
   );

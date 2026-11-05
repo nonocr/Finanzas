@@ -1,7 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { type QueryClient, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import { api, type Range } from './api';
-import type { Account, Category, Transaction } from './types';
+import { fetchUsdRate } from './fx';
+import { applyRecurring } from './recurring';
+import type { Account, Category, Recurring, Transaction } from './types';
 
 // ---------------------------------------------------------------------------
 // Lecturas
@@ -100,6 +102,64 @@ export function useDeleteMerchantRule() {
 export function useCreateApiToken() {
   const onSuccess = useInvalidate([['api_tokens']]);
   return useMutation({ mutationFn: api.createApiToken, onSuccess });
+}
+
+/**
+ * Tipo de cambio del dólar (BCCR, venta). Se pide solo al registrar en dólares; dura una hora y sin señal se usa
+ * el último guardado. null si Hacienda no responde: el campo queda para escribirlo a mano.
+ */
+export const useUsdRate = (enabled: boolean) =>
+  useQuery({
+    queryKey: ['fx', 'USD'],
+    queryFn: () => fetchUsdRate(),
+    enabled,
+    staleTime: 60 * 60 * 1000,
+    networkMode: 'online',
+  });
+
+export const useRecurring = () => useQuery({ queryKey: ['recurring'], queryFn: api.listRecurring });
+
+let recurringQueue: Promise<unknown> = Promise.resolve();
+
+/**
+ * Registra los cobros fijos vencidos. Al terminar refresca los fijos (su próxima fecha avanzó) y, si entró algún
+ * movimiento, también listas, saldos y presupuestos. Las corridas van en fila: la que pide un fijo recién guardado
+ * espera a la que ya estaba en curso y luego lee la lista de nuevo. No es una mutación para que un fallo en segundo
+ * plano no salte como error en pantalla (se reintenta la próxima vez que se abra la app).
+ */
+export function runRecurring(qc: QueryClient): Promise<number> {
+  const run = recurringQueue
+    .catch(() => {})
+    .then(() => applyRecurring(api))
+    .then(async (created) => {
+      await qc.invalidateQueries({ queryKey: ['recurring'] });
+      if (created > 0) await Promise.all(MONEY_KEYS.map((queryKey) => qc.invalidateQueries({ queryKey })));
+      return created;
+    });
+  recurringQueue = run;
+  return run;
+}
+
+/**
+ * Guardar un fijo también registra enseguida sus cobros si la fecha ya llegó (p. ej. uno que vence hoy). Devuelve
+ * cuántos movimientos entraron; si eso falla, el fijo ya quedó guardado y el runner lo reintenta después.
+ */
+export function useSaveRecurring() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (r: Partial<Recurring>) => {
+      await api.saveRecurring(r);
+      return runRecurring(qc).catch(async () => {
+        await qc.invalidateQueries({ queryKey: ['recurring'] });
+        return 0;
+      });
+    },
+  });
+}
+
+export function useDeleteRecurring() {
+  const onSuccess = useInvalidate([['recurring'], ['transactions']]);
+  return useMutation({ mutationFn: api.deleteRecurring, onSuccess });
 }
 
 export function useRevokeApiToken() {

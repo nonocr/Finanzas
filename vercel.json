@@ -6,7 +6,7 @@
       "headers": [
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://qdrkbocandltwfvofngt.supabase.co; worker-src 'self'; manifest-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests"
+          "value": "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://qdrkbocandltwfvofngt.supabase.co https://api.hacienda.go.cr; worker-src 'self'; manifest-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests"
         },
         { "key": "Strict-Transport-Security", "value": "max-age=63072000; includeSubDomains" },
         { "key": "X-Content-Type-Options", "value": "nosniff" },

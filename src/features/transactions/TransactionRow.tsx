@@ -1,5 +1,6 @@
 import { ArrowLeftRight, CircleDot } from 'lucide-react';
 import { CategoryIcon, IconTile, Row, Stamp } from '../../components/ui';
+import { formatUSD } from '../../lib/fx';
 import { formatCRC } from '../../lib/money';
 import type { Account, Category, Transaction } from '../../lib/types';
 import { useEditor } from './editor';
@@ -64,13 +65,19 @@ export function TransactionRow({
         tx.amount === 0 ? (
           <span className="text-subhead text-label-2">Sin monto</span>
         ) : (
-        <span
-          className={
-            'tnum font-semibold ' +
-            (tx.type === 'ingreso' ? 'text-green' : tx.type === 'transferencia' ? 'text-label-2' : 'text-label')
-          }
-        >
-          {tx.type === 'ingreso' ? formatCRC(tx.amount, { sign: true }) : tx.type === 'gasto' ? formatCRC(-tx.amount) : formatCRC(tx.amount)}
+        <span className="block text-right">
+          <span
+            className={
+              'tnum block font-semibold ' +
+              (tx.type === 'ingreso' ? 'text-green' : tx.type === 'transferencia' ? 'text-label-2' : 'text-label')
+            }
+          >
+            {tx.type === 'ingreso' ? formatCRC(tx.amount, { sign: true }) : tx.type === 'gasto' ? formatCRC(-tx.amount) : formatCRC(tx.amount)}
+          </span>
+          {/* Pagado en dólares: lo que se pagó de verdad, debajo de los colones que cuentan. */}
+          {tx.original_currency === 'USD' && tx.original_amount ? (
+            <span className="tnum block text-footnote text-label-2">{formatUSD(tx.original_amount)}</span>
+          ) : null}
         </span>
         )
       }

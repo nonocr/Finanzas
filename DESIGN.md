@@ -1,5 +1,5 @@
 ---
-name: Finanzas personales (nombre por definir)
+name: Finanzas
 description: A colones-first personal money tracker held like a private black metal card, dark only.
 colors:
   bg: "#050505"

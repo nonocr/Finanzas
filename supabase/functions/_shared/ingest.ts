@@ -1,5 +1,6 @@
 // Lógica del webhook de Wallet (wallet-sync): autorizar el token y guardar un pago de la cola.
 import type { SupabaseClient } from 'npm:@supabase/supabase-js@2';
+import { fetchUsdRate, parseUsdAmount, type UsdRate, usdToColonCents } from './fx.ts';
 import { parseAmountToCents } from './money.ts';
 import { cleanText, clientIp, json, tooMany, withinLimit } from './security.ts';
 
@@ -110,9 +111,39 @@ export function notAColonCharge(v: unknown): boolean {
   return foreign || negative;
 }
 
-export async function ingestPayment(supabase: SupabaseClient, userId: string, p: WalletPayment): Promise<IngestResult> {
+/** Tipo de cambio del día, una consulta por instancia de la función (se renueva cada hora). */
+let rateCache: { at: number; value: Promise<UsdRate | null> } | null = null;
+export function cachedUsdRate(now = Date.now()): Promise<UsdRate | null> {
+  if (!rateCache || now - rateCache.at > 3_600_000) {
+    const value = fetchUsdRate();
+    rateCache = { at: now, value };
+    // Un fallo no se guarda: el próximo pago vuelve a intentar.
+    void value.then((r) => {
+      if (r === null && rateCache?.value === value) rateCache = null;
+    });
+  }
+  return rateCache.value;
+}
+
+export interface IngestOptions {
+  /** Tipo de cambio para pagos en dólares (inyectable en pruebas). */
+  usdRate?: () => Promise<UsdRate | null>;
+}
+
+export async function ingestPayment(
+  supabase: SupabaseClient,
+  userId: string,
+  p: WalletPayment,
+  opts: IngestOptions = {},
+): Promise<IngestResult> {
   const amountIn = typeof p.amount === 'number' || typeof p.amount === 'string' ? p.amount : null;
-  const parsed = notAColonCharge(amountIn) ? null : parseAmountToCents(amountIn);
+  // Un cargo en dólares se convierte con el tipo de cambio del BCCR. Si no se consigue, sigue como antes: monto 0 por
+  // revisar, con el texto original para escribir los colones a mano.
+  const usdCents = parseUsdAmount(amountIn);
+  const fx = usdCents !== null ? await (opts.usdRate ?? cachedUsdRate)() : null;
+  const parsed = usdCents !== null
+    ? fx ? usdToColonCents(usdCents, fx.rate) : null
+    : notAColonCharge(amountIn) ? null : parseAmountToCents(amountIn);
   const merchant = cleanText(p.merchant, 200);
   const card = cleanText(p.card, 100) ?? '';
   // Hay datáfonos (buses, algunos comercios) que no le pasan el monto al Atajo. El pago se guarda igual con monto 0,
@@ -129,8 +160,10 @@ export async function ingestPayment(supabase: SupabaseClient, userId: string, p:
   const time = paymentTime(p.at);
   const occurred = time.date;
 
-  // Cada pago de la cola tiene un id estable (el del Atajo o su huella): reenviarlo no duplica.
-  const externalId = cleanText(p.id, 128) ?? (await paymentFingerprint(p, amount, merchant, card, time));
+  // Cada pago de la cola tiene un id estable (el del Atajo o su huella): reenviarlo no duplica. En dólares la huella
+  // usa 0 (como antes de convertirlos): los colones cambian con el tipo de cambio y un reenvío al otro día duplicaría.
+  const externalId =
+    cleanText(p.id, 128) ?? (await paymentFingerprint(p, usdCents !== null ? 0 : amount, merchant, card, time));
 
   const { data: existing } = await supabase
     .from('transactions')
@@ -185,6 +218,9 @@ export async function ingestPayment(supabase: SupabaseClient, userId: string, p:
       occurred_at: occurred.toISOString(),
       external_id: externalId,
       amount_raw: amountRaw,
+      ...(readable && fx && usdCents !== null
+        ? { original_currency: 'USD', original_amount: usdCents, fx_rate: fx.rate }
+        : {}),
     })
     .select('id, status')
     .single();

@@ -11,6 +11,7 @@ import type {
   Category,
   MerchantRule,
   NewTransaction,
+  Recurring,
   Transaction,
 } from './types';
 
@@ -47,6 +48,12 @@ export interface Api {
   deleteMerchantRule(id: string): Promise<void>;
   createApiToken(name: string): Promise<string>;
   revokeApiToken(id: string): Promise<void>;
+  listRecurring(): Promise<Recurring[]>;
+  saveRecurring(r: Partial<Recurring>): Promise<void>;
+  /** Borra el recurrente; los movimientos que ya generó se quedan. */
+  deleteRecurring(id: string): Promise<void>;
+  /** Inserta los movimientos cuyo id aún no existe y devuelve cuántos entraron (los repetidos se ignoran). */
+  insertMissingTransactions(txs: Transaction[]): Promise<number>;
 }
 
 async function unwrap<T>(p: PromiseLike<{ data: T | null; error: { message: string } | null }>): Promise<T> {
@@ -114,6 +121,27 @@ const supabaseApi: Api = {
   createApiToken: (name) => unwrap(supabase.rpc('create_api_token', { p_name: name })),
   revokeApiToken: async (id) => {
     await unwrap(supabase.from('api_tokens').delete().eq('id', id));
+  },
+  listRecurring: () =>
+    unwrap(
+      supabase
+        .from('recurring')
+        .select('id, name, type, amount, account_id, category_id, frequency, next_date, anchor_day, active')
+        .order('next_date'),
+    ),
+  saveRecurring: async ({ id, ...r }) => {
+    await unwrap(id ? supabase.from('recurring').update(r).eq('id', id) : supabase.from('recurring').insert(r));
+  },
+  deleteRecurring: async (id) => {
+    await unwrap(supabase.from('recurring').delete().eq('id', id));
+  },
+  // insert … on conflict (id) do nothing: solo vuelven las filas que de verdad entraron.
+  insertMissingTransactions: async (txs) => {
+    if (txs.length === 0) return 0;
+    const rows = await unwrap(
+      supabase.from('transactions').upsert(txs, { onConflict: 'id', ignoreDuplicates: true }).select('id'),
+    );
+    return rows.length;
   },
 };
 
