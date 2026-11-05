@@ -26,9 +26,10 @@ import {
 const compact = new Intl.NumberFormat('es-CR', { notation: 'compact', maximumFractionDigits: 1 });
 // Mismo signo menos (U+2212) que formatCRC.
 // Recharts pinta con atributos SVG, que no leen variables CSS: sus colores salen del tema en JS.
-// El verde de ingresos no cambia con el tema (es un color con significado). Los gastos van en el claro neutro del tema,
-// no en el metal de la acción: en Esmeralda o Zafiro el metal teñido competiría con el verde de los ingresos.
+// Ingresos en verde y gastos en rojo apagado (--color-expense), iguales en todos los temas: son colores con significado.
+// El rojo de los gastos es más oscuro y opaco que el de alarma, para que este siga avisando solo cuando hace falta.
 const GREEN = '#a9bfae';
+const EXPENSE = 'oklch(0.56 0.085 27)';
 const formatPct = (ratio: number) => `${ratio < 0 ? '−' : ''}${Math.abs(Math.round(ratio * 100))}%`;
 
 export function StatsPage() {
@@ -174,7 +175,7 @@ export function StatsPage() {
                 formatter={(v) => formatCRC(Number(v) * 100)}
               />
               <Bar dataKey="Ingresos" fill={GREEN} radius={[4, 4, 1, 1]} isAnimationActive={false} />
-              <Bar dataKey="Gastos" fill={tk.label} radius={[4, 4, 1, 1]} isAnimationActive={false} />
+              <Bar dataKey="Gastos" fill={EXPENSE} radius={[4, 4, 1, 1]} isAnimationActive={false} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -184,7 +185,7 @@ export function StatsPage() {
             Ingresos
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="size-2.5 rounded-[3px] bg-label" />
+            <span className="size-2.5 rounded-[3px] bg-expense" />
             Gastos
           </span>
         </div>
@@ -255,9 +256,10 @@ export function StatsPage() {
 }
 
 const METHOD_LABEL = { tarjeta: 'Tarjeta', efectivo: 'Efectivo', otro: 'Otros' } as const;
+// Tarjeta en el metal del tema, efectivo en el mismo metal más oscuro (dos tonos de una familia) y «otros» en un gris
+// apagado: es el tramo menos importante y no debe llevarse la vista. Aquí no hay ingresos cerca: el metal no compite.
 const METHOD_COLOR = {
-  tarjeta: 'var(--color-label)',
-  // Topo, como el efectivo en Cuentas: pagar en efectivo es un gasto, no puede ir en el verde de los ingresos.
-  efectivo: 'var(--color-brown)',
-  otro: 'color-mix(in srgb, var(--color-muted) 80%, var(--color-label-3))',
+  tarjeta: 'var(--color-accent)',
+  efectivo: 'color-mix(in oklch, var(--color-accent) 65%, var(--color-bg))',
+  otro: 'var(--color-muted)',
 } as const;

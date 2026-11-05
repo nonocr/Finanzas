@@ -45,6 +45,8 @@
   --color-blue: #8497ab;
   --color-orange: #d4a04c;
   --color-red: #e0695a;
+  /* Gastos en gráficos: rojo apagado y más oscuro, distinto del rojo de alarma (que queda para «te pasaste» y «borrar») */
+  --color-expense: oklch(0.56 0.085 27);
   --color-yellow: #c4b07a;
   --color-pink: #ab8289;
   --color-purple: #9187a6;

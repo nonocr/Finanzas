@@ -30,7 +30,7 @@ colors:
   pink: "#ab8289"
   gray: "#85858b"
   c1-bronce: "#b28c62"
-  c2-orquidea: "#c99fbe"
+  c2-salvia: "#93a893"
   c3-acero-azul: "#8497ab"
   c4-topo: "#a08f7e"
   c5-champan: "#bcaa7a"
@@ -294,13 +294,13 @@ Graphite and platinum, with colour reserved for meaning and kept at low chroma s
 - **Engraved Silver** (engraved): figures cut into metal (card amounts, card fields, last-four digits, the amount being typed).
 
 ### Named Rules
-**The Platinum Rule.** Platinum (or the chosen theme's metal) means "you can act here" (or "this is selected / today"). It is never a heading colour, a category accent or decoration, and no other hue ever marks an action. A theme's metal must stay distinguishable from the meaningful colours: Oro's champagne is paler than budget amber, Cobre leans redder than it, Esmeralda's jade is cooler and lighter than income sage. Charts never paint a data series in the action metal: Estadísticas draws expenses (and «Tarjeta») in the theme's light neutral (label) so a tinted metal never competes with income green.
+**The Platinum Rule.** Platinum (or the chosen theme's metal) means "you can act here" (or "this is selected / today"). It is never a heading colour, a category accent or decoration, and no other hue ever marks an action. A theme's metal must stay distinguishable from the meaningful colours: Oro's champagne is paler than budget amber, Cobre leans redder than it, Esmeralda's jade is cooler and lighter than income sage. Charts: the 6-month trend paints income in sage and expenses in a muted, darker red (--color-expense, oklch(0.56 0.085 27)), distinct from the alarm red that stays reserved for over-budget, negative balance and destructive actions; both are fixed across themes. The payment-method bar is the one place a data series uses the theme metal (chosen by the owner, 2026-11-05): Tarjeta in the accent, Efectivo in the same metal darker (65 % accent mixed into bg), Otros in dim muted grey so the least important segment never draws the eye. No income sits in that bar, so the tinted metal competes with nothing.
 
 **The Token-Only Surface Rule.** No surface, text or action colour is written as a literal in a component: it comes from a theme variable (`--color-*`, `metal`, `metal-disc`, `black-card`, `ring-metal`), so all six cards stay correct. Only meaningful colours (budget, income, categories) and pure black/white shadow light are literal. Recharts, which paints through SVG attributes, reads the tokens from `useTheme()`.
 
 **The One Budget Rule.** Every budget expression uses one ratio rule: steel under 80 %, amber from 80 %, red at 100 % and over. Never pick a budget colour by hand; route it through the shared budget colour/tone helpers.
 
-**The Green Means Income Rule.** Green is income (and, in the same sense, «good»: a success check, spending down, a feature turned on). No category tint, account tint or chart series is green for anything else. c2 was a sage (#93a893) that read as income next to the income figure in Estadísticas; it is now orchid (#c99fbe), the most distinct tint in the palette. Cash (an expense) uses taupe (brown), in Cuentas and in the payment-method bar. A test keeps every category tint away from the income green.
+**The Green Means Income Rule.** Green is income (and, in the same sense, «good»: a success check, spending down, a feature turned on). No account tint or chart series is green for anything else; cash (an expense) uses taupe (brown) in Cuentas. The one exception is the c2 sage category tint, which reads close to income: the owner chose to keep it (2026-11-05), since every category slice carries its name and icon.
 
 **The Stroke-Only Tint Rule.** Category and account tints colour an icon's stroke on a graphite plate, a chart segment, or a 10px legend swatch. They never fill a tile, a row or a card.
 
