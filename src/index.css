@@ -36,6 +36,9 @@
   --color-on-accent: oklch(0.145 0.005 286);
   --color-metal-hi: oklch(0.965 0.001 286);
   --color-metal-lo: oklch(0.834 0.008 286);
+  /* Centro del disco + y canto superior brillante: blanco solo en el platino; en los demás, del propio metal */
+  --color-metal-peak: oklch(0.985 0 0);
+  --color-metal-glint: oklch(1 0 0 / 0.85);
 
   /* Estados y tintes de categoría: baja saturación, para convivir con el metal */
   --color-green: #a9bfae;
@@ -169,7 +172,7 @@
   background-color: var(--color-accent);
   background-image: linear-gradient(180deg, var(--color-metal-hi), var(--color-metal-lo));
   box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.85),
+    inset 0 1px 0 var(--color-metal-glint),
     inset 0 -1px 0 rgb(0 0 0 / 0.18),
     0 2px 6px rgb(0 0 0 / 0.5);
 }
@@ -204,12 +207,12 @@
   color: var(--color-on-accent);
   background: radial-gradient(
     120% 120% at 30% 20%,
-    color-mix(in srgb, var(--color-metal-hi) 50%, white) 0%,
+    var(--color-metal-peak) 0%,
     color-mix(in srgb, var(--color-metal-hi) 35%, var(--color-metal-lo)) 45%,
     color-mix(in srgb, var(--color-metal-lo) 82%, black) 100%
   );
   box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.8),
+    inset 0 1px 0 var(--color-metal-glint),
     inset 0 -2px 3px rgb(0 0 0 / 0.25),
     0 6px 16px rgb(0 0 0 / 0.6),
     0 0 0 1px #000;

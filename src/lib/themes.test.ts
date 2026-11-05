@@ -56,13 +56,18 @@ describe('temas', () => {
     expect(spread((t) => apca(t.lch.label3, t.lch.card))).toBeLessThan(1);
   });
 
-  // Solo el metal de la acción (accent): es el que aparece suelto (texto de acciones, interruptores, la barra de hoy).
-  // Los extremos del degradado solo viven dentro de un botón. Los metales grises no entran: no tienen color que
-  // confundir, aunque el verde de ingresos, casi gris, quede cerca en números.
+  // Solo el metal de la acción (accent): es el que aparece suelto (texto de acciones, interruptores, la barra de hoy);
+  // los extremos del degradado solo viven dentro de un botón. La confusión real pasa dentro de una misma familia de
+  // color (un metal verde junto al verde de ingresos): ahí se exige que se distingan con claridad. Entre familias
+  // distintas el matiz ya los separa (un botón dorado no se lee como «ingreso» aunque tengan la misma claridad).
+  const hueGap = (a: number, b: number) => Math.min(Math.abs(a - b), 360 - Math.abs(a - b));
   it.each(THEMES.filter((t) => t.lch.accent[1] > 0.02).map((t) => [t.name, t] as const))(
     '%s: el metal no se confunde con los colores con significado',
     (_, t) => {
-      for (const [name, color] of Object.entries(MEANINGFUL)) expect(distance(t.lch.accent, color), name).toBeGreaterThanOrEqual(0.085);
+      for (const [name, color] of Object.entries(MEANINGFUL)) {
+        const sameFamily = hueGap(t.lch.accent[2], color[2]) < 40;
+        expect(distance(t.lch.accent, color), name).toBeGreaterThanOrEqual(sameFamily ? 0.085 : 0.04);
+      }
     },
   );
 });

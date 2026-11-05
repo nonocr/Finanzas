@@ -48,6 +48,11 @@ type Ladder = {
   metalHi: number;
   metalLo: number;
   onAccent: number;
+  /**
+   * Solo el platino de Negra: el centro del disco + se aclara hacia el blanco y el canto superior brilla en blanco.
+   * En los metales de color ese blanco lava el color; ahí el brillo sale del propio metal.
+   */
+  platinum?: true;
   /** Ícono de la app: fondo y las tres barras (oscura, clara, media). */
   icon: { bg: number; dark: number; light: number; mid: number };
 };
@@ -69,11 +74,13 @@ const BASE: Omit<Ladder, 'accent' | 'metalHi' | 'metalLo'> = {
   onAccent: 0.145,
   icon: { bg: 0.155, dark: 0.45, light: 0.93, mid: 0.7 },
 };
-const NEUTRAL: Ladder = { ...BASE, accent: 0.896, metalHi: 0.965, metalLo: 0.834 };
-const COLORED: Ladder = { ...BASE, accent: 0.855, metalHi: 0.94, metalLo: 0.76 };
+const NEUTRAL: Ladder = { ...BASE, accent: 0.896, metalHi: 0.965, metalLo: 0.834, platinum: true };
+// Más oscuros que el platino: a L alta el metal de color se lavaba hacia el blanco. metalLo no baja de 0.73 para que
+// el texto oscuro de los botones conserve APCA ≥ 54.
+const COLORED: Ladder = { ...BASE, accent: 0.82, metalHi: 0.865, metalLo: 0.73 };
 /** Carbono: negro puro (en pantallas OLED los píxeles se apagan) y un grafito más bajo y apagado. */
 const CARBON: Ladder = {
-  ...NEUTRAL,
+  ...COLORED,
   bg: 0,
   card: 0.15,
   card2: 0.195,
@@ -81,8 +88,8 @@ const CARBON: Ladder = {
   sep: 0.235,
   label: 0.92,
   engraved: 0.82,
-  accent: 0.81,
-  metalHi: 0.89,
+  accent: 0.79,
+  metalHi: 0.84,
   metalLo: 0.72,
   icon: { bg: 0, dark: 0.38, light: 0.8, mid: 0.6 },
 };
@@ -105,7 +112,7 @@ type Recipe = {
 const RECIPES: Recipe[] = [
   { id: 'negra', name: 'Negra', hue: 286, tint: 3, metal: 8, ladder: NEUTRAL, iconName: null },
   { id: 'carbono', name: 'Carbono', hue: 286, tint: 0, metal: 0, ladder: CARBON, iconName: 'Carbono' },
-  { id: 'titanio', name: 'Titanio', hue: 235, tint: 9, metal: 20, ladder: NEUTRAL, iconName: 'Titanio' },
+  { id: 'titanio', name: 'Titanio', hue: 235, tint: 9, metal: 20, ladder: COLORED, iconName: 'Titanio' },
   // Oro (88°) queda lejos del ámbar del presupuesto (77°, mucho más intenso y más oscuro).
   { id: 'oro', name: 'Oro', hue: 88, tint: 14, metal: 45, ladder: COLORED, iconName: 'Oro' },
   { id: 'oro-rosa', name: 'Oro rosa', hue: 35, tint: 14, metal: 42, ladder: COLORED, iconName: 'OroRosa' },
@@ -114,8 +121,8 @@ const RECIPES: Recipe[] = [
   { id: 'sakura', name: 'Sakura', hue: 355, tint: 14, metal: 40, ladder: COLORED, iconName: 'Sakura' },
   { id: 'amatista', name: 'Amatista', hue: 305, tint: 14, metal: 45, ladder: COLORED, iconName: 'Amatista' },
   { id: 'zafiro', name: 'Zafiro', hue: 264, tint: 14, metal: 45, ladder: COLORED, iconName: 'Zafiro' },
-  // Esmeralda (175°) es más fría, clara e intensa que el salvia de los ingresos (152°, casi gris).
-  { id: 'esmeralda', name: 'Esmeralda', hue: 175, tint: 14, metal: 50, ladder: COLORED, iconName: 'Esmeralda' },
+  // Esmeralda: jade (178°) intenso, para no confundirse con el salvia de los ingresos (152°, casi gris), que es de su familia.
+  { id: 'esmeralda', name: 'Esmeralda', hue: 178, tint: 14, metal: 72, ladder: COLORED, iconName: 'Esmeralda' },
 ];
 
 export type ThemeTokens = {
@@ -135,6 +142,10 @@ export type ThemeTokens = {
   onAccent: string;
   metalHi: string;
   metalLo: string;
+  /** Centro del disco + (el punto más claro del metal). */
+  metalPeak: string;
+  /** Canto superior que brilla en los botones de metal. */
+  metalGlint: string;
 };
 
 export type Theme = {
@@ -142,7 +153,7 @@ export type Theme = {
   name: string;
   tokens: ThemeTokens;
   /** Los mismos colores en OKLCH numérico, para medir contraste. */
-  lch: Record<Exclude<keyof ThemeTokens, 'fill' | 'fill2'>, Lch>;
+  lch: Record<Exclude<keyof ThemeTokens, 'fill' | 'fill2' | 'metalPeak' | 'metalGlint'>, Lch>;
   /** Fondo en hex: la barra del navegador (meta theme-color) no entiende oklch en todos lados. */
   bgHex: string;
   /** Ícono de la app en hex (lo dibujan scripts/iconos.ps1 y Xcode/Android): fondo y barras oscura, clara, media. */
@@ -167,17 +178,22 @@ function build(r: Recipe): Theme {
     label3: text(L.label3),
     engraved: text(L.engraved),
     accent: at(L.accent, r.metal),
-    metalHi: at(L.metalHi, r.metal * 0.8),
+    metalHi: at(L.metalHi, r.metal * (L.platinum ? 0.8 : 0.9)),
     metalLo: at(L.metalLo, r.metal * 1.15),
     // El texto sobre el metal lleva un poco de su matiz: se ve grabado en ese metal, no gris encima.
     onAccent: at(L.onAccent, r.tint * 2),
   };
   const fill = surface(L.fill);
-  const tokens = Object.fromEntries(Object.entries(lch).map(([k, v]) => [k, css(v)])) as Omit<ThemeTokens, 'fill' | 'fill2'>;
+  const tokens = Object.fromEntries(Object.entries(lch).map(([k, v]) => [k, css(v)])) as Omit<
+    ThemeTokens,
+    'fill' | 'fill2' | 'metalPeak' | 'metalGlint'
+  >;
+  const metalPeak = L.platinum ? css(at(0.985, r.metal * 0.5)) : css(lch.metalHi);
+  const metalGlint = L.platinum ? 'oklch(1 0 0 / 0.85)' : css(at(Math.min(L.metalHi + 0.06, 0.95), r.metal * 0.6), 0.7);
   return {
     id: r.id,
     name: r.name,
-    tokens: { ...tokens, fill: css(fill, 0.14), fill2: css(fill, 0.24) },
+    tokens: { ...tokens, fill: css(fill, 0.14), fill2: css(fill, 0.24), metalPeak, metalGlint },
     lch,
     bgHex: hex(lch.bg),
     icon: {
@@ -213,6 +229,8 @@ export function themeVars(t: ThemeTokens): Record<string, string> {
     '--color-on-accent': t.onAccent,
     '--color-metal-hi': t.metalHi,
     '--color-metal-lo': t.metalLo,
+    '--color-metal-peak': t.metalPeak,
+    '--color-metal-glint': t.metalGlint,
     '--color-engraved': t.engraved,
     '--color-muted': t.muted,
   };
