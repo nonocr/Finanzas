@@ -123,13 +123,15 @@ const RECIPES: Recipe[] = [
   { id: 'oro', name: 'Oro', hue: 88, tint: 14, metal: 45, ladder: COLORED, iconName: 'Oro' },
   // Los tres cálidos se separan entre sí (ΔE ≥ 0.06): Oro rosa es el rosa suave, Cobre el intenso entre el rosa y el
   // ámbar del presupuesto (77°, del que queda a 40°), Sakura el rosa frío de flor de cerezo.
-  { id: 'oro-rosa', name: 'Oro rosa', hue: 20, tint: 14, metal: 36, ladder: DEEP, iconName: 'OroRosa' },
-  { id: 'cobre', name: 'Cobre', hue: 37, tint: 14, metal: 82, ladder: DEEP, iconName: 'Cobre' },
-  { id: 'sakura', name: 'Sakura', hue: 345, tint: 14, metal: 55, ladder: DEEP, iconName: 'Sakura' },
-  { id: 'amatista', name: 'Amatista', hue: 305, tint: 14, metal: 70, ladder: DEEP, iconName: 'Amatista' },
-  { id: 'zafiro', name: 'Zafiro', hue: 264, tint: 14, metal: 55, ladder: DEEP, iconName: 'Zafiro' },
+  // Esmeralda no se puede apagar tanto como los otros: el salvia de los ingresos tiene su misma claridad y, apagada,
+  // se le parecería. Por eso conserva más croma.
+  { id: 'oro-rosa', name: 'Oro rosa', hue: 20, tint: 14, metal: 31, ladder: DEEP, iconName: 'OroRosa' },
+  { id: 'cobre', name: 'Cobre', hue: 37, tint: 14, metal: 70, ladder: DEEP, iconName: 'Cobre' },
+  { id: 'sakura', name: 'Sakura', hue: 342, tint: 14, metal: 47, ladder: DEEP, iconName: 'Sakura' },
+  { id: 'amatista', name: 'Amatista', hue: 305, tint: 14, metal: 60, ladder: DEEP, iconName: 'Amatista' },
+  { id: 'zafiro', name: 'Zafiro', hue: 264, tint: 14, metal: 47, ladder: DEEP, iconName: 'Zafiro' },
   // Esmeralda: jade (178°) intenso, para no confundirse con el salvia de los ingresos (152°, casi gris), que es de su familia.
-  { id: 'esmeralda', name: 'Esmeralda', hue: 178, tint: 14, metal: 85, ladder: DEEP, iconName: 'Esmeralda' },
+  { id: 'esmeralda', name: 'Esmeralda', hue: 178, tint: 14, metal: 80, ladder: DEEP, iconName: 'Esmeralda' },
 ];
 
 export type ThemeTokens = {
