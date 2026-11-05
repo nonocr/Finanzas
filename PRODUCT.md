@@ -4,10 +4,10 @@
 
 ## Platform
 
-web
+adaptive
 
 ## Stack
-React + Vite + TypeScript, Tailwind CSS, PWA (`vite-plugin-pwa`), Supabase (Postgres + Auth + Edge Functions), hosting on Vercel. Motion with GSAP and transitions.dev tokens. A native iOS app (Expo / React Native) is a later phase that reuses the same backend.
+React + Vite + TypeScript, Tailwind CSS, PWA (`vite-plugin-pwa`), Supabase (Postgres + Auth + Edge Functions), hosting on Vercel. Motion with GSAP and transitions.dev tokens. The same web app ships as native iOS and Android apps through Capacitor 8 (`ios/`, `android/`, branch `feature/tiendas-multiusuario`), heading to the App Store and Google Play; the PWA stays live on the web.
 
 ## Users
 A single person in Costa Rica (the owner) who tracks her personal money. She mostly uses it on her iPhone, often right after paying for something, and sometimes on a PC to review.
@@ -19,7 +19,7 @@ Record and monitor personal spending by payment method (cash, debit, credit card
 A personal, colones-first tracker whose Apple Wallet payments arrive by themselves through an iOS Shortcuts "Transaction" automation. Manual entry is only needed for cash and non-Wallet card purchases.
 
 ## Operating Context
-- Installed on the iPhone home screen as a PWA; must feel like an app (standalone, no browser chrome).
+- Installed on the iPhone home screen as a PWA, or as the native app from the App Store / Google Play; either way it must feel like an app (standalone, no browser chrome). On Android, the back button, edge-to-edge system bars and native pickers must behave as Android users expect.
 - Wallet payments come in through a webhook and land in a "por revisar" inbox when the category can't be inferred.
 - Quick entry happens standing in a store or right after paying: one hand, a few seconds.
 - The first thing she wants on open: **statistics for the current month and/or week** (spending by category, trend, vs budget).
