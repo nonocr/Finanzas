@@ -23,7 +23,7 @@ import type { Account, Transaction, TxType } from '../../lib/types';
 const LAST_ACCOUNT_KEY = 'finanzas-last-account';
 const pillDate = new Intl.DateTimeFormat('es-CR', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
 const pillTime = new Intl.DateTimeFormat('es-CR', { hour: 'numeric', minute: '2-digit', timeZone: 'UTC' });
-const PICKER_INPUT =
+export const PICKER_INPUT =
   'absolute inset-0 opacity-0 [color-scheme:dark] [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:size-full';
 const readLastAccount = () => {
   try {
@@ -329,7 +329,7 @@ function Group({ label, icon, children }: { label: string; icon?: React.ReactNod
   );
 }
 
-function AccountChips({
+export function AccountChips({
   accounts,
   selected,
   onSelect,

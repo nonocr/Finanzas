@@ -1,4 +1,4 @@
-import { ChevronLeft, CreditCard, Download, KeyRound, LogOut, RotateCcw, ShieldCheck, Smartphone, Tags, Wand2 } from 'lucide-react';
+import { ChevronLeft, CreditCard, Download, KeyRound, LogOut, Repeat, RotateCcw, ShieldCheck, Smartphone, Tags, Wand2 } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useToast } from '../../components/Toast';
@@ -81,6 +81,7 @@ export function MorePage() {
 
       <Section header="Automático">
         <Row to="/mas/wallet" leading={<IconTile icon={Smartphone} color="var(--color-label-2)" />} title="Apple Wallet" subtitle="Registrar pagos con Atajos" chevron />
+        <Row to="/mas/fijos" leading={<IconTile icon={Repeat} color="var(--color-label-2)" />} title="Gastos e ingresos fijos" subtitle="Alquiler, salario, suscripciones" chevron />
       </Section>
 
       {!isDemo && (

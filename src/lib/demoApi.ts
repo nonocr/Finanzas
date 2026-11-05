@@ -10,8 +10,10 @@ import type {
   BudgetProgress,
   Category,
   MerchantRule,
+  Recurring,
   Transaction,
 } from './types';
+import { dueDates } from './recurring';
 
 interface DemoDb {
   version: number;
@@ -21,10 +23,11 @@ interface DemoDb {
   budgets: Budget[];
   rules: MerchantRule[];
   tokens: ApiToken[];
+  recurring: Recurring[];
 }
 
 const KEY = 'finanzas-demo';
-const VERSION = 4;
+const VERSION = 5;
 const uid = () => crypto.randomUUID();
 
 function load(): DemoDb | null {
@@ -146,7 +149,21 @@ function seed(): DemoDb {
     { id: uid(), pattern: 'UBER', category_id: c['Transporte'], priority: 0 },
   ];
 
-  return { version: VERSION, accounts, categories, transactions, budgets, rules, tokens: [] };
+  // Los mismos fijos que trae el historial de ejemplo; la próxima fecha es la primera después de hoy, así que no se
+  // repiten los movimientos ya sembrados.
+  const fixed = (name: string, type: Recurring['type'], amount: number, account: Account, category: string, frequency: Recurring['frequency'], anchor: number): Recurring => {
+    const prev = addMonths(startOfMonth(today), -1);
+    const { next } = dueDates({ next_date: isoDate(prev), frequency, anchor_day: anchor }, today);
+    return { id: uid(), name, type, amount, account_id: account.id, category_id: c[category], frequency, next_date: isoDate(next), anchor_day: anchor, active: true };
+  };
+  const recurring = [
+    fixed('Planilla', 'ingreso', 68_000_000, debito, 'Salario', 'quincenal', 15),
+    fixed('Alquiler', 'gasto', 32_000_000, debito, 'Casa', 'mensual', 1),
+    fixed('Kölbi Internet', 'gasto', 1_490_000, visa, 'Suscripciones', 'mensual', 12),
+    fixed('Netflix', 'gasto', 699_000, visa, 'Suscripciones', 'mensual', 18),
+  ];
+
+  return { version: VERSION, accounts, categories, transactions, budgets, rules, tokens: [], recurring };
 }
 
 export function createDemoApi(): Api {
@@ -287,6 +304,28 @@ export function createDemoApi(): Api {
     async revokeApiToken(id) {
       db.tokens = db.tokens.filter((t) => t.id !== id);
       commit();
+    },
+    listRecurring: () => ok([...db.recurring].sort((a, b) => a.next_date.localeCompare(b.next_date))),
+    async saveRecurring({ id, ...r }) {
+      if (id) db.recurring = db.recurring.map((x) => (x.id === id ? { ...x, ...r } : x));
+      else
+        db.recurring.push({
+          id: uid(), name: '', type: 'gasto', amount: 0, account_id: db.accounts[0].id, category_id: null,
+          frequency: 'mensual', next_date: isoDate(crDay()), anchor_day: null, active: true, ...r,
+        });
+      commit();
+    },
+    async deleteRecurring(id) {
+      // Igual que en la base (on delete set null): los movimientos generados se quedan.
+      db.recurring = db.recurring.filter((r) => r.id !== id);
+      db.transactions = db.transactions.map((t) => (t.recurring_id === id ? { ...t, recurring_id: null } : t));
+      commit();
+    },
+    async insertMissingTransactions(txs) {
+      const fresh = txs.filter((t) => !db.transactions.some((x) => x.id === t.id));
+      db.transactions.push(...structuredClone(fresh));
+      commit();
+      return fresh.length;
     },
   };
 }

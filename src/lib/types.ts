@@ -51,6 +51,23 @@ export interface Transaction {
    * mandó el iPhone ("" si vino vacío). Lo escribe solo el servidor.
    */
   amount_raw?: string | null;
+  /** Gasto o ingreso fijo que lo generó (src/lib/recurring.ts). */
+  recurring_id?: string | null;
+}
+
+export interface Recurring {
+  id: string;
+  name: string;
+  type: 'gasto' | 'ingreso';
+  amount: number;
+  account_id: string;
+  category_id: string | null;
+  frequency: Frequency;
+  /** Próxima fecha de cobro, "2026-11-15" (día de calendario en Costa Rica). */
+  next_date: string;
+  /** Día del mes elegido; con él, un cobro del 31 vuelve al 31 después de febrero. */
+  anchor_day: number | null;
+  active: boolean;
 }
 
 export type NewTransaction = Omit<Transaction, 'id' | 'source' | 'status'> & Partial<Pick<Transaction, 'source' | 'status'>>;
