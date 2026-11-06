@@ -9,6 +9,7 @@ import type {
   Budget,
   BudgetProgress,
   Category,
+  LegalAcceptance,
   MerchantRule,
   Recurring,
   Transaction,
@@ -29,6 +30,17 @@ interface DemoDb {
 
 const KEY = 'finanzas-demo';
 const DEMO_PREFS_KEY = 'finanzas-demo-prefs';
+// Aparte de la demo (como las preferencias): así agregarla no obliga a subir VERSION y regenerar los datos de ejemplo.
+const DEMO_LEGAL_KEY = 'finanzas-demo-legal';
+
+function readDemoLegal(): LegalAcceptance[] {
+  try {
+    const rows = JSON.parse(localStorage.getItem(DEMO_LEGAL_KEY) ?? '[]');
+    return Array.isArray(rows) ? (rows as LegalAcceptance[]) : [];
+  } catch {
+    return [];
+  }
+}
 const VERSION = 5;
 const uid = () => crypto.randomUUID();
 
@@ -345,6 +357,20 @@ export function createDemoApi(): Api {
     async savePrefs(prefs) {
       try {
         localStorage.setItem(DEMO_PREFS_KEY, JSON.stringify(prefs));
+      } catch {
+        // modo privado
+      }
+    },
+    listAllBudgets: () => ok([...db.budgets].sort((a, b) => a.month.localeCompare(b.month))),
+    async listLegalAcceptances() {
+      return readDemoLegal().sort((a, b) => b.version.localeCompare(a.version));
+    },
+    async acceptLegal(version) {
+      const rows = readDemoLegal();
+      if (rows.some((r) => r.version === version)) return;
+      rows.push({ version, accepted_at: new Date().toISOString(), source: 'app' });
+      try {
+        localStorage.setItem(DEMO_LEGAL_KEY, JSON.stringify(rows));
       } catch {
         // modo privado
       }

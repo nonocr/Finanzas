@@ -4,6 +4,7 @@ import nav from './locales/es/nav';
 import language from './locales/es/language';
 import auth from './locales/es/auth';
 import legal from './locales/es/legal';
+import terms from './locales/es/terms';
 import security from './locales/es/security';
 import home from './locales/es/home';
 import transactions from './locales/es/transactions';
@@ -23,6 +24,7 @@ export const es = {
   language,
   auth,
   legal,
+  terms,
   security,
   home,
   transactions,

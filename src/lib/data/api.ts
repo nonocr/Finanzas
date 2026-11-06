@@ -9,6 +9,7 @@ import type {
   Budget,
   BudgetProgress,
   Category,
+  LegalAcceptance,
   MerchantRule,
   NewTransaction,
   Recurring,
@@ -57,6 +58,12 @@ export interface Api {
   /** Preferencias de la persona tal como estén guardadas (las valida normalizePrefs); {} si nunca guardó. */
   getPrefs(): Promise<unknown>;
   savePrefs(prefs: object): Promise<void>;
+  /** Todos los presupuestos de todos los meses (para «Exportar todos mis datos»). */
+  listAllBudgets(): Promise<Budget[]>;
+  /** Versiones de los Términos y la Privacidad que la persona aceptó, de la más nueva a la más vieja. */
+  listLegalAcceptances(): Promise<LegalAcceptance[]>;
+  /** Deja constancia de que acepta esta versión. Aceptar otra vez la misma no hace nada. */
+  acceptLegal(version: string): Promise<void>;
 }
 
 async function unwrap<T>(p: PromiseLike<{ data: T | null; error: { message: string } | null }>): Promise<T> {
@@ -153,6 +160,15 @@ const supabaseApi: Api = {
   // Una fila por persona: el dueño lo pone la base (user_id = auth.uid()), así que no se manda.
   savePrefs: async (prefs) => {
     await unwrap(supabase.from('user_settings').upsert({ prefs, updated_at: new Date().toISOString() }, { onConflict: 'user_id' }));
+  },
+  listAllBudgets: () => unwrap(supabase.from('budgets').select('id, category_id, month, amount').order('month')),
+  listLegalAcceptances: () =>
+    unwrap(supabase.from('legal_acceptances').select('version, accepted_at, source').order('version', { ascending: false })),
+  // La base pone el dueño, la hora y el origen (solo se puede mandar la versión). Si ya estaba aceptada, el índice
+  // único la rechaza (23505): para quien acepta, eso es lo mismo que haberla guardado.
+  acceptLegal: async (version) => {
+    const { error } = await supabase.from('legal_acceptances').insert({ version });
+    if (error && error.code !== '23505') throw new Error(error.message);
   },
 };
 

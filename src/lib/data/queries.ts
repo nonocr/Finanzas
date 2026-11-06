@@ -180,3 +180,14 @@ export function useRevokeApiToken() {
   const onSuccess = useInvalidate([['api_tokens']]);
   return useMutation({ mutationFn: api.revokeApiToken, onSuccess });
 }
+
+// ---------------------------------------------------------------------------
+// Términos y privacidad aceptados (src/lib/legal/version.ts)
+// ---------------------------------------------------------------------------
+
+export const useLegalAcceptances = () => useQuery({ queryKey: ['legal'], queryFn: api.listLegalAcceptances, staleTime: 5 * 60_000 });
+
+export function useAcceptLegal() {
+  const onSuccess = useInvalidate([['legal']]);
+  return useMutation({ mutationFn: api.acceptLegal, onSuccess });
+}

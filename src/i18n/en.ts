@@ -5,6 +5,7 @@ import nav from './locales/en/nav';
 import language from './locales/en/language';
 import auth from './locales/en/auth';
 import legal from './locales/en/legal';
+import terms from './locales/en/terms';
 import security from './locales/en/security';
 import home from './locales/en/home';
 import transactions from './locales/en/transactions';
@@ -24,6 +25,7 @@ export const en: Strings = {
   language,
   auth,
   legal,
+  terms,
   security,
   home,
   transactions,

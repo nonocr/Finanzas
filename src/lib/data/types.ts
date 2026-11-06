@@ -114,6 +114,16 @@ export interface ApiToken {
   last_used_at: string | null;
 }
 
+/**
+ * Constancia de que la persona aceptó los Términos y la Privacidad en esa versión (tabla legal_acceptances).
+ * `registro`: al crear la cuenta; `app`: al aceptar una versión nueva dentro de la app.
+ */
+export interface LegalAcceptance {
+  version: string;
+  accepted_at: string;
+  source: 'registro' | 'app';
+}
+
 /** Etiqueta del tipo de cuenta en el idioma actual (los textos viven en src/i18n/locales/<idioma>/accounts.ts). */
 export const accountTypeLabel = (type: AccountType): string => strings().accounts.types[type];
 

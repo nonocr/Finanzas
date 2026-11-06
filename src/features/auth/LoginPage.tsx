@@ -1,7 +1,8 @@
 import { CircleCheck, Wallet } from 'lucide-react';
 import { useEffect, useState, type ComponentProps, type ReactNode } from 'react';
-import { Link } from 'react-router-dom';
 import { Button } from '../../components/ui';
+import { LEGAL_VERSION } from '../../lib/legal/version';
+import { ConsentCheck } from '../legal/ConsentCheck';
 import { cleanCode, needsMfaCode, verifyCode } from '../../lib/auth/mfa';
 import { isNative, platform, WEB_APP_URL } from '../../lib/platform/native';
 import { checkPassword } from '../../lib/auth/password';
@@ -105,13 +106,17 @@ export function LoginPage() {
   const [errorCode, setErrorCode] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [resent, setResent] = useState(false);
+  // Casilla de «Crear cuenta»: consentimiento expreso para los Términos y la Privacidad (empieza sin marcar).
+  const [accepted, setAccepted] = useState(false);
   const [partialSignOut] = useState(takePartialSignOut);
   const [accountDeleted] = useState(takeAccountDeleted);
 
   const strength = checkPassword(password);
   const valid =
     email.includes('@') &&
-    (mode === 'forgot' || (mode === 'login' && password.length > 0) || (mode === 'signup' && strength.ok && password === confirm));
+    (mode === 'forgot' ||
+      (mode === 'login' && password.length > 0) ||
+      (mode === 'signup' && strength.ok && password === confirm && accepted));
 
   const fail = (code: string | undefined) => {
     setErrorCode(code ?? null);
@@ -130,7 +135,13 @@ export function LoginPage() {
       // Si el correo ya tenía cuenta, Supabase responde igual que si fuera nuevo (no revela quién está registrado):
       // por eso la pantalla siguiente no afirma que la cuenta se creó.
       // El idioma va en los datos de la cuenta: el correo de confirmación y las categorías iniciales salen en ese idioma.
-      const { error } = await supabase.auth.signUp({ email: address, password, options: { emailRedirectTo: emailRedirect(), data: { lang: getLang() } } });
+      // legal_version: la versión de los Términos y la Privacidad que aceptó con la casilla; la base guarda la constancia
+      // (trigger record_signup_legal_acceptance, migración 20261109000000_aceptacion_legal).
+      const { error } = await supabase.auth.signUp({
+        email: address,
+        password,
+        options: { emailRedirectTo: emailRedirect(), data: { lang: getLang(), legal_version: LEGAL_VERSION } },
+      });
       if (error) fail(error.code);
       else go('check');
     } else {
@@ -213,6 +224,11 @@ export function LoginPage() {
             {password && !strength.ok ? t.auth.missing(strength.missing) : confirm && password !== confirm ? t.auth.mismatch : t.auth.rules}
           </p>
         )}
+        {mode === 'signup' && (
+          <div className="mt-3">
+            <ConsentCheck checked={accepted} onChange={setAccepted} text={t.legal.signupConsent} />
+          </div>
+        )}
         <ErrorText>{error}</ErrorText>
         {errorCode === 'email_not_confirmed' && (
           <Button variant="plain" className="mt-1 w-full text-body font-normal" disabled={busy || resent} onClick={() => void resend()}>
@@ -222,15 +238,6 @@ export function LoginPage() {
         <Button type="submit" className="mt-4 w-full" disabled={busy || !valid}>
           {t.auth.submit[mode]}
         </Button>
-        {mode === 'signup' && (
-          <p className="mt-3 px-4 text-center text-footnote text-pretty text-label-2">
-            {t.auth.privacyBefore}{' '}
-            <Link to="/privacidad" className="text-accent underline underline-offset-2">
-              {t.auth.privacyLink}
-            </Link>
-            {t.auth.privacyAfter}
-          </p>
-        )}
       </form>
       {mode === 'login' ? (
         <div className="mt-2 flex flex-col">

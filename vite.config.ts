@@ -41,11 +41,18 @@ export default defineConfig({
       },
       workbox: {
         navigateFallback: '/index.html',
+        // El archivo de licencias es un archivo real, no una ruta de la app: el service worker no debe cambiarlo por la app.
+        navigateFallbackDenylist: [/^\/licencias\.txt$/],
         // Los datos vienen de Supabase en vivo; solo se cachea la app.
         runtimeCaching: [],
       },
     }),
   ],
+  build: {
+    // Licencias de las dependencias que van dentro de la app (MIT, ISC…: piden conservar su aviso de copyright).
+    // Queda en dist/licencias.txt: se publica en la web y viaja en las apps nativas. Lo enlazan los Términos de uso.
+    license: { fileName: 'licencias.txt' },
+  },
   preview: {
     headers: securityHeaders,
   },

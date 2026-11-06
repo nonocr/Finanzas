@@ -7,7 +7,10 @@ import { SettingsButton } from './components/SettingsButton';
 import { TabBar } from './components/TabBar';
 import { ToastProvider } from './components/Toast';
 import { LoginPage, MfaPage, ResetPasswordPage } from './features/auth/LoginPage';
+import { AccountDeletionPage } from './features/legal/AccountDeletionPage';
+import { LegalGate } from './features/legal/LegalGate';
 import { PrivacyPage } from './features/legal/PrivacyPage';
+import { TermsPage } from './features/legal/TermsPage';
 import { BudgetsPage } from './features/budgets/BudgetsPage';
 import { HomePage } from './features/home/HomePage';
 import { AccountsPage } from './features/settings/finance/AccountsPage';
@@ -69,8 +72,10 @@ export default function App() {
   const { auth, recovery, finishRecovery, endRecovery } = useAuth();
   const { pathname } = useLocation();
 
-  // La política de privacidad es pública: se abre con o sin sesión (la piden las tiendas y la pantalla de registro).
+  // Las páginas legales son públicas: se abren con o sin sesión (las piden las tiendas y la pantalla de registro).
   if (pathname === '/privacidad') return <PrivacyPage />;
+  if (pathname === '/terminos') return <TermsPage />;
+  if (pathname === '/eliminar-cuenta') return <AccountDeletionPage />;
   if (!auth) return null; // leyendo la sesión guardada
   if (!isDemo) {
     if (recovery === 'done' || (recovery && auth.session))
@@ -81,37 +86,41 @@ export default function App() {
 
   return (
     <ToastProvider>
-      <EditorProvider>
-        <ScrollToTop />
-        <PrefsSync />
-        <RecurringRunner />
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/movimientos" element={<TransactionsPage />} />
-          <Route
-            path="/estadisticas"
-            element={
-              <Suspense fallback={null}>
-                <StatsPage />
-              </Suspense>
-            }
-          />
-          <Route path="/presupuesto" element={<BudgetsPage />} />
-          <Route path="/mas" element={<MorePage />} />
-          <Route path="/mas/cuentas" element={<AccountsPage />} />
-          <Route path="/mas/categorias" element={<CategoriesPage />} />
-          <Route path="/mas/reglas" element={<RulesPage />} />
-          <Route path="/mas/fijos" element={<RecurringPage />} />
-          <Route path="/mas/wallet" element={<WalletPage />} />
-          <Route path="/mas/tema" element={<ThemePage />} />
-          <Route path="/mas/resumen" element={<HomeLayoutPage />} />
-          <Route path="/mas/idioma" element={<LanguagePage />} />
-          <Route path="*" element={<HomePage />} />
-        </Routes>
-        <SettingsButton />
-        <OfflineBanner />
-        <TabBar />
-      </EditorProvider>
+      <PrefsSync />
+      {/* Sin la aceptación de la versión vigente de los Términos y la Privacidad, la app no se muestra (ni se registran
+          los fijos vencidos): primero se acepta, o se descargan los datos y se elimina la cuenta. */}
+      <LegalGate>
+        <EditorProvider>
+          <ScrollToTop />
+          <RecurringRunner />
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/movimientos" element={<TransactionsPage />} />
+            <Route
+              path="/estadisticas"
+              element={
+                <Suspense fallback={null}>
+                  <StatsPage />
+                </Suspense>
+              }
+            />
+            <Route path="/presupuesto" element={<BudgetsPage />} />
+            <Route path="/mas" element={<MorePage />} />
+            <Route path="/mas/cuentas" element={<AccountsPage />} />
+            <Route path="/mas/categorias" element={<CategoriesPage />} />
+            <Route path="/mas/reglas" element={<RulesPage />} />
+            <Route path="/mas/fijos" element={<RecurringPage />} />
+            <Route path="/mas/wallet" element={<WalletPage />} />
+            <Route path="/mas/tema" element={<ThemePage />} />
+            <Route path="/mas/resumen" element={<HomeLayoutPage />} />
+            <Route path="/mas/idioma" element={<LanguagePage />} />
+            <Route path="*" element={<HomePage />} />
+          </Routes>
+          <SettingsButton />
+          <OfflineBanner />
+          <TabBar />
+        </EditorProvider>
+      </LegalGate>
     </ToastProvider>
   );
 }

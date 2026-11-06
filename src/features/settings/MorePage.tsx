@@ -1,15 +1,11 @@
-import { ChevronLeft, CreditCard, Download, EyeOff, FileText, KeyRound, Languages, LayoutList, LogOut, Palette, Repeat, RotateCcw, ShieldCheck, Smartphone, Tags, Trash2, Wand2 } from 'lucide-react';
+import { ChevronLeft, CreditCard, Download, EyeOff, FileJson, FileText, KeyRound, Languages, LayoutList, LogOut, Palette, Repeat, RotateCcw, Scale, ShieldCheck, Smartphone, Tags, Trash2, Wand2 } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useToast } from '../../components/Toast';
 import { IconTile, Row, Screen, Section } from '../../components/ui';
-import { api, isDemo } from '../../lib/data/api';
-import { csvRow } from '../../lib/format/csv';
-import { crDayOf, isoDate } from '../../lib/format/dates';
+import { isDemo } from '../../lib/data/api';
 import { resetDemo } from '../../lib/data/demoApi';
-import { clearOfflineCache } from '../../lib/data/offline';
-import { useAccounts, useLookups } from '../../lib/data/queries';
-import { markPartialSignOut, supabase } from '../../lib/data/supabase';
+import { useAccounts } from '../../lib/data/queries';
+import { signOutEverywhere } from '../../lib/auth/signOut';
 import { useT } from '../../i18n';
 import { useTheme } from '../../lib/theme/theme';
 import { usePrefs, useSavePrefs } from '../../lib/prefs/usePrefs';
@@ -17,6 +13,7 @@ import { Toggle } from '../transactions/TransactionSheet';
 import { ChangePasswordSheet } from './security/ChangePasswordSheet';
 import { DeleteAccountSheet } from './security/DeleteAccountSheet';
 import { TwoFactorSheet } from './security/TwoFactorSheet';
+import { useExports } from './exports';
 
 export function BackLink() {
   const t = useT();
@@ -29,10 +26,8 @@ export function BackLink() {
 }
 
 export function MorePage() {
-  // Con las archivadas: el CSV lleva el nombre de la cuenta y la categoría de cada movimiento, aunque ya no se usen.
-  const { catMap, accMap } = useLookups();
   const { data: accounts = [] } = useAccounts();
-  const toast = useToast();
+  const { exportCsv, exportJson } = useExports();
   const t = useT();
   const theme = useTheme();
   const prefs = usePrefs();
@@ -43,47 +38,6 @@ export function MorePage() {
   const [twoFactorKey, setTwoFactorKey] = useState(0);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleteKey, setDeleteKey] = useState(0);
-
-  const exportCsv = async () => {
-    const txs = await api.listTransactions({ from: '2000-01-01T00:00:00Z', to: new Date(Date.now() + 86_400_000).toISOString() });
-    const acc = new Map([...accMap].map(([id, a]) => [id, a.name]));
-    const cat = new Map([...catMap].map(([id, c]) => [id, c.name]));
-    const rows = [
-      t.more.csvHeader,
-      ...txs.map((t) => [
-        isoDate(crDayOf(t.occurred_at)),
-        t.type,
-        (t.amount / 100).toFixed(2),
-        acc.get(t.account_id) ?? '',
-        t.to_account_id ? (acc.get(t.to_account_id) ?? '') : '',
-        t.category_id ? (cat.get(t.category_id) ?? '') : '',
-        t.merchant,
-        t.note,
-        t.source,
-        t.status,
-        t.original_currency === 'USD' && t.original_amount ? (t.original_amount / 100).toFixed(2) : '',
-        t.original_currency === 'USD' && t.fx_rate ? String(t.fx_rate) : '',
-      ]),
-    ];
-    const csv = '﻿' + rows.map(csvRow).join('\n');
-    const file = new File([csv], t.more.csvFile(isoDate(new Date())), { type: 'text/csv' });
-    // En iPhone, compartir abre la hoja de iOS (Guardar en Archivos, AirDrop…).
-    if (navigator.canShare?.({ files: [file] })) {
-      try {
-        await navigator.share({ files: [file] });
-        return;
-      } catch {
-        // cancelado: se cae a la descarga
-      }
-    }
-    const url = URL.createObjectURL(file);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = file.name;
-    a.click();
-    URL.revokeObjectURL(url);
-    toast(t.more.exported(txs.length));
-  };
 
   return (
     <Screen title={t.common.settings}>
@@ -147,6 +101,7 @@ export function MorePage() {
 
       <Section header={t.more.data}>
         <Row onClick={exportCsv} leading={<IconTile icon={Download} color="var(--color-label-2)" />} title={t.more.exportCsv} />
+        <Row onClick={exportJson} leading={<IconTile icon={FileJson} color="var(--color-label-2)" />} title={t.more.exportJson} subtitle={t.more.exportJsonDetail} />
         {isDemo ? (
           <Row
             onClick={() => {
@@ -158,16 +113,7 @@ export function MorePage() {
           />
         ) : (
           <Row
-            onClick={async () => {
-              // global: invalida la sesión en todos los dispositivos, no solo en este. Sin conexión eso falla y la
-              // sesión seguiría abierta aquí: entonces se cierra al menos en este teléfono y se avisa.
-              const { error } = await supabase.auth.signOut({ scope: 'global' });
-              if (error) {
-                markPartialSignOut(); // la pantalla de entrar lo explica
-                await supabase.auth.signOut({ scope: 'local' });
-              }
-              clearOfflineCache(); // la copia local de tus datos no se queda en el teléfono
-            }}
+            onClick={() => void signOutEverywhere()}
             leading={<IconTile icon={LogOut} color="var(--color-red)" />}
             title={t.more.signOut}
             destructive
@@ -177,6 +123,7 @@ export function MorePage() {
 
       <Section>
         <Row to="/privacidad" leading={<IconTile icon={FileText} color="var(--color-label-2)" />} title={t.more.privacy} chevron />
+        <Row to="/terminos" leading={<IconTile icon={Scale} color="var(--color-label-2)" />} title={t.more.terms} chevron />
         {!isDemo && (
           <Row
             onClick={() => {
