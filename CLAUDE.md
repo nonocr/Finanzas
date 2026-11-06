@@ -76,7 +76,7 @@ En esta máquina (Windows), git no está en el PATH de PowerShell. Antepón `$en
   - Usa los íconos de lucide; nada de emoji ni glifos Unicode.
 - Movimiento: snippets de transitions.dev en `src/index.css` y GSAP (`useGSAP`) para la hoja inferior y el conteo de montos. Respeta `prefers-reduced-motion`.
 - Skills del proyecto en `.claude/skills/`: `impeccable` (contexto en `.impeccable/`), `transitions-dev`, `gsap-*` y `make-interfaces-feel-better`.
-- **Rediseño de Ajustes aprobado (2026-11-06), pendiente de implementar.** Hazlo solo cuando la dueña lo pida. Sigue `propuesta-ajustes.md` (versión 2; maqueta en `propuesta-ajustes.svg`):
+- **Rediseño de Ajustes aprobado (2026-11-06), pendiente de implementar.** Hazlo solo cuando la dueña lo pida. Sigue `docs/propuesta-ajustes.md` (versión 2; maqueta en `docs/propuesta-ajustes.svg`):
   - Arriba, una tarjeta de la cuenta que abre `/mas/cuenta`. Esa página reúne seguridad (contraseña, dos pasos), datos (CSV, privacidad), cerrar sesión y eliminar cuenta.
   - Cuentas y tarjetas, Categorías y Reglas de comercios **quedan como filas, igual que hoy**. La dueña rechazó los accesos en cuadrícula.
   - En Apariencia, Tema, Idioma y Resumen pasan a ser una sola fila hacia `/mas/apariencia`, que abre con los temas. El modo discreto sigue con su interruptor.
