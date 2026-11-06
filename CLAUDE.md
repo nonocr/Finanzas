@@ -51,7 +51,7 @@ En esta máquina (Windows), git no está en el PATH de PowerShell. Antepón `$en
 
 - **Ningún texto visible va escrito en un componente.** Cada texto vive en `src/i18n/locales/es/<área>.ts` (la fuente) y su traducción en `src/i18n/locales/en/<área>.ts`, con el mismo tipo: si falta una traducción, no compila. En componentes `const t = useT()` (antes de cualquier `return`); fuera de React `strings()`. Plurales y valores: funciones (`(n: number) => …`). Texto con formato: `<Rich text={…} />` con `**negrita**`, ` código ` y `[enlace](https://…)`.
 - Fechas y montos con los helpers de `src/lib/dates.ts` y `src/lib/money.ts` (`formatCRC`, `formatNumber`), que siguen el idioma; nunca `new Intl.*('es-CR')` fijo. Fuera de esos helpers, `locale()` dentro del render.
-- El idioma es una preferencia (`prefs.lang`: `auto` | `es` | `en`; Ajustes → Idioma) y se copia a `user_metadata.lang` (`syncAuthLang`): con él, los correos (plantillas con `{{ if eq (printf "%v" .Data.lang) "en" }}`) y las categorías iniciales de una cuenta nueva (`handle_new_user`, migración `20261108000000_idioma`) salen en ese idioma. Las pruebas corren en español.
+- El idioma es una preferencia (`prefs.lang`: `auto` | `es` | `en`; Ajustes → Idioma; `auto` sigue al teléfono y, si no está en español ni inglés, inglés) y se copia a `user_metadata.lang` (`syncAuthLang`): con él, los correos (plantillas con `{{ if eq (printf "%v" .Data.lang) "en" }}`) y las categorías iniciales de una cuenta nueva (`handle_new_user`, migración `20261108000000_idioma`) salen en ese idioma. Las pruebas corren en español.
 
 ## Diseño
 

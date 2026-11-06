@@ -19,14 +19,14 @@ const DICTS: Record<Lang, Strings> = { es, en };
 /** Locale de Intl para fechas y números. Costa Rica en español; Estados Unidos en inglés. */
 export const LOCALES: Record<Lang, string> = { es: 'es-CR', en: 'en-US' };
 
-/** Idioma del teléfono o navegador entre los que la app tiene; si ninguno coincide, español. */
+/** Idioma del teléfono o navegador entre los que la app tiene; si ninguno coincide (francés, portugués…), inglés. */
 export function deviceLang(): Lang {
   const prefs = typeof navigator === 'undefined' ? [] : (navigator.languages ?? [navigator.language]);
   for (const l of prefs) {
     const base = l?.toLowerCase().split('-')[0];
     if (base === 'es' || base === 'en') return base;
   }
-  return 'es';
+  return 'en';
 }
 
 export const resolveLang = (pref: LangPref): Lang => (pref === 'auto' ? deviceLang() : pref);
