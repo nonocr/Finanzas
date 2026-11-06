@@ -4,12 +4,12 @@ import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import './index.css'
 import App from './App.tsx'
-import { isDemo } from './lib/api'
-import { startAppUpdates } from './lib/appUpdate'
-import { startNative } from './lib/native'
-import { CACHE_MAX_AGE, onCacheRestored, persister, queryClient, resumePendingMutations, shouldPersistMutation } from './lib/offline'
-import { startPrefs } from './lib/prefs'
-import { startTheme } from './lib/theme'
+import { isDemo } from './lib/data/api'
+import { startAppUpdates } from './lib/platform/appUpdate'
+import { startNative } from './lib/platform/native'
+import { CACHE_MAX_AGE, onCacheRestored, persister, queryClient, resumePendingMutations, shouldPersistMutation } from './lib/data/offline'
+import { startPrefs } from './lib/prefs/prefs'
+import { startTheme } from './lib/theme/theme'
 
 startTheme()
 startPrefs()

@@ -7,8 +7,8 @@ import { hexOf } from '../../components/palette';
 import { useToast } from '../../components/Toast';
 import { budgetTone, Button, CategoryIcon, ProgressBar, Screen, Section } from '../../components/ui';
 import { useT } from '../../i18n';
-import { addMonths, crDay, isoDate, monthName, monthRange, startOfMonth } from '../../lib/dates';
-import { formatCRC } from '../../lib/money';
+import { addMonths, crDay, isoDate, monthName, monthRange, startOfMonth } from '../../lib/format/dates';
+import { formatCRC } from '../../lib/format/money';
 import {
   useBudgetProgress,
   useBudgets,
@@ -18,9 +18,9 @@ import {
   useLookups,
   useSaveBudget,
   useTransactions,
-} from '../../lib/queries';
-import { budgetAlert, spendingByCategory, spentAgainstTotal, totalBudget, totals } from '../../lib/stats';
-import type { Category } from '../../lib/types';
+} from '../../lib/data/queries';
+import { budgetAlert, spendingByCategory, spentAgainstTotal, totalBudget, totals } from '../../lib/finance/stats';
+import type { Category } from '../../lib/data/types';
 
 type Editing = { categoryId: string | null; name: string; cents: number; budgetId?: string; key: number } | null;
 

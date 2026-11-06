@@ -1,0 +1,195 @@
+import { strings } from '../../i18n';
+import { crDayOf, startOfMonth } from '../format/dates';
+import type { Account, AccountType, Category, Transaction } from '../data/types';
+
+export interface Totals {
+  gastos: number;
+  ingresos: number;
+  neto: number;
+}
+
+export function totals(txs: Transaction[]): Totals {
+  let gastos = 0;
+  let ingresos = 0;
+  for (const t of txs) {
+    if (t.type === 'gasto') gastos += t.amount;
+    else if (t.type === 'ingreso') ingresos += t.amount;
+  }
+  return { gastos, ingresos, neto: ingresos - gastos };
+}
+
+export interface CategorySlice {
+  categoryId: string | null;
+  amount: number;
+  count: number;
+  share: number; // 0–1 del total de gastos
+}
+
+/** Gasto por categoría principal (las subcategorías suman a su padre), de mayor a menor. */
+export function spendingByCategory(txs: Transaction[], categories: Category[]): CategorySlice[] {
+  const parentOf = new Map(categories.map((c) => [c.id, c.parent_id ?? c.id]));
+  const acc = new Map<string | null, { amount: number; count: number }>();
+  let total = 0;
+  for (const t of txs) {
+    if (t.type !== 'gasto') continue;
+    const key = t.category_id ? (parentOf.get(t.category_id) ?? t.category_id) : null;
+    const cur = acc.get(key) ?? { amount: 0, count: 0 };
+    cur.amount += t.amount;
+    cur.count += 1;
+    acc.set(key, cur);
+    total += t.amount;
+  }
+  return [...acc.entries()]
+    .map(([categoryId, v]) => ({ categoryId, ...v, share: total ? v.amount / total : 0 }))
+    .sort((a, b) => b.amount - a.amount);
+}
+
+/** Gasto por día para `days` días a partir de `start` (día de calendario CR). */
+export function spendingByDay(txs: Transaction[], start: Date, days: number): number[] {
+  const out = new Array<number>(days).fill(0);
+  for (const t of txs) {
+    if (t.type !== 'gasto') continue;
+    const idx = Math.round((crDayOf(t.occurred_at).getTime() - start.getTime()) / 86_400_000);
+    if (idx >= 0 && idx < days) out[idx] += t.amount;
+  }
+  return out;
+}
+
+export interface MonthPoint {
+  month: Date;
+  gastos: number;
+  ingresos: number;
+}
+
+/** Totales por mes para los `months` meses que terminan en `lastMonth` (inclusive). */
+export function monthlyTrend(txs: Transaction[], lastMonth: Date, months: number): MonthPoint[] {
+  const points: MonthPoint[] = [];
+  for (let i = months - 1; i >= 0; i--) {
+    points.push({
+      month: new Date(Date.UTC(lastMonth.getUTCFullYear(), lastMonth.getUTCMonth() - i, 1)),
+      gastos: 0,
+      ingresos: 0,
+    });
+  }
+  const index = new Map(points.map((p, i) => [p.month.getTime(), i]));
+  for (const t of txs) {
+    if (t.type === 'transferencia') continue;
+    const i = index.get(startOfMonth(crDayOf(t.occurred_at)).getTime());
+    if (i === undefined) continue;
+    if (t.type === 'gasto') points[i].gastos += t.amount;
+    else points[i].ingresos += t.amount;
+  }
+  return points;
+}
+
+export type PaymentMethod = 'efectivo' | 'tarjeta' | 'otro';
+
+const METHOD: Record<AccountType, PaymentMethod> = {
+  efectivo: 'efectivo',
+  debito: 'tarjeta',
+  credito: 'tarjeta',
+  banco: 'otro',
+  ahorro: 'otro',
+};
+
+/** Efectivo contra tarjeta (débito + crédito) y otros medios. */
+/**
+ * Categorías de gasto que forman la dona, en orden fijo: las activas siempre y las archivadas solo si tienen gasto en el
+ * periodo (archivar oculta la categoría al registrar, pero su historial se sigue viendo con su nombre y su color).
+ */
+export function donutCategories(categories: Category[], slices: CategorySlice[]): Category[] {
+  const spent = new Set(slices.filter((s) => s.amount > 0).map((s) => s.categoryId));
+  const top = categories.filter((c) => c.kind === 'gasto' && !c.parent_id);
+  return [...top.filter((c) => !c.archived), ...top.filter((c) => c.archived && spent.has(c.id))];
+}
+
+export function spendingByMethod(txs: Transaction[], accounts: Account[]): Record<PaymentMethod, number> {
+  const typeOf = new Map(accounts.map((a) => [a.id, a.type]));
+  const out: Record<PaymentMethod, number> = { efectivo: 0, tarjeta: 0, otro: 0 };
+  for (const t of txs) {
+    if (t.type !== 'gasto') continue;
+    const type = typeOf.get(t.account_id);
+    out[type ? METHOD[type] : 'otro'] += t.amount;
+  }
+  return out;
+}
+
+export interface MerchantTotal {
+  merchant: string;
+  amount: number;
+  count: number;
+}
+
+export function topMerchants(txs: Transaction[], limit = 5): MerchantTotal[] {
+  const acc = new Map<string, MerchantTotal>();
+  for (const t of txs) {
+    if (t.type !== 'gasto' || !t.merchant) continue;
+    const key = t.merchant.trim().toUpperCase();
+    const cur = acc.get(key) ?? { merchant: t.merchant.trim(), amount: 0, count: 0 };
+    cur.amount += t.amount;
+    cur.count += 1;
+    acc.set(key, cur);
+  }
+  return [...acc.values()].sort((a, b) => b.amount - a.amount).slice(0, limit);
+}
+
+export interface TotalBudget {
+  /** Límite que rige el mes; null si no hay ningún presupuesto. */
+  limit: number | null;
+  /** Total definido a mano (fila con category_id null), si existe. */
+  manual: number | null;
+  /** Suma de los presupuestos por categoría. */
+  sum: number;
+  /** 'manual': manda el total definido; 'suma': no hay total, se usa la suma; 'ajustado': la suma superó al total. */
+  source: 'manual' | 'suma' | 'ajustado' | null;
+}
+
+/**
+ * El total del mes se adapta a las categorías: sin total definido es la suma de las categorías,
+ * y si las categorías suman más que el total definido, el total sube hasta esa suma.
+ */
+export function totalBudget(budgets: { category_id: string | null; amount: number }[]): TotalBudget {
+  const manual = budgets.find((b) => b.category_id === null)?.amount ?? null;
+  const sum = budgets.filter((b) => b.category_id !== null).reduce((s, b) => s + b.amount, 0);
+  if (manual === null) return { limit: sum > 0 ? sum : null, manual, sum, source: sum > 0 ? 'suma' : null };
+  if (sum > manual) return { limit: sum, manual, sum, source: 'ajustado' };
+  return { limit: manual, manual, sum, source: 'manual' };
+}
+
+/**
+ * Gasto que se compara con el total del mes. Con un total definido por ti cuenta todo el gasto; si el total es solo la
+ * suma de las categorías con presupuesto, cuenta solo el gasto de esas categorías (si no, con una sola categoría
+ * presupuestada todo lo demás parecía un exceso).
+ */
+export function spentAgainstTotal(
+  total: TotalBudget,
+  budgets: { category_id: string | null }[],
+  slices: CategorySlice[],
+  allSpent: number,
+): number {
+  if (total.source !== 'suma') return allSpent;
+  const budgeted = new Set(budgets.map((b) => b.category_id).filter(Boolean));
+  return slices.filter((s) => s.categoryId && budgeted.has(s.categoryId)).reduce((sum, s) => sum + s.amount, 0);
+}
+
+/** Aviso de presupuesto: separa lo que ya llegó al límite (≥ 100 %) de lo que va por encima del 80 %. */
+export function budgetAlert(items: { name: string; ratio: number }[]): string {
+  const t = strings().budgets.alert;
+  const over = items.filter((i) => i.ratio >= 1).map((i) => i.name);
+  const near = items.filter((i) => i.ratio >= 0.8 && i.ratio < 1).map((i) => i.name);
+  const parts: string[] = [];
+  if (over.length) parts.push(t.over(t.list(over), over.length));
+  if (near.length) parts.push(t.near(t.list(near), near.length));
+  return parts.join(' ');
+}
+
+/** Cambio relativo contra el periodo anterior; null si antes no hubo gasto. */
+export function changeVs(current: number, previous: number): number | null {
+  return previous > 0 ? (current - previous) / previous : null;
+}
+
+/** Gasto acumulado del mismo número de días del mes anterior, para comparar "a esta altura". */
+export function sameDaysLastMonth(prevMonthTxs: Transaction[], prevMonthStart: Date, daysElapsed: number): number {
+  const byDay = spendingByDay(prevMonthTxs, prevMonthStart, 31);
+  return byDay.slice(0, daysElapsed).reduce((a, b) => a + b, 0);
+}

@@ -5,11 +5,11 @@ import { MonthNav } from '../../components/MonthNav';
 import { useT } from '../../i18n';
 import { Segmented } from '../../components/motion';
 import { CategoryIcon, EmptyState, IconTile, Screen, Section, Skeleton } from '../../components/ui';
-import { crDay, crDayOf, dayLabel, isoDate, monthRange, startOfMonth } from '../../lib/dates';
-import { type Drill, matchesDrill, readDrill, readMonth } from '../../lib/drill';
-import { formatCRC } from '../../lib/money';
-import { useLookups, usePendingReview, useTransactions } from '../../lib/queries';
-import type { Category, Transaction } from '../../lib/types';
+import { crDay, crDayOf, dayLabel, isoDate, monthRange, startOfMonth } from '../../lib/format/dates';
+import { type Drill, matchesDrill, readDrill, readMonth } from '../../lib/finance/drill';
+import { formatCRC } from '../../lib/format/money';
+import { useLookups, usePendingReview, useTransactions } from '../../lib/data/queries';
+import type { Category, Transaction } from '../../lib/data/types';
 import { TransactionRow } from './TransactionRow';
 
 type Filter = 'todos' | 'gastos' | 'ingresos' | 'revisar';

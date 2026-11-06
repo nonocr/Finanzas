@@ -20,7 +20,7 @@ export default {
   byCategory: 'Por categoría',
   unassigned: (amount: string) => `Sin asignar a categorías: ${amount}.`,
   noBudget: 'Sin presupuesto',
-  /** Aviso de presupuesto (budgetAlert en src/lib/stats.ts). */
+  /** Aviso de presupuesto (budgetAlert en src/lib/finance/stats.ts). */
   alert: {
     list: (names: string[]) =>
       names.length <= 1 ? names.join('') : `${names.slice(0, -1).join(', ')} y ${names[names.length - 1]}`,

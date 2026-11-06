@@ -6,12 +6,12 @@ import { AnimatedAmount, Segmented, SoftText } from '../../components/motion';
 import { hexOf } from '../../components/palette';
 import { budgetTone, EmptyState, IconTile, ProgressBar, Screen, Section, Skeleton } from '../../components/ui';
 import { useT } from '../../i18n';
-import { isDemo } from '../../lib/api';
-import { crDay, crDayOf, crShortDate, crTime, isoDate, monthName, monthRange, startOfMonth, startOfWeek, weekRange, weekdayInitials } from '../../lib/dates';
-import { formatCRC } from '../../lib/money';
-import type { HomeSection } from '../../lib/prefs';
-import { useBudgetProgress, useBudgets, useLookups, usePendingReview, useTransactions } from '../../lib/queries';
-import { usePrefs } from '../../lib/usePrefs';
+import { isDemo } from '../../lib/data/api';
+import { crDay, crDayOf, crShortDate, crTime, isoDate, monthName, monthRange, startOfMonth, startOfWeek, weekRange, weekdayInitials } from '../../lib/format/dates';
+import { formatCRC } from '../../lib/format/money';
+import type { HomeSection } from '../../lib/prefs/prefs';
+import { useBudgetProgress, useBudgets, useLookups, usePendingReview, useTransactions } from '../../lib/data/queries';
+import { usePrefs } from '../../lib/prefs/usePrefs';
 import {
   donutCategories,
   spendingByCategory,
@@ -19,8 +19,8 @@ import {
   spentAgainstTotal,
   totalBudget,
   totals,
-} from '../../lib/stats';
-import type { Transaction } from '../../lib/types';
+} from '../../lib/finance/stats';
+import type { Transaction } from '../../lib/data/types';
 import { BudgetRow } from '../budgets/BudgetsPage';
 import { useEditor } from '../transactions/editor';
 import { TransactionRow } from '../transactions/TransactionRow';

@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 import type { ComponentProps, ReactNode } from 'react';
-import { formatNumber, pastedColones } from '../../lib/money';
+import { formatNumber, pastedColones } from '../../lib/format/money';
 
 /** Encabezado de grupo de formulario estilo iOS (nota en mayúsculas, alineada con el texto de las filas). */
 export function FormHeader({ children }: { children: ReactNode }) {

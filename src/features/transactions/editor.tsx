@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
-import type { Transaction, TxType } from '../../lib/types';
+import type { Transaction, TxType } from '../../lib/data/types';
 import { TransactionSheet } from './TransactionSheet';
 
 interface EditorApi {

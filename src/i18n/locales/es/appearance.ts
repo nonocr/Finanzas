@@ -1,6 +1,6 @@
 // Textos en español del área «appearance». Fuente de verdad: el inglés (locales/en/appearance.ts) tiene el mismo tipo.
 export default {
-  /** Nombre de cada tema, por su id (src/lib/themes.ts). */
+  /** Nombre de cada tema, por su id (src/lib/theme/themes.ts). */
   themes: {
     negra: 'Negra',
     carbono: 'Carbono',
@@ -20,14 +20,14 @@ export default {
   iconNoteAndroid: ' El ícono de la app cambia con la tarjeta al salir de la app.',
 
   homeTitle: 'Resumen',
-  /** Secciones del Resumen (HomeSection en src/lib/prefs.ts). */
+  /** Secciones del Resumen (HomeSection en src/lib/prefs/prefs.ts). */
   sections: {
     semana: 'Esta semana',
     recientes: 'Recientes',
     categorias: 'Por categoría',
     presupuestos: 'Presupuestos',
   },
-  /** Qué cifra lleva en grande la tarjeta del Resumen (CardFigure en src/lib/prefs.ts). */
+  /** Qué cifra lleva en grande la tarjeta del Resumen (CardFigure en src/lib/prefs/prefs.ts). */
   cardFigures: {
     gastado: 'Lo gastado',
     disponible: 'Lo que queda del presupuesto',

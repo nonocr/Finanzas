@@ -1,6 +1,6 @@
 import { CircleAlert, CircleCheck } from 'lucide-react';
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
-import { ERROR_EVENT } from '../lib/offline';
+import { ERROR_EVENT } from '../lib/data/offline';
 import { strings } from '../i18n';
 
 // transitions.dev · Toast open / close: entra lento, sale rápido.

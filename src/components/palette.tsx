@@ -23,7 +23,7 @@ import {
   Utensils,
   Zap,
 } from 'lucide-react';
-import type { AccountType } from '../lib/types';
+import type { AccountType } from '../lib/data/types';
 
 // Las categorías guardan una clave de color (c1…c10). En la «tarjeta negra» son tintes de baja saturación (bronce,
 // salvia, acero…) que viven en el trazo del ícono y en los gráficos; no compiten con el ámbar y rojo del presupuesto.

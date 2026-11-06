@@ -1,10 +1,10 @@
 import { ArrowLeftRight, CircleDot } from 'lucide-react';
 import { CategoryIcon, IconTile, Row, Stamp } from '../../components/ui';
 import { useT } from '../../i18n';
-import { crTime } from '../../lib/dates';
-import { formatUSD } from '../../lib/fx';
-import { formatCRC } from '../../lib/money';
-import type { Account, Category, Transaction } from '../../lib/types';
+import { crTime } from '../../lib/format/dates';
+import { formatUSD } from '../../lib/format/fx';
+import { formatCRC } from '../../lib/format/money';
+import type { Account, Category, Transaction } from '../../lib/data/types';
 import { useEditor } from './editor';
 
 export function TransactionRow({

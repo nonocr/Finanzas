@@ -1,6 +1,6 @@
 import { onlineManager, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
-import { runRecurring } from '../lib/queries';
+import { runRecurring } from '../lib/data/queries';
 import { useToast } from './Toast';
 import { strings } from '../i18n';
 

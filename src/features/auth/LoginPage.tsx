@@ -2,10 +2,10 @@ import { CircleCheck, Wallet } from 'lucide-react';
 import { useEffect, useState, type ComponentProps, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '../../components/ui';
-import { cleanCode, needsMfaCode, verifyCode } from '../../lib/mfa';
-import { isNative, platform, WEB_APP_URL } from '../../lib/native';
-import { checkPassword } from '../../lib/password';
-import { signupLinkNotice, supabase, takeAccountDeleted, takePartialSignOut } from '../../lib/supabase';
+import { cleanCode, needsMfaCode, verifyCode } from '../../lib/auth/mfa';
+import { isNative, platform, WEB_APP_URL } from '../../lib/platform/native';
+import { checkPassword } from '../../lib/auth/password';
+import { signupLinkNotice, supabase, takeAccountDeleted, takePartialSignOut } from '../../lib/data/supabase';
 import { getLang, useT, type Strings } from '../../i18n';
 
 // Correo + contraseña: funciona igual en la web, en la PWA instalada y en la app nativa, sin depender de que un

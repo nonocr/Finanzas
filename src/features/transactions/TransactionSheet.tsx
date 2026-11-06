@@ -10,7 +10,7 @@ import { Sheet } from '../../components/Sheet';
 import { useToast } from '../../components/Toast';
 import { Button } from '../../components/ui';
 import { getLang, useT } from '../../i18n';
-import { clockTime, crDay, crDayOf, crInstant, crTimeOf, isoDate, longDate } from '../../lib/dates';
+import { clockTime, crDay, crDayOf, crInstant, crTimeOf, isoDate, longDate } from '../../lib/format/dates';
 import {
   centsToUsdInput,
   formatRate,
@@ -19,8 +19,8 @@ import {
   parseUsdAmount,
   usdInputToCents,
   usdToColonCents,
-} from '../../lib/fx';
-import { formatCRC } from '../../lib/money';
+} from '../../lib/format/fx';
+import { formatCRC } from '../../lib/format/money';
 import {
   useAccounts,
   useCategories,
@@ -29,8 +29,8 @@ import {
   useSaveMerchantRule,
   useSaveTransaction,
   useUsdRate,
-} from '../../lib/queries';
-import type { Account, Transaction, TxType } from '../../lib/types';
+} from '../../lib/data/queries';
+import type { Account, Transaction, TxType } from '../../lib/data/types';
 
 /** Tipo de cambio para el campo, con el separador decimal del idioma (454,41 / 454.41); parseRateInput lee los dos. */
 const rateToText = (rate: number) => (getLang() === 'es' ? String(rate).replace('.', ',') : String(rate));
@@ -120,7 +120,7 @@ export function TransactionSheet({
     (isTransfer ? destination && destination.id !== account.id : true) &&
     (!pending || categoryId);
 
-  // Sin esperar a la red: el cambio entra a la cola (lib/offline.ts), la lista se actualiza al instante
+  // Sin esperar a la red: el cambio entra a la cola (lib/data/offline.ts), la lista se actualiza al instante
   // y se sube en cuanto haya conexión.
   const submit = () => {
     if (!valid || !account) return;

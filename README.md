@@ -19,12 +19,28 @@ Solo captura pagos hechos con el iPhone o el Apple Watch. Las compras en línea 
 ```
 src/
   components/      UI compartida (listas iOS, hoja inferior, dona, control segmentado, toast)
-  features/        pantallas: home, transactions, stats, budgets, settings, auth
-  lib/             dinero (céntimos), fechas CR, estadísticas, acceso a datos (Supabase o demo)
+  features/        pantallas: home, transactions, stats, budgets, auth, legal y settings/
+                   (appearance, automation, finance, security)
+  i18n/            textos de la app: locales/es (fuente) y locales/en
+  lib/
+    auth/          contraseña y verificación en dos pasos
+    data/          acceso a datos (Supabase o demo), React Query y cola sin conexión
+    finance/       estadísticas, recurrentes y nombres por defecto
+    format/        dinero (céntimos), fechas CR, tipo de cambio y CSV
+    platform/      app nativa (Capacitor) y actualizaciones de la PWA
+    prefs/         preferencias guardadas en la cuenta
+    theme/         temas «Tarjetas de metal» en OKLCH
 supabase/
   migrations/      esquema, RLS, vistas de saldos y presupuesto, datos iniciales por usuario
   functions/       wallet-sync (webhook del Atajo) y _shared/ (lógica común, money.ts)
+  templates/       correos de confirmación y recuperación
+  tests/           seguridad y lógica de la base en PostgreSQL efímero
+android/, ios/     proyectos nativos de Capacitor
+assets/            fuentes de íconos y pantalla de carga
+scripts/           capturas, búsqueda de secretos, correos e iconos/ (íconos por tema)
+e2e/               pruebas de Playwright
 PRODUCT.md         contexto de producto para las skills de diseño
+DESIGN.md          sistema visual
 ```
 
 Los montos se guardan como enteros en **céntimos** y todas las fechas se agrupan en hora de Costa Rica (UTC−6).

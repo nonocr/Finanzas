@@ -19,7 +19,7 @@ export default defineConfig({
     react(),
     tailwindcss(),
     VitePWA({
-      // La versión nueva espera y la activa src/lib/appUpdate.ts cuando no interrumpe (sin hojas abiertas).
+      // La versión nueva espera y la activa src/lib/platform/appUpdate.ts cuando no interrumpe (sin hojas abiertas).
       registerType: 'prompt',
       injectRegister: false,
       includeAssets: ['favicon.svg', 'apple-touch-icon.png'],

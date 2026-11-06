@@ -3,7 +3,7 @@ import clsx from 'clsx';
 import gsap from 'gsap';
 import { useEffect, useId, useRef, useState, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import { appUpdates } from '../lib/appUpdate';
+import { appUpdates } from '../lib/platform/appUpdate';
 
 /** Movimiento mínimo (px) antes de decidir si el gesto arrastra la hoja o es un toque/desplazamiento. */
 const SLOP = 6;

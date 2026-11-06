@@ -8,11 +8,11 @@ import { AnimatedAmount, SoftText } from '../../components/motion';
 import { hexOf } from '../../components/palette';
 import { CategoryIcon, EmptyState, Screen, Section } from '../../components/ui';
 import { locale, useT } from '../../i18n';
-import { addMonths, crDay, crDayStartInstant, monthName, startOfMonth } from '../../lib/dates';
-import { drillHref } from '../../lib/drill';
-import { formatCRC } from '../../lib/money';
-import { useTheme } from '../../lib/theme';
-import { useLookups, useTransactions } from '../../lib/queries';
+import { addMonths, crDay, crDayStartInstant, monthName, startOfMonth } from '../../lib/format/dates';
+import { drillHref } from '../../lib/finance/drill';
+import { formatCRC } from '../../lib/format/money';
+import { useTheme } from '../../lib/theme/theme';
+import { useLookups, useTransactions } from '../../lib/data/queries';
 import {
   changeVs,
   monthlyTrend,
@@ -22,7 +22,7 @@ import {
   topMerchants,
   totals,
   donutCategories,
-} from '../../lib/stats';
+} from '../../lib/finance/stats';
 
 // Mismo signo menos (U+2212) que formatCRC.
 // Recharts pinta con atributos SVG, que no leen variables CSS: sus colores salen del tema en JS.

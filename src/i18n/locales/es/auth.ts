@@ -78,7 +78,7 @@ export default {
     doneSubtitle: 'Ya puedes entrar con ella en la app. Por seguridad, aquí se cerró la sesión; puedes cerrar esta página.',
     signInHere: 'Entrar aquí',
   },
-  /** Reglas de contraseña que faltan (src/lib/password.ts). */
+  /** Reglas de contraseña que faltan (src/lib/auth/password.ts). */
   passwordRules: {
     length: '8 caracteres',
     lower: 'una minúscula',
@@ -86,7 +86,7 @@ export default {
     digit: 'un número',
     max: 'máximo 72 caracteres',
   },
-  /** Errores del código de dos pasos (src/lib/mfa.ts). */
+  /** Errores del código de dos pasos (src/lib/auth/mfa.ts). */
   mfaErrors: {
     mfa_verification_failed: 'Código incorrecto o vencido. Prueba con el siguiente.',
     mfa_challenge_expired: 'El código venció. Prueba con el siguiente.',

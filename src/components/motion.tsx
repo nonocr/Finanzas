@@ -2,7 +2,7 @@ import { useGSAP } from '@gsap/react';
 import clsx from 'clsx';
 import gsap from 'gsap';
 import { useLayoutEffect, useRef } from 'react';
-import { formatCRC } from '../lib/money';
+import { formatCRC } from '../lib/format/money';
 
 gsap.registerPlugin(useGSAP);
 

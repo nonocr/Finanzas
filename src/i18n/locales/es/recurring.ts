@@ -18,7 +18,7 @@ export default {
   frequency: { semanal: 'Semanal', quincenal: 'Quincenal', mensual: 'Mensual', anual: 'Anual' },
   /** Opciones de «Se repite cada …». */
   every: { semanal: 'Semana', quincenal: 'Quincena', mensual: 'Mes', anual: 'Año' },
-  /** Cuándo se cobra, en palabras (src/lib/recurring.ts → scheduleLabel). */
+  /** Cuándo se cobra, en palabras (src/lib/finance/recurring.ts → scheduleLabel). */
   schedule: {
     weekly: (weekday: string) => `Los ${weekday}`,
     biweekly: (d1: number, d2: number) => `El ${d1} y el ${d2}`,

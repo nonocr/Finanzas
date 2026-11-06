@@ -1,9 +1,9 @@
-// Los temas se calculan en src/lib/themes.ts, pero se repiten en archivos que no son TypeScript: los valores de Negra
-// en src/index.css (primer pintado), los colores de los íconos (scripts/iconos.json) y los íconos alternos en los
+// Los temas se calculan en src/lib/theme/themes.ts, pero se repiten en archivos que no son TypeScript: los valores de Negra
+// en src/index.css (primer pintado), los colores de los íconos (scripts/iconos/iconos.json) y los íconos alternos en los
 // proyectos de iOS y Android. Aquí se comprueba que todo siga cuadrando.
 import { existsSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { THEMES, themeVars } from '../src/lib/themes.ts';
+import { THEMES, themeVars } from '../src/lib/theme/themes.ts';
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
 const exists = (path) => existsSync(new URL(`../${path}`, import.meta.url));
@@ -15,8 +15,8 @@ describe('temas en CSS y en los proyectos nativos', () => {
     for (const [name, value] of Object.entries(themeVars(THEMES[0].tokens))) expect(css, name).toContain(`${name}: ${value};`);
   });
 
-  it('scripts/iconos.json está al día (node scripts/temas-iconos.mjs)', () => {
-    const json = JSON.parse(read('scripts/iconos.json'));
+  it('scripts/iconos/iconos.json está al día (node scripts/iconos/temas-iconos.mjs)', () => {
+    const json = JSON.parse(read('scripts/iconos/iconos.json'));
     expect(json).toEqual(
       alternates.map((t) => ({ ios: t.iconName, android: t.iconName.toLowerCase(), bg: t.icon.bg, bars: t.icon.bars })),
     );

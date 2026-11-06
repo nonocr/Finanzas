@@ -83,7 +83,7 @@ const AUDIT = `(() => {
 
 await send('Page.enable');
 await send('Runtime.enable');
-// CAPTURAS_TEMA=oro: captura con ese tema (src/lib/themes.ts), guardándolo antes de que cargue la app.
+// CAPTURAS_TEMA=oro: captura con ese tema (src/lib/theme/themes.ts), guardándolo antes de que cargue la app.
 if (process.env.CAPTURAS_TEMA)
   await send('Page.addScriptToEvaluateOnNewDocument', {
     source: `localStorage.setItem('finanzas-theme', ${JSON.stringify(process.env.CAPTURAS_TEMA)})`,

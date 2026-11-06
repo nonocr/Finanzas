@@ -10,22 +10,22 @@ import { LoginPage, MfaPage, ResetPasswordPage } from './features/auth/LoginPage
 import { PrivacyPage } from './features/legal/PrivacyPage';
 import { BudgetsPage } from './features/budgets/BudgetsPage';
 import { HomePage } from './features/home/HomePage';
-import { AccountsPage } from './features/settings/AccountsPage';
-import { CategoriesPage } from './features/settings/CategoriesPage';
+import { AccountsPage } from './features/settings/finance/AccountsPage';
+import { CategoriesPage } from './features/settings/finance/CategoriesPage';
 import { MorePage } from './features/settings/MorePage';
-import { RecurringPage } from './features/settings/RecurringPage';
-import { RulesPage } from './features/settings/RulesPage';
-import { ThemePage } from './features/settings/ThemePage';
-import { HomeLayoutPage } from './features/settings/HomeLayoutPage';
-import { LanguagePage } from './features/settings/LanguagePage';
-import { WalletPage } from './features/settings/WalletPage';
+import { RecurringPage } from './features/settings/finance/RecurringPage';
+import { RulesPage } from './features/settings/finance/RulesPage';
+import { ThemePage } from './features/settings/appearance/ThemePage';
+import { HomeLayoutPage } from './features/settings/appearance/HomeLayoutPage';
+import { LanguagePage } from './features/settings/appearance/LanguagePage';
+import { WalletPage } from './features/settings/automation/WalletPage';
 import { EditorProvider } from './features/transactions/editor';
 import { TransactionsPage } from './features/transactions/TransactionsPage';
-import { isDemo } from './lib/api';
-import { needsMfaCode } from './lib/mfa';
-import { syncCacheWithSession } from './lib/offline';
-import { PrefsSync } from './lib/usePrefs';
-import { openedFromRecoveryLink, supabase } from './lib/supabase';
+import { isDemo } from './lib/data/api';
+import { needsMfaCode } from './lib/auth/mfa';
+import { syncCacheWithSession } from './lib/data/offline';
+import { PrefsSync } from './lib/prefs/usePrefs';
+import { openedFromRecoveryLink, supabase } from './lib/data/supabase';
 
 // Recharts es lo más pesado del paquete; solo se carga al abrir Estadísticas.
 const StatsPage = lazy(() => import('./features/stats/StatsPage').then((m) => ({ default: m.StatsPage })));

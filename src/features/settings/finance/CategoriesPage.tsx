@@ -1,0 +1,213 @@
+import clsx from 'clsx';
+import { Check } from 'lucide-react';
+import { useState } from 'react';
+import { Segmented } from '../../../components/motion';
+import { CATEGORY_COLORS, ICONS } from '../../../components/palette';
+import { Sheet } from '../../../components/Sheet';
+import { useToast } from '../../../components/Toast';
+import { Button, CategoryIcon, Row, Screen, Section } from '../../../components/ui';
+import { useT } from '../../../i18n';
+import { api } from '../../../lib/data/api';
+import { useArchivedCategories, useCategories, useDeleteCategory, useSaveCategory } from '../../../lib/data/queries';
+import type { Category, CategoryKind } from '../../../lib/data/types';
+import { BackLink } from '../MorePage';
+import { FormGroup, FormRow, TextInput } from '../form';
+
+export function CategoriesPage() {
+  const t = useT();
+  const { data: categories = [] } = useCategories();
+  const { data: archived = [] } = useArchivedCategories();
+  const [kind, setKind] = useState<CategoryKind>('gasto');
+  const [editing, setEditing] = useState<{ cat: Partial<Category>; key: number } | null>(null);
+  const [open, setOpen] = useState(false);
+  const list = categories.filter((c) => c.kind === kind);
+  const archivedList = archived.filter((c) => c.kind === kind);
+
+  const openEditor = (cat: Partial<Category>) => {
+    setEditing((prev) => ({ cat, key: (prev?.key ?? 0) + 1 }));
+    setOpen(true);
+  };
+
+  return (
+    <Screen title={t.categories.title} subtitle={<BackLink />}>
+      <Segmented
+        options={[
+          { value: 'gasto', label: t.categories.expenses },
+          { value: 'ingreso', label: t.categories.incomes },
+        ]}
+        value={kind}
+        onChange={setKind}
+      />
+      <Section className="mt-4">
+        {list.map((c) => (
+          <Row key={c.id} onClick={() => openEditor(c)} leading={<CategoryIcon icon={c.icon} color={c.color} />} title={c.name} chevron />
+        ))}
+      </Section>
+      <Button variant="tinted" className="mt-6 w-full" onClick={() => openEditor({ kind, icon: 'ellipsis', color: 'c10' })}>
+        {t.categories.new}
+      </Button>
+
+      {archivedList.length > 0 && (
+        <Section header={t.categories.archived} footer={t.categories.archivedFooter}>
+          {archivedList.map((c) => (
+            <Row
+              key={c.id}
+              onClick={() => openEditor(c)}
+              leading={
+                <span className="opacity-50">
+                  <CategoryIcon icon={c.icon} color={c.color} />
+                </span>
+              }
+              title={<span className="text-label-2">{c.name}</span>}
+              chevron
+            />
+          ))}
+        </Section>
+      )}
+      {editing && <CategorySheet key={editing.key} open={open} initial={editing.cat} onClose={() => setOpen(false)} />}
+    </Screen>
+  );
+}
+
+function CategorySheet({ open, initial, onClose }: { open: boolean; initial: Partial<Category>; onClose: () => void }) {
+  const t = useT();
+  const save = useSaveCategory();
+  const toast = useToast();
+  const [cat, setCat] = useState<Partial<Category>>(initial);
+  const set = (patch: Partial<Category>) => setCat((c) => ({ ...c, ...patch }));
+
+  const submit = async () => {
+    try {
+      await save.mutateAsync({ ...cat, name: cat.name?.trim() });
+      toast(initial.id ? t.categories.updated : t.categories.created);
+      onClose();
+    } catch {
+      toast(t.categories.duplicate);
+    }
+  };
+
+  const remove = useDeleteCategory();
+  // Borrar es definitivo: el primer toque muestra cuántos movimientos quedarían sin categoría.
+  const [confirmDelete, setConfirmDelete] = useState<number | null>(null);
+
+  const setArchived = async (archived: boolean) => {
+    await save.mutateAsync({ id: initial.id, archived });
+    toast(archived ? t.categories.archivedToast : t.categories.reactivatedToast);
+    onClose();
+  };
+
+  const askDelete = async () => setConfirmDelete(await api.countCategoryUse(initial.id!));
+
+  const destroy = async () => {
+    await remove.mutateAsync(initial.id!);
+    toast(t.categories.deleted);
+    onClose();
+  };
+
+  return (
+    <Sheet
+      open={open}
+      onClose={onClose}
+      title={initial.id ? t.categories.edit : t.categories.new}
+      leading={
+        <button type="button" className="min-h-11 text-body text-accent" onClick={onClose}>
+          {t.common.cancel}
+        </button>
+      }
+      trailing={
+        <button
+          type="button"
+          className="press metal min-h-9 rounded-full px-4 text-body font-semibold disabled:bg-none disabled:bg-fill disabled:text-label-3 disabled:shadow-none"
+          disabled={!cat.name?.trim() || save.isPending}
+          onClick={submit}
+        >
+          {t.common.save}
+        </button>
+      }
+    >
+      <div className="flex justify-center py-4">
+        <CategoryIcon icon={cat.icon ?? null} color={cat.color ?? null} size={64} />
+      </div>
+      <FormGroup>
+        <FormRow label={t.categories.name} last>
+          <TextInput value={cat.name ?? ''} maxLength={60} onChange={(e) => set({ name: e.target.value })} placeholder={t.categories.namePlaceholder} />
+        </FormRow>
+      </FormGroup>
+
+      <p className="mt-5 mb-2 px-1 text-subhead font-semibold text-label">{t.categories.color}</p>
+      <div className="grid grid-cols-5 gap-3 rounded-[12px] bg-card-2 p-4">
+        {Object.entries(CATEGORY_COLORS).map(([key, color]) => (
+          <button
+            key={key}
+            type="button"
+            aria-label={t.categories.colorLabel(key)}
+            aria-pressed={cat.color === key}
+            onClick={() => set({ color: key })}
+            className="press grid aspect-square place-items-center rounded-full"
+            style={{ background: color }}
+          >
+            {cat.color === key && <Check size={20} strokeWidth={3} className="text-white" />}
+          </button>
+        ))}
+      </div>
+
+      <p className="mt-5 mb-2 px-1 text-subhead font-semibold text-label">{t.categories.icon}</p>
+      <div className="grid grid-cols-6 gap-2 rounded-[12px] bg-card-2 p-3">
+        {Object.entries(ICONS).map(([name, Icon]) => (
+          <button
+            key={name}
+            type="button"
+            aria-label={name}
+            aria-pressed={cat.icon === name}
+            onClick={() => set({ icon: name })}
+            className={clsx(
+              'press grid aspect-square place-items-center rounded-[10px]',
+              cat.icon === name ? 'metal' : 'text-label-2',
+            )}
+          >
+            <Icon size={22} strokeWidth={2} />
+          </button>
+        ))}
+      </div>
+
+      {initial.id && (
+        <div className="mt-6 space-y-3">
+          {initial.archived ? (
+            <Button variant="tinted" className="w-full" onClick={() => setArchived(false)}>
+              {t.categories.reactivate}
+            </Button>
+          ) : (
+            <Button variant="tinted" className="w-full" onClick={() => setArchived(true)}>
+              {t.categories.archive}
+            </Button>
+          )}
+          {confirmDelete === null ? (
+            <Button variant="destructive" className="w-full" onClick={askDelete}>
+              {t.categories.deleteForever}
+            </Button>
+          ) : (
+            <div className="rounded-[12px] bg-red/15 p-4">
+              <p className="text-subhead">
+                {confirmDelete === 0
+                  ? t.categories.deleteUnused
+                  : t.categories.deleteUsed(confirmDelete)}{' '}
+                {t.categories.cannotUndo}
+              </p>
+              <div className="mt-3 flex gap-2">
+                <Button variant="plain" className="flex-1" onClick={() => setConfirmDelete(null)}>
+                  {t.common.cancel}
+                </Button>
+                <Button className="flex-1 !bg-red" onClick={destroy} disabled={remove.isPending}>
+                  {t.common.delete}
+                </Button>
+              </div>
+            </div>
+          )}
+          <p className="px-1 text-footnote text-label-2">
+            {t.categories.archiveHelp}
+          </p>
+        </div>
+      )}
+    </Sheet>
+  );
+}

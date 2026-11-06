@@ -1,6 +1,6 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useT } from '../i18n';
-import { addMonths, crDay, monthName, startOfMonth } from '../lib/dates';
+import { addMonths, crDay, monthName, startOfMonth } from '../lib/format/dates';
 import { SoftText } from './motion';
 
 export function MonthNav({ month, onChange }: { month: Date; onChange: (m: Date) => void }) {

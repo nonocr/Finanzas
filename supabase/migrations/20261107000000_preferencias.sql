@@ -1,6 +1,6 @@
 -- Preferencias de cada persona (tema, modo discreto, cómo se arma el Resumen), guardadas en su cuenta: si entra
 -- desde otro teléfono o la computadora, la app se ve igual. Una fila por usuario con un JSON pequeño; la app valida
--- y completa los valores (src/lib/prefs.ts), así que agregar una preferencia nueva no necesita migración.
+-- y completa los valores (src/lib/prefs/prefs.ts), así que agregar una preferencia nueva no necesita migración.
 create table public.user_settings (
   user_id    uuid primary key default auth.uid() references auth.users on delete cascade,
   prefs      jsonb not null default '{}'::jsonb,

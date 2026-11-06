@@ -5,7 +5,7 @@
    acción. El color solo aparece donde significa algo (estado del presupuesto,
    ingresos) y, muy sobrio, para distinguir categorías. Solo modo oscuro.
 
-   Temas «Tarjetas de metal» (src/lib/themes.ts): Negra, Titanio, Oro, Oro rosa,
+   Temas «Tarjetas de metal» (src/lib/theme/themes.ts): Negra, Titanio, Oro, Oro rosa,
    Zafiro y Esmeralda. Cambian los grafitos y el metal de la acción escribiendo
    estas mismas variables en <html>; aquí quedan los valores de Negra para el
    primer pintado. Lo que significa algo (presupuesto, ingresos, categorías) no
@@ -14,7 +14,7 @@
 @theme {
   --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', Roboto, system-ui, sans-serif;
 
-  /* Escala de grafitos: los únicos neutros. Valores de la tarjeta Negra en OKLCH, iguales a src/lib/themes.ts. */
+  /* Escala de grafitos: los únicos neutros. Valores de la tarjeta Negra en OKLCH, iguales a src/lib/theme/themes.ts. */
   --color-bg: oklch(0.115 0.002 286);
   --color-card: oklch(0.178 0.003 286);
   --color-card-2: oklch(0.223 0.004 286);
@@ -392,7 +392,7 @@
 }
 
 /* ---------------------------------------------------------------------------
-   Modo discreto (Ajustes → Modo discreto, src/lib/prefs.ts): los montos (toda cifra de dinero lleva .tnum) se
+   Modo discreto (Ajustes → Modo discreto, src/lib/prefs/prefs.ts): los montos (toda cifra de dinero lleva .tnum) se
    difuminan hasta tocar uno; entonces se ven todos por un minuto. Las cifras que no son dinero (conteos, horas,
    porcentajes, códigos) llevan .not-money y se quedan a la vista. Dentro de una hoja no: ahí la persona está
    escribiendo o revisando un movimiento a propósito. Las cifras de los ejes y la burbuja de los gráficos también.

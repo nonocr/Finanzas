@@ -3,7 +3,7 @@ import { ChartPie, Gauge, House, List, Plus, type LucideIcon } from 'lucide-reac
 import { NavLink } from 'react-router-dom';
 import { useEditor } from '../features/transactions/editor';
 import { useT } from '../i18n';
-import { usePendingReview } from '../lib/queries';
+import { usePendingReview } from '../lib/data/queries';
 
 type TabKey = 'home' | 'transactions' | 'stats' | 'budget';
 // «tab» y no «key»: React se queda con la prop key y el componente no la recibiría.

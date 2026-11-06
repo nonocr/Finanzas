@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 import { useLang } from '../i18n';
-import type { Category } from '../lib/types';
+import type { Category } from '../lib/data/types';
 import { colorOf, iconOf } from './palette';
 
 /** Todas las categorías visibles a la vez, en 4 columnas (sin deslizar de lado). */

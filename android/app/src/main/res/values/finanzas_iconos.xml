@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Generado por scripts/iconos.ps1: fondo de los iconos alternos de cada tema. -->
+<!-- Generado por scripts/iconos/iconos.ps1: fondo de los iconos alternos de cada tema. -->
 <resources>
     <color name="icono_fondo_carbono">#000000</color>
     <color name="icono_fondo_titanio">#0b0c0d</color>

@@ -1,8 +1,8 @@
 import clsx from 'clsx';
 import { useEffect, useRef } from 'react';
-import { centsToUsdInput, sanitizeUsdInput } from '../lib/fx';
+import { centsToUsdInput, sanitizeUsdInput } from '../lib/format/fx';
 import { useLang, useT } from '../i18n';
-import { formatNumber, parseAmountToCents, pastedColones } from '../lib/money';
+import { formatNumber, parseAmountToCents, pastedColones } from '../lib/format/money';
 
 /** Colones enteros → "12.500" (punto de miles, como se lee en Costa Rica; en inglés "12,500"). */
 const pretty = (colones: string) => (colones ? formatNumber(Number(colones)) : '');
