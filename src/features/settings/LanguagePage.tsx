@@ -1,7 +1,7 @@
 import clsx from 'clsx';
 import { Check } from 'lucide-react';
 import { Screen, Section } from '../../components/ui';
-import { deviceLang, useT, type LangPref } from '../../i18n';
+import { useT, type LangPref } from '../../i18n';
 import { usePrefs, useSavePrefs } from '../../lib/usePrefs';
 import { BackLink } from './MorePage';
 
@@ -11,7 +11,7 @@ export function LanguagePage() {
   const current = usePrefs().lang;
   const save = useSavePrefs();
   const options: { value: LangPref; label: string; detail?: string }[] = [
-    { value: 'auto', label: t.language.auto, detail: t.language.autoDetail(t.language.names[deviceLang()]) },
+    { value: 'auto', label: t.language.auto },
     { value: 'es', label: t.language.names.es },
     { value: 'en', label: t.language.names.en },
   ];
