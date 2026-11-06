@@ -3,7 +3,7 @@
 import { describe, expect, it } from 'vitest';
 import { parseUsdAmount } from '../functions/_shared/fx';
 import { parseAmountToCents } from '../functions/_shared/money';
-import { parseNotification } from '../functions/_shared/notification';
+import { findPurchaseTime, parseNotification } from '../functions/_shared/notification';
 
 describe('parseNotification: compras', () => {
   it.each([
@@ -22,7 +22,7 @@ describe('parseNotification: compras', () => {
     ],
     ['Pago en línea\nCargo por USD 15.99 en NETFLIX.COM con su tarjeta ****1234', { amount: 'USD 15.99', merchant: 'NETFLIX.COM', card: '•••• 1234' }],
   ])('%s', (body, expected) => {
-    expect(parseNotification(body)).toEqual({ ok: true, ...expected });
+    expect(parseNotification(body)).toMatchObject({ ok: true, ...expected });
   });
 
   it('los montos salen en un formato que entienden los lectores de colones y dólares', () => {
@@ -38,12 +38,13 @@ describe('parseNotification: compras', () => {
       amount: null,
       merchant: 'UBER TRIP',
       card: '•••• 1234',
+      at: null,
     });
   });
 
   it('el título del banco no se confunde con el comercio', () => {
     const r = parseNotification('Google Wallet\n₡3.200 con Mastercard ••9876');
-    expect(r).toEqual({ ok: true, amount: 'CRC 3.200', merchant: null, card: 'Mastercard •••• 9876' });
+    expect(r).toEqual({ ok: true, amount: 'CRC 3.200', merchant: null, card: 'Mastercard •••• 9876', at: null });
   });
 });
 
@@ -58,5 +59,32 @@ describe('parseNotification: lo que no es una compra se ignora', () => {
     ['   ', 'empty'],
   ])('%s → %s', (body, reason) => {
     expect(parseNotification(body)).toEqual({ ok: false, reason });
+  });
+});
+
+describe('findPurchaseTime (hora de la compra que trae el aviso)', () => {
+  // 6 nov 2026, 9:00 de la mañana en Costa Rica (15:00 UTC).
+  const NOW = Date.parse('2026-11-06T15:00:00Z');
+
+  it('fecha día/mes/año y hora de 24 h, en hora de Costa Rica', () => {
+    expect(findPurchaseTime('Compra aprobada ... el 05/11/2026 13:45.', NOW)).toBe('2026-11-05T19:45:00.000Z');
+  });
+  it('año de dos dígitos, guiones y a. m./p. m.', () => {
+    expect(findPurchaseTime('compra 5-11-26 1:45 p. m.', NOW)).toBe('2026-11-05T19:45:00.000Z');
+    expect(findPurchaseTime('compra 05/11/2026 12:10 a.m.', NOW)).toBe('2026-11-05T06:10:00.000Z');
+  });
+  it('solo la hora: hoy, o ayer si esa hora todavía no llega', () => {
+    expect(findPurchaseTime('a las 08:30', NOW)).toBe('2026-11-06T14:30:00.000Z');
+    // 23:50 del 5 de noviembre en Costa Rica = 05:50 UTC del 6.
+    expect(findPurchaseTime('a las 23:50', NOW)).toBe('2026-11-06T05:50:00.000Z');
+  });
+  it('sin hora clara: null (se usa la hora de llegada)', () => {
+    expect(findPurchaseTime('Compra en AUTOMERCADO por ₡12.500', NOW)).toBeNull();
+    expect(findPurchaseTime('el 05/11/2026', NOW)).toBeNull();
+    expect(findPurchaseTime('a las 27:99', NOW)).toBeNull();
+  });
+  it('el aviso completo la incluye', () => {
+    const r = parseNotification('BAC\nCompra aprobada en SODA por CRC 2,000.00 con su tarjeta ****1234 el 05/11/2026 13:45.', NOW);
+    expect(r).toMatchObject({ ok: true, at: '2026-11-05T19:45:00.000Z' });
   });
 });

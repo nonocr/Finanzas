@@ -9,7 +9,7 @@
 // rechazadas, retiros). Lo que sí se guarda queda siempre por revisar: la persona confirma con un toque.
 
 export type ParsedNotification =
-  | { ok: true; amount: string | null; merchant: string | null; card: string | null }
+  | { ok: true; amount: string | null; merchant: string | null; card: string | null; at: string | null }
   | { ok: false; reason: 'empty' | 'not_a_purchase' | 'income' | 'declined' | 'withdrawal' };
 
 /** Monto con su moneda, antes o después del número. Devuelve el texto listo para los lectores de montos. */
@@ -65,11 +65,47 @@ function findMerchant(text: string, title: string): string | null {
   return null;
 }
 
+const pad = (n: number) => String(n).padStart(2, '0');
+
 /**
- * El cuerpo que manda MacroDroid: primera línea el título de la notificación, el resto su texto.
+ * Hora de la compra si la notificación la trae (muchos bancos la escriben): así un aviso que llegó tarde (el teléfono
+ * estaba sin señal) queda con la hora real. Fechas día/mes/año (formato de Costa Rica) y horas de 24 h o con a. m./p. m.,
+ * en hora de Costa Rica (UTC−6, sin horario de verano). Solo la hora: hoy, o ayer si esa hora aún no llega.
+ * null si no hay una hora clara; quien llama usa la de llegada.
+ */
+export function findPurchaseTime(text: string, now = Date.now()): string | null {
+  const time = /(\d{1,2}):(\d{2})(?::\d{2})?\s*(a\.?\s*m\.?|p\.?\s*m\.?)?(?![\d])/i.exec(text);
+  if (!time) return null;
+  let hour = Number(time[1]);
+  const minute = Number(time[2]);
+  const meridiem = time[3]?.replace(/[\s.]/g, '').toLowerCase();
+  if (meridiem === 'pm' && hour < 12) hour += 12;
+  if (meridiem === 'am' && hour === 12) hour = 0;
+  if (hour > 23 || minute > 59) return null;
+
+  // «Hoy» en Costa Rica: el reloj de pared de UTC−6.
+  const cr = new Date(now - 6 * 3_600_000);
+  let year = cr.getUTCFullYear();
+  let month = cr.getUTCMonth() + 1;
+  let day = cr.getUTCDate();
+  const date = /(\d{1,2})[/-](\d{1,2})[/-](\d{2}|\d{4})(?!\d)/.exec(text);
+  if (date) {
+    day = Number(date[1]);
+    month = Number(date[2]);
+    year = date[3].length === 2 ? 2000 + Number(date[3]) : Number(date[3]);
+    if (month < 1 || month > 12 || day < 1 || day > 31) return null;
+  }
+  let at = Date.parse(`${year}-${pad(month)}-${pad(day)}T${pad(hour)}:${pad(minute)}:00-06:00`);
+  if (Number.isNaN(at)) return null;
+  // Solo la hora y todavía no llega: fue ayer (p. ej. un aviso de las 23:50 que llegó pasada la medianoche).
+  if (!date && at > now + 5 * 60_000) at -= 86_400_000;
+  return new Date(at).toISOString();
+}
+
+/** * El cuerpo que manda MacroDroid: primera línea el título de la notificación, el resto su texto.
  * (Si viene todo en una línea, se usa como texto.)
  */
-export function parseNotification(body: string): ParsedNotification {
+export function parseNotification(body: string, now = Date.now()): ParsedNotification {
   const raw = body.replace(/\r/g, '').trim().slice(0, 2000);
   if (!raw) return { ok: false, reason: 'empty' };
   const [first, ...rest] = raw.split('\n');
@@ -87,7 +123,8 @@ export function parseNotification(body: string): ParsedNotification {
 
   // Con monto: basta una palabra de compra o una tarjeta (Google Wallet no dice «compra»). Sin monto: solo si dice que
   // es una compra y trae con qué reconocerla; se guarda con monto 0 para completarlo.
-  if (amount && (purchaseWord || card)) return { ok: true, amount, merchant, card };
-  if (!amount && purchaseWord && (merchant || card)) return { ok: true, amount: null, merchant, card };
+  const at = findPurchaseTime(text, now);
+  if (amount && (purchaseWord || card)) return { ok: true, amount, merchant, card, at };
+  if (!amount && purchaseWord && (merchant || card)) return { ok: true, amount: null, merchant, card, at };
   return { ok: false, reason: 'not_a_purchase' };
 }

@@ -82,7 +82,8 @@ Deno.serve(async (req) => {
     const r = await ingestPayment(
       supabase,
       auth.userId,
-      { amount: parsed.amount, merchant: parsed.merchant, card: parsed.card, at: new Date().toISOString() },
+      // La hora que trae el aviso (si llegó tarde, la de la compra); si no trae, la de llegada.
+      { amount: parsed.amount, merchant: parsed.merchant, card: parsed.card, at: parsed.at ?? new Date().toISOString() },
       { fromNotification: true },
     );
     if (!r.ok) return json({ ok: false, error: r.error }, r.error === 'no_accounts' ? 409 : r.error === 'insert_failed' ? 500 : 422);
