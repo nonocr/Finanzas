@@ -1,5 +1,7 @@
 import { type QueryClient, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
+import { useLang } from '../i18n';
+import { localizeAccount, localizeCategory } from './defaultNames';
 import { api, type Range } from './api';
 import { fetchUsdRate } from './fx';
 import { applyRecurring } from './recurring';
@@ -9,10 +11,22 @@ import type { Account, Category, Recurring, Transaction } from './types';
 // Lecturas
 // ---------------------------------------------------------------------------
 
-export const useAccounts = () => useQuery({ queryKey: ['accounts'], queryFn: api.listAccounts });
-export const useCategories = () => useQuery({ queryKey: ['categories'], queryFn: api.listCategories });
+// Los nombres por defecto («Súper», «Efectivo»…) se muestran en el idioma de la app; los editados, tal cual (defaultNames.ts).
+// Se traducen al leer (select), así todas las pantallas los ven igual; lo guardado no cambia.
+function useLocalizedCategories() {
+  const lang = useLang();
+  return useCallback((rows: Category[]) => rows.map((c) => localizeCategory(c, lang)), [lang]);
+}
+function useLocalizedAccounts() {
+  const lang = useLang();
+  return useCallback((rows: Account[]) => rows.map((a) => localizeAccount(a, lang)), [lang]);
+}
+
+export const useAccounts = () => useQuery({ queryKey: ['accounts'], queryFn: api.listAccounts, select: useLocalizedAccounts() });
+export const useCategories = () =>
+  useQuery({ queryKey: ['categories'], queryFn: api.listCategories, select: useLocalizedCategories() });
 export const useArchivedAccounts = () =>
-  useQuery({ queryKey: ['accounts', 'archived'], queryFn: api.listArchivedAccounts });
+  useQuery({ queryKey: ['accounts', 'archived'], queryFn: api.listArchivedAccounts, select: useLocalizedAccounts() });
 
 /**
  * Todas las categorías y cuentas (activas y archivadas) por id, para mostrar movimientos viejos: archivar oculta una
@@ -69,7 +83,7 @@ export function useSaveCategory() {
 }
 
 export const useArchivedCategories = () =>
-  useQuery({ queryKey: ['categories', 'archived'], queryFn: api.listArchivedCategories });
+  useQuery({ queryKey: ['categories', 'archived'], queryFn: api.listArchivedCategories, select: useLocalizedCategories() });
 
 export function useDeleteCategory() {
   const onSuccess = useInvalidate([['categories'], ...MONEY_KEYS, ['budgets'], ['merchant_rules']]);
