@@ -7,7 +7,7 @@
 adaptive
 
 ## Stack
-React + Vite + TypeScript, Tailwind CSS, PWA (`vite-plugin-pwa`), Supabase (Postgres + Auth + Edge Functions), hosting on Vercel. Motion with GSAP and transitions.dev tokens. The same web app ships as native iOS and Android apps through Capacitor 8 (`ios/`, `android/`, branch `feature/tiendas-multiusuario`), heading to the App Store and Google Play; the PWA stays live on the web.
+React + Vite + TypeScript, Tailwind CSS, PWA (`vite-plugin-pwa`), Supabase (Postgres + Auth + Edge Functions), hosting on Vercel. Motion with GSAP and transitions.dev tokens. The same web app ships as native iOS and Android apps through Capacitor 8 (`ios/`, `android/`, merged into `main`), heading to the App Store and Google Play; the PWA stays live on the web.
 
 ## Users
 Anyone in Costa Rica who wants to track their personal money in colones (open sign-up since 2026-11-05; each person sees only their own data). The owner built it for herself and is still the reference user: mostly on her iPhone, often right after paying for something, and sometimes on a PC to review. New users may be on Android or desktop, where the Apple Wallet automation does not exist.

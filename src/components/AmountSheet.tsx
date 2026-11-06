@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from 'react';
+import { useT } from '../i18n';
 import { AmountInput } from './AmountInput';
 import { Sheet } from './Sheet';
 import { Button } from './ui';
@@ -23,6 +24,7 @@ export function AmountSheet({
   onDelete?: () => void | Promise<void>;
   onClose: () => void;
 }) {
+  const t = useT();
   const [colones, setColones] = useState(initialCents ? String(Math.round(initialCents / 100)) : '');
   const cents = Number(colones || '0') * 100;
   const canSave = allowZero || cents > 0;
@@ -35,7 +37,7 @@ export function AmountSheet({
       title={title}
       leading={
         <button type="button" className="min-h-11 text-body text-accent" onClick={onClose}>
-          Cancelar
+          {t.common.cancel}
         </button>
       }
       trailing={
@@ -45,7 +47,7 @@ export function AmountSheet({
           disabled={!canSave}
           onClick={() => onSave(cents)}
         >
-          Guardar
+          {t.common.save}
         </button>
       }
     >
@@ -61,7 +63,7 @@ export function AmountSheet({
       {extra}
       {onDelete && (
         <Button variant="destructive" className="mt-8 w-full" onClick={onDelete}>
-          Quitar
+          {t.common.remove}
         </Button>
       )}
     </Sheet>

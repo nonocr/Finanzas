@@ -5,8 +5,8 @@
    acción. El color solo aparece donde significa algo (estado del presupuesto,
    ingresos) y, muy sobrio, para distinguir categorías. Solo modo oscuro.
 
-   Temas «Tarjetas de metal» (src/lib/theme/themes.ts): Negra, Titanio, Oro, Oro rosa,
-   Zafiro y Esmeralda. Cambian los grafitos y el metal de la acción escribiendo
+   Temas «Tarjetas de metal» (src/lib/theme/themes.ts): Negra, Carbono, Titanio, Oro,
+   Oro rosa, Cobre, Sakura, Amatista, Zafiro y Esmeralda. Cambian los grafitos y el metal de la acción escribiendo
    estas mismas variables en <html>; aquí quedan los valores de Negra para el
    primer pintado. Lo que significa algo (presupuesto, ingresos, categorías) no
    cambia con el tema. Todo color de superficie sale de estas variables.

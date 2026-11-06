@@ -6,6 +6,7 @@ export default {
   done: 'Listo',
   edit: 'Editar',
   delete: 'Eliminar',
+  remove: 'Quitar',
   back: 'Volver',
   settings: 'Ajustes',
   seeAll: 'Ver todos',

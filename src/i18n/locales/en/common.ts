@@ -7,6 +7,7 @@ const en: typeof es = {
   done: 'Done',
   edit: 'Edit',
   delete: 'Delete',
+  remove: 'Remove',
   back: 'Back',
   settings: 'Settings',
   seeAll: 'See all',
