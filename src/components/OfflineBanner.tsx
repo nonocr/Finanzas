@@ -1,6 +1,7 @@
 import { onlineManager, useMutationState } from '@tanstack/react-query';
 import { CloudOff, RefreshCw } from 'lucide-react';
 import { useSyncExternalStore } from 'react';
+import { useT } from '../i18n';
 
 const useOnline = () =>
   useSyncExternalStore(
@@ -10,6 +11,7 @@ const useOnline = () =>
 
 /** Pastilla sobre la barra de pestañas: sin conexión y cuántos cambios esperan subir. */
 export function OfflineBanner() {
+  const t = useT();
   const online = useOnline();
   // Cambios sin terminar: en pausa (sin señal) o reintentando tras una señal intermitente.
   const pending = useMutationState({ filters: { status: 'pending' }, select: (m) => m.state.isPaused || m.state.failureCount > 0 });
@@ -18,9 +20,9 @@ export function OfflineBanner() {
 
   const text = !online
     ? waiting
-      ? `Sin conexión · ${waiting} ${waiting === 1 ? 'cambio espera' : 'cambios esperan'} para subir`
-      : 'Sin conexión'
-    : `Subiendo ${waiting} ${waiting === 1 ? 'cambio' : 'cambios'}…`;
+      ? t.common.offlineWaiting(waiting)
+      : t.common.offline
+    : t.common.uploading(waiting);
 
   return (
     <div

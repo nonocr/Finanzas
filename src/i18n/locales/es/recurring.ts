@@ -1,0 +1,52 @@
+// Textos en español del área «recurring». Fuente de verdad: el inglés (locales/en/recurring.ts) tiene el mismo tipo.
+export default {
+  title: 'Fijos',
+  intro:
+    'Alquiler, salario, suscripciones: el día que tocan se registran solos al abrir la app, y cuentan en el presupuesto como cualquier gasto.',
+  today: 'Hoy',
+  tomorrow: 'Mañana',
+  inDays: (n: number) => (n === 1 ? 'En 1 día' : `En ${n} días`),
+  paused: 'En pausa',
+  expensesPerMonth: 'Gastos fijos al mes',
+  incomePerMonth: 'Ingresos fijos al mes',
+  upcoming: 'Próximos',
+  emptyTitle: 'Aún no hay fijos',
+  emptyBody: 'Agrega lo que pagas o recibes siempre igual, como el alquiler o el salario.',
+  add: 'Agregar gasto o ingreso fijo',
+  pausedFooter: 'No se registran hasta que los reactives.',
+  /** Frecuencia en la lista: «Mensual». */
+  frequency: { semanal: 'Semanal', quincenal: 'Quincenal', mensual: 'Mensual', anual: 'Anual' },
+  /** Opciones de «Se repite cada …». */
+  every: { semanal: 'Semana', quincenal: 'Quincena', mensual: 'Mes', anual: 'Año' },
+  /** Cuándo se cobra, en palabras (src/lib/recurring.ts → scheduleLabel). */
+  schedule: {
+    weekly: (weekday: string) => `Los ${weekday}`,
+    biweekly: (d1: number, d2: number) => `El ${d1} y el ${d2}`,
+    monthly: (day: number) => `El ${day} de cada mes`,
+    /** `dayMonth` ya viene formateado: «3 de marzo». */
+    yearly: (dayMonth: string) => `Cada ${dayMonth}`,
+  },
+  changesSaved: 'Cambios guardados',
+  added: (name: string) => `${name} agregado`,
+  charged: (n: number) => (n === 1 ? '1 cobro registrado' : `${n} cobros registrados`),
+  deleted: 'Fijo eliminado',
+  edit: 'Editar fijo',
+  newIncome: 'Nuevo ingreso fijo',
+  newExpense: 'Nuevo gasto fijo',
+  expense: 'Gasto',
+  income: 'Ingreso',
+  name: 'Nombre',
+  incomePlaceholder: 'Salario',
+  expensePlaceholder: 'Alquiler',
+  category: 'Categoría',
+  depositTo: 'Entra a',
+  paidWith: 'Se paga con',
+  repeatsEvery: 'Se repite cada',
+  pastDate: 'La fecha ya pasó: al guardar se registran también los cobros desde entonces hasta hoy.',
+  alreadyThisMonth: 'Si este mes ya lo registraste a mano, elige la fecha del próximo cobro.',
+  nextCharge: 'Próximo cobro',
+  activeFooter: 'En pausa no se registra; lo que ya se registró no cambia.',
+  active: 'Activo',
+  confirmDelete: '¿Eliminar este fijo? Los movimientos que ya registró se quedan.',
+  delete: 'Eliminar fijo',
+};

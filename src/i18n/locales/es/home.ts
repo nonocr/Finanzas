@@ -1,0 +1,41 @@
+// Textos en español del área «home». Fuente de verdad: el inglés (locales/en/home.ts) tiene el mismo tipo.
+export default {
+  week: 'Semana',
+  month: 'Mes',
+  /** Periodo de la tarjeta: «en noviembre» / «esta semana». */
+  inMonth: (month: string) => `en ${month}`,
+  thisWeek: 'esta semana',
+  cardAvailable: (when: string) => `Disponible ${when}`,
+  cardBalance: (when: string) => `Balance ${when}`,
+  cardSpent: (when: string) => `Gastado ${when}`,
+  /** Campos de la tarjeta negra (etiqueta grabada pequeña). */
+  fieldSpent: 'GASTADO',
+  fieldIncome: 'INGRESOS',
+  fieldBalance: 'BALANCE',
+  spentOf: (spent: string, limit: string) => `Gastado ${spent} de ${limit}`,
+  leftOf: (left: string, limit: string) => `Quedan ${left} de ${limit}`,
+  overOf: (over: string, limit: string) => `Te pasaste ${over} de ${limit}`,
+  setBudget: 'Definir un presupuesto',
+  sectionWeek: 'Esta semana',
+  sectionRecent: 'Recientes',
+  sectionCategories: 'Por categoría',
+  sectionBudgets: 'Presupuestos',
+  noTxWeek: 'Sin movimientos esta semana',
+  noTxMonth: 'Sin movimientos este mes',
+  firstExpense: 'Toca + para registrar tu primer gasto.',
+  donutTotal: 'Total',
+  noBudgetsTitle: 'Sin presupuestos por categoría',
+  noBudgetsBody: 'Defínelos en Presupuesto para ver aquí cómo vas.',
+  demoNote: 'Datos de ejemplo. Conecta tu cuenta en Ajustes para ver tus movimientos reales.',
+  // Pagos por revisar
+  pendingLabel: 'Pagos por revisar',
+  pendingTitle: (n: number) => (n === 1 ? 'Tienes 1 pago por revisar' : `Tienes ${n} pagos por revisar`),
+  pendingBody: 'Registrados automáticamente; confírmalos',
+  walletPayment: 'Pago de Wallet',
+  yesterday: 'ayer',
+  reviewNow: 'Revisar ahora',
+  reviewAll: (n: number) => `Revisar los ${n}`,
+  // Semana
+  weekChartLabel: (avg: string, today: string) => `Gasto por día de esta semana. Promedio diario ${avg}, hoy ${today}`,
+  weekSummary: (avg: string, today: string) => `Promedio diario ${avg} · Hoy ${today}`,
+};

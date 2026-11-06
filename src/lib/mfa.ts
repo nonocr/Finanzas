@@ -1,3 +1,4 @@
+import { strings } from '../i18n';
 import { supabase } from './supabase';
 
 // Verificación en dos pasos con códigos de 6 dígitos (TOTP): la app Contraseñas de iPhone, Google Authenticator, etc.
@@ -18,17 +19,17 @@ export async function verifiedTotp() {
 /** Solo dígitos, máximo 6 (al pegar un código con espacios también funciona). */
 export const cleanCode = (s: string) => s.replace(/\D/g, '').slice(0, 6);
 
-export const MFA_ERRORS: Record<string, string> = {
-  mfa_verification_failed: 'Código incorrecto o vencido. Prueba con el siguiente.',
-  mfa_challenge_expired: 'El código venció. Prueba con el siguiente.',
-  over_request_rate_limit: 'Demasiados intentos. Espera unos minutos.',
-};
+/** Mensaje (en el idioma actual) para un código de error conocido del código de dos pasos, o null si no se conoce. */
+export function mfaError(code: string | undefined): string | null {
+  const errors: Record<string, string> = strings().auth.mfaErrors;
+  return errors[code ?? ''] ?? null;
+}
 
 /** Sube la sesión a aal2 con el código del autenticador. Devuelve un mensaje de error o null. */
 export async function verifyCode(code: string): Promise<string | null> {
   const factor = await verifiedTotp();
-  if (!factor) return 'No hay verificación en dos pasos activada.';
+  if (!factor) return strings().auth.mfaNoFactor;
   const { error } = await supabase.auth.mfa.challengeAndVerify({ factorId: factor.id, code });
   if (!error) return null;
-  return MFA_ERRORS[error.code ?? ''] ?? 'No se pudo verificar. Revisa tu conexión e inténtalo de nuevo.';
+  return mfaError(error.code) ?? strings().auth.mfaVerifyFailed;
 }

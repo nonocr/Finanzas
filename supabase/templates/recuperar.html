@@ -1,6 +1,19 @@
 <div style="margin:0;padding:32px 16px;background:#f4f4f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#18181b">
   <div style="max-width:480px;margin:0 auto;background:#ffffff;border-radius:14px;padding:32px 28px">
     <p style="margin:0 0 24px;font-size:15px;font-weight:600;letter-spacing:0.02em;color:#52525b">Finanzas</p>
+    {{ if eq (printf "%v" .Data.lang) "en" }}
+    <h1 style="margin:0 0 12px;font-size:22px;line-height:28px;font-weight:700">New password</h1>
+    <p style="margin:0 0 24px;font-size:16px;line-height:24px;color:#3f3f46">
+      You asked to set a new password for <strong>{{ .Email }}</strong>. Tap the button to choose it.
+    </p>
+    <a href="{{ .ConfirmationURL }}" style="display:inline-block;background:#18181b;color:#ffffff;text-decoration:none;font-size:16px;font-weight:600;padding:14px 22px;border-radius:12px">Set a new password</a>
+    <p style="margin:24px 0 0;font-size:14px;line-height:21px;color:#71717a">
+      It opens in your browser; then sign in to the app with the new password. The link expires in 30 minutes and works only once.
+    </p>
+    <p style="margin:16px 0 0;font-size:14px;line-height:21px;color:#71717a">
+      If you didn't ask for this, ignore this email: your password stays the same.
+    </p>
+    {{ else }}
     <h1 style="margin:0 0 12px;font-size:22px;line-height:28px;font-weight:700">Contraseña nueva</h1>
     <p style="margin:0 0 24px;font-size:16px;line-height:24px;color:#3f3f46">
       Pediste poner una contraseña nueva para <strong>{{ .Email }}</strong>. Toca el botón para elegirla.
@@ -12,5 +25,6 @@
     <p style="margin:16px 0 0;font-size:14px;line-height:21px;color:#71717a">
       Si no lo pediste, ignora este correo: tu contraseña sigue siendo la misma.
     </p>
+    {{ end }}
   </div>
 </div>

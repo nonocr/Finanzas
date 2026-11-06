@@ -1,6 +1,7 @@
 import { CircleAlert, CircleCheck } from 'lucide-react';
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { ERROR_EVENT } from '../lib/offline';
+import { strings } from '../i18n';
 
 // transitions.dev · Toast open / close: entra lento, sale rápido.
 type Tone = 'ok' | 'error';
@@ -24,7 +25,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 
   // Un cambio que el servidor rechazó (con señal) se avisa aunque la hoja ya se haya cerrado.
   useEffect(() => {
-    const onError = () => show('No se pudo guardar un cambio. Revisa Movimientos e inténtalo de nuevo.', 'error');
+    const onError = () => show(strings().common.saveFailed, 'error');
     window.addEventListener(ERROR_EVENT, onError);
     return () => window.removeEventListener(ERROR_EVENT, onError);
   }, [show]);

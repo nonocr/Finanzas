@@ -1,6 +1,15 @@
 <div style="margin:0;padding:32px 16px;background:#f4f4f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#18181b">
   <div style="max-width:480px;margin:0 auto;background:#ffffff;border-radius:14px;padding:32px 28px">
     <p style="margin:0 0 24px;font-size:15px;font-weight:600;letter-spacing:0.02em;color:#52525b">Finanzas</p>
+    {{ if eq (printf "%v" .Data.lang) "en" }}
+    <h1 style="margin:0 0 12px;font-size:22px;line-height:28px;font-weight:700">Your password changed</h1>
+    <p style="margin:0 0 16px;font-size:16px;line-height:24px;color:#3f3f46">
+      The Finanzas password for <strong>{{ .Email }}</strong> was just changed.
+    </p>
+    <p style="margin:0;font-size:16px;line-height:24px;color:#3f3f46">
+      If it was you, there's nothing to do. If not, open the app and use «Forgot your password?» to recover your account right away.
+    </p>
+    {{ else }}
     <h1 style="margin:0 0 12px;font-size:22px;line-height:28px;font-weight:700">Tu contraseña cambió</h1>
     <p style="margin:0 0 16px;font-size:16px;line-height:24px;color:#3f3f46">
       La contraseña de <strong>{{ .Email }}</strong> en Finanzas se acaba de cambiar.
@@ -8,5 +17,6 @@
     <p style="margin:0;font-size:16px;line-height:24px;color:#3f3f46">
       Si fuiste tú, no tienes que hacer nada. Si no, entra en la app y usa «¿Olvidaste tu contraseña?» para recuperar tu cuenta cuanto antes.
     </p>
+    {{ end }}
   </div>
 </div>

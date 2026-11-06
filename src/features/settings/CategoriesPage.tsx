@@ -6,6 +6,7 @@ import { CATEGORY_COLORS, ICONS } from '../../components/palette';
 import { Sheet } from '../../components/Sheet';
 import { useToast } from '../../components/Toast';
 import { Button, CategoryIcon, Row, Screen, Section } from '../../components/ui';
+import { useT } from '../../i18n';
 import { api } from '../../lib/api';
 import { useArchivedCategories, useCategories, useDeleteCategory, useSaveCategory } from '../../lib/queries';
 import type { Category, CategoryKind } from '../../lib/types';
@@ -13,6 +14,7 @@ import { BackLink } from './MorePage';
 import { FormGroup, FormRow, TextInput } from './form';
 
 export function CategoriesPage() {
+  const t = useT();
   const { data: categories = [] } = useCategories();
   const { data: archived = [] } = useArchivedCategories();
   const [kind, setKind] = useState<CategoryKind>('gasto');
@@ -27,11 +29,11 @@ export function CategoriesPage() {
   };
 
   return (
-    <Screen title="Categorías" subtitle={<BackLink />}>
+    <Screen title={t.categories.title} subtitle={<BackLink />}>
       <Segmented
         options={[
-          { value: 'gasto', label: 'Gastos' },
-          { value: 'ingreso', label: 'Ingresos' },
+          { value: 'gasto', label: t.categories.expenses },
+          { value: 'ingreso', label: t.categories.incomes },
         ]}
         value={kind}
         onChange={setKind}
@@ -42,11 +44,11 @@ export function CategoriesPage() {
         ))}
       </Section>
       <Button variant="tinted" className="mt-6 w-full" onClick={() => openEditor({ kind, icon: 'ellipsis', color: 'c10' })}>
-        Nueva categoría
+        {t.categories.new}
       </Button>
 
       {archivedList.length > 0 && (
-        <Section header="Archivadas" footer="No aparecen al registrar movimientos. Tócalas para reactivarlas o eliminarlas.">
+        <Section header={t.categories.archived} footer={t.categories.archivedFooter}>
           {archivedList.map((c) => (
             <Row
               key={c.id}
@@ -68,6 +70,7 @@ export function CategoriesPage() {
 }
 
 function CategorySheet({ open, initial, onClose }: { open: boolean; initial: Partial<Category>; onClose: () => void }) {
+  const t = useT();
   const save = useSaveCategory();
   const toast = useToast();
   const [cat, setCat] = useState<Partial<Category>>(initial);
@@ -76,10 +79,10 @@ function CategorySheet({ open, initial, onClose }: { open: boolean; initial: Par
   const submit = async () => {
     try {
       await save.mutateAsync({ ...cat, name: cat.name?.trim() });
-      toast(initial.id ? 'Categoría actualizada' : 'Categoría creada');
+      toast(initial.id ? t.categories.updated : t.categories.created);
       onClose();
     } catch {
-      toast('Ya existe una categoría con ese nombre');
+      toast(t.categories.duplicate);
     }
   };
 
@@ -89,7 +92,7 @@ function CategorySheet({ open, initial, onClose }: { open: boolean; initial: Par
 
   const setArchived = async (archived: boolean) => {
     await save.mutateAsync({ id: initial.id, archived });
-    toast(archived ? 'Categoría archivada' : 'Categoría reactivada');
+    toast(archived ? t.categories.archivedToast : t.categories.reactivatedToast);
     onClose();
   };
 
@@ -97,7 +100,7 @@ function CategorySheet({ open, initial, onClose }: { open: boolean; initial: Par
 
   const destroy = async () => {
     await remove.mutateAsync(initial.id!);
-    toast('Categoría eliminada');
+    toast(t.categories.deleted);
     onClose();
   };
 
@@ -105,10 +108,10 @@ function CategorySheet({ open, initial, onClose }: { open: boolean; initial: Par
     <Sheet
       open={open}
       onClose={onClose}
-      title={initial.id ? 'Editar categoría' : 'Nueva categoría'}
+      title={initial.id ? t.categories.edit : t.categories.new}
       leading={
         <button type="button" className="min-h-11 text-body text-accent" onClick={onClose}>
-          Cancelar
+          {t.common.cancel}
         </button>
       }
       trailing={
@@ -118,7 +121,7 @@ function CategorySheet({ open, initial, onClose }: { open: boolean; initial: Par
           disabled={!cat.name?.trim() || save.isPending}
           onClick={submit}
         >
-          Guardar
+          {t.common.save}
         </button>
       }
     >
@@ -126,18 +129,18 @@ function CategorySheet({ open, initial, onClose }: { open: boolean; initial: Par
         <CategoryIcon icon={cat.icon ?? null} color={cat.color ?? null} size={64} />
       </div>
       <FormGroup>
-        <FormRow label="Nombre" last>
-          <TextInput value={cat.name ?? ''} maxLength={60} onChange={(e) => set({ name: e.target.value })} placeholder="Mascotas" />
+        <FormRow label={t.categories.name} last>
+          <TextInput value={cat.name ?? ''} maxLength={60} onChange={(e) => set({ name: e.target.value })} placeholder={t.categories.namePlaceholder} />
         </FormRow>
       </FormGroup>
 
-      <p className="mt-5 mb-2 px-1 text-subhead font-semibold text-label">Color</p>
+      <p className="mt-5 mb-2 px-1 text-subhead font-semibold text-label">{t.categories.color}</p>
       <div className="grid grid-cols-5 gap-3 rounded-[12px] bg-card-2 p-4">
         {Object.entries(CATEGORY_COLORS).map(([key, color]) => (
           <button
             key={key}
             type="button"
-            aria-label={`Color ${key}`}
+            aria-label={t.categories.colorLabel(key)}
             aria-pressed={cat.color === key}
             onClick={() => set({ color: key })}
             className="press grid aspect-square place-items-center rounded-full"
@@ -148,7 +151,7 @@ function CategorySheet({ open, initial, onClose }: { open: boolean; initial: Par
         ))}
       </div>
 
-      <p className="mt-5 mb-2 px-1 text-subhead font-semibold text-label">Ícono</p>
+      <p className="mt-5 mb-2 px-1 text-subhead font-semibold text-label">{t.categories.icon}</p>
       <div className="grid grid-cols-6 gap-2 rounded-[12px] bg-card-2 p-3">
         {Object.entries(ICONS).map(([name, Icon]) => (
           <button
@@ -171,37 +174,37 @@ function CategorySheet({ open, initial, onClose }: { open: boolean; initial: Par
         <div className="mt-6 space-y-3">
           {initial.archived ? (
             <Button variant="tinted" className="w-full" onClick={() => setArchived(false)}>
-              Reactivar categoría
+              {t.categories.reactivate}
             </Button>
           ) : (
             <Button variant="tinted" className="w-full" onClick={() => setArchived(true)}>
-              Archivar
+              {t.categories.archive}
             </Button>
           )}
           {confirmDelete === null ? (
             <Button variant="destructive" className="w-full" onClick={askDelete}>
-              Eliminar del todo
+              {t.categories.deleteForever}
             </Button>
           ) : (
             <div className="rounded-[12px] bg-red/15 p-4">
               <p className="text-subhead">
                 {confirmDelete === 0
-                  ? 'No tiene movimientos. Se borrará junto con su presupuesto y sus reglas.'
-                  : `${confirmDelete} ${confirmDelete === 1 ? 'movimiento quedará' : 'movimientos quedarán'} sin categoría; no se borran. Su presupuesto y sus reglas sí se borran.`}{' '}
-                Esto no se puede deshacer.
+                  ? t.categories.deleteUnused
+                  : t.categories.deleteUsed(confirmDelete)}{' '}
+                {t.categories.cannotUndo}
               </p>
               <div className="mt-3 flex gap-2">
                 <Button variant="plain" className="flex-1" onClick={() => setConfirmDelete(null)}>
-                  Cancelar
+                  {t.common.cancel}
                 </Button>
                 <Button className="flex-1 !bg-red" onClick={destroy} disabled={remove.isPending}>
-                  Eliminar
+                  {t.common.delete}
                 </Button>
               </div>
             </div>
           )}
           <p className="px-1 text-footnote text-label-2">
-            Archivar la oculta pero conserva su historial; puedes reactivarla cuando quieras.
+            {t.categories.archiveHelp}
           </p>
         </div>
       )}

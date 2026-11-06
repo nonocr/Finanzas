@@ -3,6 +3,9 @@ import { useEffect } from 'react';
 import { api } from './api';
 import { applyDiscreet, normalizePrefs, readLocalPrefs, writeLocalPrefs, type Prefs } from './prefs';
 import { setTheme } from './theme';
+import { resolveLang, setLang } from '../i18n';
+import { isDemo } from './api';
+import { syncAuthLang } from './supabase';
 
 const KEY = ['prefs'];
 
@@ -33,6 +36,8 @@ export function PrefsSync() {
   useEffect(() => {
     if (!data || isPlaceholderData) return;
     writeLocalPrefs(data);
+    setLang(resolveLang(data.lang));
+    if (!isDemo) void syncAuthLang(resolveLang(data.lang)).catch(() => {});
     setTheme(data.theme);
     if (data.discreet !== 'discreet' in document.documentElement.dataset) applyDiscreet(data.discreet);
   }, [data, isPlaceholderData]);
@@ -47,6 +52,10 @@ export function useSavePrefs() {
       const next = { ...(qc.getQueryData<Prefs>(KEY) ?? readLocalPrefs()), ...patch };
       qc.setQueryData(KEY, next);
       writeLocalPrefs(next);
+      if (patch.lang) {
+        setLang(resolveLang(patch.lang));
+        if (!isDemo) void syncAuthLang(resolveLang(patch.lang)).catch(() => {});
+      }
       if (patch.theme) setTheme(patch.theme);
       if (patch.discreet !== undefined) applyDiscreet(patch.discreet);
       await api.savePrefs(next);

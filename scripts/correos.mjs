@@ -9,12 +9,16 @@ const REF = 'qdrkbocandltwfvofngt';
 const root = new URL('..', import.meta.url);
 const template = (name) => readFileSync(new URL(`supabase/templates/${name}`, root), 'utf8');
 
+const bilingual = (es, en) => `{{ if eq (printf "%v" .Data.lang) "en" }}${en}{{ else }}${es}{{ end }}`;
+
 const WANTED = {
-  mailer_subjects_confirmation: 'Confirma tu correo en Finanzas',
+  // Asunto y cuerpo en el idioma de la cuenta (user_metadata.lang, que manda la app); sin idioma, español. printf evita
+  // que una cuenta sin lang haga fallar la plantilla (eq no compara nil con texto).
+  mailer_subjects_confirmation: bilingual('Confirma tu correo en Finanzas', 'Confirm your Finanzas email'),
   mailer_templates_confirmation_content: template('confirmacion.html'),
-  mailer_subjects_recovery: 'Contraseña nueva para Finanzas',
+  mailer_subjects_recovery: bilingual('Contraseña nueva para Finanzas', 'New password for Finanzas'),
   mailer_templates_recovery_content: template('recuperar.html'),
-  mailer_subjects_password_changed_notification: 'Tu contraseña de Finanzas cambió',
+  mailer_subjects_password_changed_notification: bilingual('Tu contraseña de Finanzas cambió', 'Your Finanzas password changed'),
   mailer_templates_password_changed_notification_content: template('contrasena-cambiada.html'),
 };
 

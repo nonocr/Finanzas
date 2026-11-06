@@ -1,3 +1,4 @@
+import { strings } from '../i18n';
 import { crDayOf, startOfMonth } from './dates';
 import type { Account, AccountType, Category, Transaction } from './types';
 
@@ -171,16 +172,14 @@ export function spentAgainstTotal(
   return slices.filter((s) => s.categoryId && budgeted.has(s.categoryId)).reduce((sum, s) => sum + s.amount, 0);
 }
 
-const listNames = (names: string[]) =>
-  names.length <= 1 ? names.join('') : `${names.slice(0, -1).join(', ')} y ${names[names.length - 1]}`;
-
 /** Aviso de presupuesto: separa lo que ya llegó al límite (≥ 100 %) de lo que va por encima del 80 %. */
 export function budgetAlert(items: { name: string; ratio: number }[]): string {
+  const t = strings().budgets.alert;
   const over = items.filter((i) => i.ratio >= 1).map((i) => i.name);
   const near = items.filter((i) => i.ratio >= 0.8 && i.ratio < 1).map((i) => i.name);
   const parts: string[] = [];
-  if (over.length) parts.push(`${listNames(over)} ${over.length === 1 ? 'llegó' : 'llegaron'} al límite de su presupuesto.`);
-  if (near.length) parts.push(`${listNames(near)} ${near.length === 1 ? 'va' : 'van'} por encima del 80 %.`);
+  if (over.length) parts.push(t.over(t.list(over), over.length));
+  if (near.length) parts.push(t.near(t.list(near), near.length));
   return parts.join(' ');
 }
 

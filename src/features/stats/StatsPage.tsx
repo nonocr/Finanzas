@@ -7,6 +7,7 @@ import { MonthNav } from '../../components/MonthNav';
 import { AnimatedAmount, SoftText } from '../../components/motion';
 import { hexOf } from '../../components/palette';
 import { CategoryIcon, EmptyState, Screen, Section } from '../../components/ui';
+import { locale, useT } from '../../i18n';
 import { addMonths, crDay, crDayStartInstant, monthName, startOfMonth } from '../../lib/dates';
 import { drillHref } from '../../lib/drill';
 import { formatCRC } from '../../lib/money';
@@ -23,7 +24,6 @@ import {
   donutCategories,
 } from '../../lib/stats';
 
-const compact = new Intl.NumberFormat('es-CR', { notation: 'compact', maximumFractionDigits: 1 });
 // Mismo signo menos (U+2212) que formatCRC.
 // Recharts pinta con atributos SVG, que no leen variables CSS: sus colores salen del tema en JS.
 // Ingresos en verde y gastos en rojo apagado (--color-expense), iguales en todos los temas: son colores con significado.
@@ -33,7 +33,9 @@ const EXPENSE = 'oklch(0.56 0.085 27)';
 const formatPct = (ratio: number) => `${ratio < 0 ? '−' : ''}${Math.abs(Math.round(ratio * 100))}%`;
 
 export function StatsPage() {
+  const t = useT();
   const [month, setMonth] = useState(() => startOfMonth(crDay()));
+  const compact = new Intl.NumberFormat(locale(), { notation: 'compact', maximumFractionDigits: 1 });
   const firstMonth = addMonths(month, -5);
   // Una sola consulta de 6 meses; el mes elegido y el anterior salen de ahí.
   const { data: all = [] } = useTransactions({
@@ -52,23 +54,21 @@ export function StatsPage() {
     return { txs: inMonth(month), prevTxs: inMonth(addMonths(month, -1)) };
   }, [all, month]);
 
-  const t = totals(txs);
+  const tot = totals(txs);
   const today = crDay();
   const isCurrent = month.getTime() === startOfMonth(today).getTime();
   const daysElapsed = isCurrent ? today.getUTCDate() : 31;
   const prevComparable = sameDaysLastMonth(prevTxs, addMonths(month, -1), daysElapsed);
-  const change = changeVs(t.gastos, prevComparable);
+  const change = changeVs(tot.gastos, prevComparable);
 
   const slices = useMemo(() => spendingByCategory(txs, categories), [txs, categories]);
-  const trend = useMemo(
-    () =>
-      monthlyTrend(all, month, 6).map((p) => ({
-        name: monthName(p.month).slice(0, 3),
-        Gastos: p.gastos / 100,
-        Ingresos: p.ingresos / 100,
-      })),
-    [all, month],
-  );
+  const points = useMemo(() => monthlyTrend(all, month, 6), [all, month]);
+  // Los nombres de los meses van fuera del useMemo: cambian con el idioma.
+  const trend = points.map((p) => ({
+    name: monthName(p.month).slice(0, 3),
+    Gastos: p.gastos / 100,
+    Ingresos: p.ingresos / 100,
+  }));
   const methods = spendingByMethod(txs, [...accMap.values()]);
   const methodTotal = methods.efectivo + methods.tarjeta + methods.otro;
   const merchants = topMerchants(txs, 5);
@@ -81,36 +81,36 @@ export function StatsPage() {
   ];
 
   return (
-    <Screen title="Estadísticas">
+    <Screen title={t.stats.title}>
       <MonthNav month={month} onChange={setMonth} />
 
       <section className="machined mt-4 rounded-card bg-card p-4">
-        <p className="text-subhead font-semibold text-label-2">Gastado</p>
-        <AnimatedAmount quietCurrency cents={t.gastos} className="engraved block text-[40px] leading-[46px] font-light tracking-[-0.03em]" />
+        <p className="text-subhead font-semibold text-label-2">{t.stats.spent}</p>
+        <AnimatedAmount quietCurrency cents={tot.gastos} className="engraved block text-[40px] leading-[46px] font-light tracking-[-0.03em]" />
         {change !== null && (
           <p className={'mt-1 flex items-center gap-1 text-subhead font-semibold ' + (change > 0 ? 'text-red' : 'text-green')}>
             {change > 0 ? <TrendingUp size={18} strokeWidth={2.25} /> : <TrendingDown size={18} strokeWidth={2.25} />}
             <SoftText
-              text={`${Math.abs(Math.round(change * 100))}% ${change > 0 ? 'más' : 'menos'} que ${monthName(addMonths(month, -1))}${isCurrent ? ' a esta altura' : ''}`}
+              text={t.stats.change(Math.abs(Math.round(change * 100)), change > 0, monthName(addMonths(month, -1)), isCurrent)}
             />
           </p>
         )}
         <dl className="mt-4 grid grid-cols-2 gap-3 border-t-[0.5px] border-sep pt-3">
           <div>
-            <dt className="text-footnote text-label-2">Ingresos</dt>
+            <dt className="text-footnote text-label-2">{t.stats.income}</dt>
             <dd className="tnum text-headline font-semibold text-green">
-              <SoftText text={formatCRC(t.ingresos)} />
+              <SoftText text={formatCRC(tot.ingresos)} />
             </dd>
           </div>
           <div>
-            <dt className="text-footnote text-label-2">Ahorro</dt>
-            <dd className={'tnum text-headline font-semibold ' + (t.neto < 0 ? 'text-red' : 'text-label')}>
+            <dt className="text-footnote text-label-2">{t.stats.savings}</dt>
+            <dd className={'tnum text-headline font-semibold ' + (tot.neto < 0 ? 'text-red' : 'text-label')}>
               <SoftText
                 text={
                   // Con ingresos mínimos el porcentaje sale absurdo (−32378 %): solo se muestra si es legible.
-                  t.ingresos && Math.abs(t.neto / t.ingresos) <= 9.99
-                    ? `${formatCRC(t.neto)} · ${formatPct(t.neto / t.ingresos)}`
-                    : formatCRC(t.neto)
+                  tot.ingresos && Math.abs(tot.neto / tot.ingresos) <= 9.99
+                    ? `${formatCRC(tot.neto)} · ${formatPct(tot.neto / tot.ingresos)}`
+                    : formatCRC(tot.neto)
                 }
               />
             </dd>
@@ -118,15 +118,15 @@ export function StatsPage() {
         </dl>
       </section>
 
-      <Section header="Por categoría">
+      <Section header={t.stats.byCategory}>
         {slices.length === 0 ? (
-          <EmptyState title="Sin gastos este mes" />
+          <EmptyState title={t.stats.noExpenses} />
         ) : (
           <>
             <div className="flex justify-center py-5">
               <Donut segments={segments} size={180} thickness={22}>
-                <span className="text-caption text-label-2">Total</span>
-                <span className="tnum text-headline font-semibold">{formatCRC(t.gastos)}</span>
+                <span className="text-caption text-label-2">{t.stats.total}</span>
+                <span className="tnum text-headline font-semibold">{formatCRC(tot.gastos)}</span>
               </Donut>
             </div>
             {slices.map((s) => {
@@ -139,7 +139,7 @@ export function StatsPage() {
                 >
                   <CategoryIcon icon={c?.icon ?? null} color={c?.color ?? null} />
                   <div className="flex min-h-11 min-w-0 flex-1 items-center gap-3 py-2.5 pr-3 shadow-[inset_0_-0.5px_0_var(--color-sep)] group-last:shadow-none">
-                    <span className="min-w-0 flex-1 truncate text-body">{c?.name ?? 'Sin categoría'}</span>
+                    <span className="min-w-0 flex-1 truncate text-body">{c?.name ?? t.common.noCategory}</span>
                     <span className="tnum not-money text-subhead text-label-2">{Math.round(s.share * 100)}%</span>
                     <span className="tnum w-24 text-right text-body font-semibold">{formatCRC(s.amount)}</span>
                     <ChevronRight size={16} strokeWidth={2.25} className="shrink-0 text-label-3" />
@@ -151,12 +151,12 @@ export function StatsPage() {
         )}
       </Section>
 
-      <Section header="Últimos 6 meses">
+      <Section header={t.stats.lastMonths}>
         <div
           className="h-56 px-2 pt-4 pb-2"
           role="img"
           // VoiceOver no puede leer las barras: se le da el resumen en texto.
-          aria-label={trend.map((p) => `${p.name}: gastos ${formatCRC(p.Gastos * 100)}, ingresos ${formatCRC(p.Ingresos * 100)}`).join('. ')}
+          aria-label={trend.map((p) => t.stats.chartPoint(p.name, formatCRC(p.Gastos * 100), formatCRC(p.Ingresos * 100))).join('. ')}
         >
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={trend} barGap={2} barCategoryGap="22%">
@@ -174,27 +174,27 @@ export function StatsPage() {
                 labelStyle={{ color: tk.label, fontWeight: 600, textTransform: 'capitalize' }}
                 formatter={(v) => formatCRC(Number(v) * 100)}
               />
-              <Bar dataKey="Ingresos" fill={GREEN} radius={[4, 4, 1, 1]} isAnimationActive={false} />
-              <Bar dataKey="Gastos" fill={EXPENSE} radius={[4, 4, 1, 1]} isAnimationActive={false} />
+              <Bar dataKey="Ingresos" name={t.stats.income} fill={GREEN} radius={[4, 4, 1, 1]} isAnimationActive={false} />
+              <Bar dataKey="Gastos" name={t.stats.expenses} fill={EXPENSE} radius={[4, 4, 1, 1]} isAnimationActive={false} />
             </BarChart>
           </ResponsiveContainer>
         </div>
         <div className="flex gap-4 px-4 pb-3 text-footnote text-label-2">
           <span className="flex items-center gap-1.5">
             <span className="size-2.5 rounded-[3px] bg-green" />
-            Ingresos
+            {t.stats.income}
           </span>
           <span className="flex items-center gap-1.5">
             <span className="size-2.5 rounded-[3px] bg-expense" />
-            Gastos
+            {t.stats.expenses}
           </span>
         </div>
       </Section>
 
-      <Section header="Efectivo y tarjeta">
+      <Section header={t.stats.methods}>
         <div className="p-4">
           {methodTotal === 0 ? (
-            <p className="text-subhead text-label-2">Sin gastos este mes.</p>
+            <p className="text-subhead text-label-2">{t.stats.noExpensesSentence}</p>
           ) : (
             <>
               <div className="flex h-3 gap-[3px] overflow-hidden rounded-full">
@@ -214,7 +214,7 @@ export function StatsPage() {
                   <div key={k}>
                     <dt className="flex items-center gap-1.5 text-footnote text-label-2">
                       <span className="size-2.5 rounded-[3px]" style={{ background: METHOD_COLOR[k] }} />
-                      {METHOD_LABEL[k]}
+                      {t.stats.method[k]}
                     </dt>
                     <dd className="tnum text-subhead font-semibold">{formatCRC(methods[k])}</dd>
                     <dd className="tnum not-money text-footnote text-label-2">{Math.round((methods[k] / methodTotal) * 100)}%</dd>
@@ -226,9 +226,9 @@ export function StatsPage() {
         </div>
       </Section>
 
-      <Section header="Dónde más gastas">
+      <Section header={t.stats.merchants}>
         {merchants.length === 0 ? (
-          <EmptyState title="Sin comercios este mes" />
+          <EmptyState title={t.stats.noMerchants} />
         ) : (
           merchants.map((m, i) => (
             <Link
@@ -241,7 +241,7 @@ export function StatsPage() {
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-body">{m.merchant}</span>
                   <span className="block text-footnote text-label-2">
-                    {m.count} {m.count === 1 ? 'compra' : 'compras'}
+                    {t.stats.purchases(m.count)}
                   </span>
                 </span>
                 <span className="tnum text-body font-semibold">{formatCRC(m.amount)}</span>
@@ -255,7 +255,6 @@ export function StatsPage() {
   );
 }
 
-const METHOD_LABEL = { tarjeta: 'Tarjeta', efectivo: 'Efectivo', otro: 'Otros' } as const;
 // Tarjeta en el metal del tema, efectivo en el mismo metal más oscuro (dos tonos de una familia) y «otros» en un gris
 // apagado: es el tramo menos importante y no debe llevarse la vista. Aquí no hay ingresos cerca: el metal no compite.
 const METHOD_COLOR = {

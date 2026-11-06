@@ -1,9 +1,11 @@
 import { Copy } from 'lucide-react';
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useState } from 'react';
 import { Disclosure, NumberedSteps } from '../../components/Disclosure';
 import { Sheet } from '../../components/Sheet';
 import { useToast } from '../../components/Toast';
-import { cleanCode, MFA_ERRORS } from '../../lib/mfa';
+import { useT } from '../../i18n';
+import { Rich } from '../../i18n/Rich';
+import { cleanCode, mfaError } from '../../lib/mfa';
 import { isAppleMobile } from '../../lib/native';
 import { supabase } from '../../lib/supabase';
 import { Toggle } from '../transactions/TransactionSheet';
@@ -11,55 +13,8 @@ import { FormGroup, FormRow, TextInput } from './form';
 
 type Enrollment = { factorId: string; qr: string; secret: string; uri: string };
 
-const GOOGLE_AUTHENTICATOR = 'https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2';
-
-/** Pasos para configurarla en cada sistema. Sirve cualquier gestor o app que genere códigos TOTP de 6 dígitos. */
-const GUIDES: { id: 'ios' | 'android'; title: string; app: string; steps: ReactNode[] }[] = [
-  {
-    id: 'ios',
-    title: 'iPhone (iOS)',
-    app: 'Te recomendamos la app Contraseñas, que ya viene en el iPhone.',
-    steps: [
-      <>Activa el interruptor de arriba.</>,
-      <>
-        Toca <b>Agregar a Contraseñas</b>. Se abre Contraseñas (en iOS 17, Ajustes → Contraseñas): elige la entrada donde
-        guardaste tu contraseña de Finanzas, o crea una, y confirma que guarde el código.
-      </>,
-      <>
-        Vuelve a Finanzas, escribe el código de 6 dígitos que muestra Contraseñas y toca <b>Activar</b>.
-      </>,
-      <>
-        Desde una computadora: escanea el QR con la cámara del iPhone y toca «Agregar código de verificación».
-      </>,
-      <>Cuando entres en otro dispositivo, el código está en Contraseñas, en la entrada de Finanzas. En el iPhone el teclado suele sugerirlo solo.</>,
-    ],
-  },
-  {
-    id: 'android',
-    title: 'Android',
-    app: 'Te recomendamos Google Authenticator, gratis en Google Play.',
-    steps: [
-      <>
-        Instala{' '}
-        <a href={GOOGLE_AUTHENTICATOR} target="_blank" rel="noreferrer" className="text-accent underline underline-offset-2">
-          Google Authenticator
-        </a>{' '}
-        desde Google Play.
-      </>,
-      <>Activa el interruptor de arriba.</>,
-      <>
-        Toca <b>Abrir en mi autenticador</b>: Google Authenticator se abre y agrega Finanzas. Si no se abre, en Google
-        Authenticator toca <b>+</b> → «Ingresar una clave de configuración», ponle de nombre «Finanzas» y pega la clave
-        (tócala aquí para copiarla).
-      </>,
-      <>
-        Escribe el código de 6 dígitos que aparece en Google Authenticator y toca <b>Activar</b>.
-      </>,
-      <>Desde una computadora: en Google Authenticator toca + → «Escanear un código QR» y apunta al QR.</>,
-      <>Cuando entres en otro dispositivo, abre Google Authenticator y escribe el código de Finanzas.</>,
-    ],
-  },
-];
+/** Guías por sistema (los textos, en security.twoFactor.guides). Sirve cualquier gestor o app de códigos TOTP. */
+const GUIDE_IDS = ['ios', 'android'] as const;
 
 /**
  * Verificación en dos pasos con un código de 6 dígitos (TOTP). Un interruptor la activa o desactiva; debajo, los
@@ -67,6 +22,8 @@ const GUIDES: { id: 'ios' | 'android'; title: string; app: string; steps: ReactN
  * que genere códigos TOTP.
  */
 export function TwoFactorSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const t = useT();
+  const tf = t.security.twoFactor;
   const toast = useToast();
   const [active, setActive] = useState<string | null | undefined>(undefined); // id del factor verificado
   const [enrollment, setEnrollment] = useState<Enrollment | null>(null);
@@ -88,7 +45,7 @@ export function TwoFactorSheet({ open, onClose }: { open: boolean; onClose: () =
     for (const f of factors?.all ?? []) if (f.status === 'unverified') await supabase.auth.mfa.unenroll({ factorId: f.id });
     const { data, error } = await supabase.auth.mfa.enroll({ factorType: 'totp', friendlyName: 'Autenticador', issuer: 'Finanzas' });
     setBusy(false);
-    if (error || !data) return setError('No se pudo empezar. Revisa tu conexión e inténtalo de nuevo.');
+    if (error || !data) return setError(tf.startFailed);
     setEnrollment({ factorId: data.id, qr: data.totp.qr_code, secret: data.totp.secret, uri: data.totp.uri });
   };
 
@@ -109,22 +66,22 @@ export function TwoFactorSheet({ open, onClose }: { open: boolean; onClose: () =
     setBusy(false);
     if (error) {
       setCode('');
-      return setError(MFA_ERRORS[error.code ?? ''] ?? 'No se pudo verificar. Inténtalo de nuevo.');
+      return setError(mfaError(error.code) ?? tf.verifyFailed);
     }
-    toast('Verificación en dos pasos activada');
+    toast(tf.enabled);
     setActive(enrollment.factorId);
     setEnrollment(null);
     setCode('');
   };
 
   const disable = async () => {
-    if (!active || !confirm('¿Desactivar la verificación en dos pasos? Para entrar bastará la contraseña.')) return;
+    if (!active || !confirm(tf.confirmDisable)) return;
     setBusy(true);
     setError(null);
     const { error } = await supabase.auth.mfa.unenroll({ factorId: active });
     setBusy(false);
-    if (error) return setError('No se pudo desactivar. Vuelve a iniciar sesión e inténtalo de nuevo.');
-    toast('Verificación en dos pasos desactivada');
+    if (error) return setError(tf.disableFailed);
+    toast(tf.disabled);
     setActive(null);
   };
 
@@ -145,10 +102,10 @@ export function TwoFactorSheet({ open, onClose }: { open: boolean; onClose: () =
       open={open}
       onClose={close}
       swipeToClose
-      title="Dos pasos"
+      title={tf.title}
       leading={
         <button type="button" className="min-h-11 text-body text-accent" onClick={close}>
-          {enrollment ? 'Cancelar' : 'Cerrar'}
+          {enrollment ? t.common.cancel : t.common.close}
         </button>
       }
       trailing={
@@ -159,23 +116,17 @@ export function TwoFactorSheet({ open, onClose }: { open: boolean; onClose: () =
             disabled={code.length !== 6 || busy}
             onClick={verify}
           >
-            Activar
+            {tf.activate}
           </button>
         )
       }
     >
       {active !== undefined && (
         <>
-          <FormGroup
-            footer={
-              active
-                ? 'Activada: al entrar en un dispositivo nuevo, además de la contraseña se pide el código de 6 dígitos.'
-                : 'Además de la contraseña, para entrar se pedirá un código de 6 dígitos que cambia cada 30 segundos. Si alguien averigua tu contraseña, igual no puede ver tus finanzas.'
-            }
-          >
+          <FormGroup footer={active ? tf.footerOn : tf.footerOff}>
             <div className="flex min-h-11 items-center gap-3 py-2 pr-4 pl-4">
-              <span className="min-w-0 flex-1 text-body">Verificación en dos pasos</span>
-              <Toggle checked={!!active || !!enrollment} onChange={onSwitch} label="Verificación en dos pasos" />
+              <span className="min-w-0 flex-1 text-body">{tf.label}</span>
+              <Toggle checked={!!active || !!enrollment} onChange={onSwitch} label={tf.label} />
             </div>
           </FormGroup>
 
@@ -187,26 +138,26 @@ export function TwoFactorSheet({ open, onClose }: { open: boolean; onClose: () =
                 void verify();
               }}
             >
-              <FormGroup header="1. Guarda el código en tu autenticador">
+              <FormGroup header={tf.step1}>
                 <a href={enrollment.uri} className="flex min-h-11 items-center px-4 text-body text-accent active:bg-card">
-                  {isAppleMobile ? 'Agregar a Contraseñas' : 'Abrir en mi autenticador'}
+                  {isAppleMobile ? tf.addToPasswords : tf.openInAuthenticator}
                 </a>
               </FormGroup>
               <div className="mt-4 flex justify-center">
-                <img src={enrollment.qr} alt="Código QR para tu autenticador" className="size-44 rounded-[12px] bg-white p-2" />
+                <img src={enrollment.qr} alt={tf.qrAlt} className="size-44 rounded-[12px] bg-white p-2" />
               </div>
-              <FormGroup className="mt-4" footer="O escribe esta clave a mano en tu autenticador (tócala para copiarla).">
+              <FormGroup className="mt-4" footer={tf.manualKey}>
                 <button
                   type="button"
                   className="flex min-h-11 w-full items-center gap-3 px-4 text-left active:bg-card"
-                  onClick={() => void navigator.clipboard?.writeText(enrollment.secret).then(() => toast('Clave copiada'))}
+                  onClick={() => void navigator.clipboard?.writeText(enrollment.secret).then(() => toast(tf.keyCopied))}
                 >
                   <span className="tnum not-money min-w-0 flex-1 truncate font-mono text-subhead">{enrollment.secret}</span>
                   <Copy size={18} strokeWidth={2.25} className="shrink-0 text-accent" />
                 </button>
               </FormGroup>
-              <FormGroup header="2. Escribe el código que aparece">
-                <FormRow label="Código" last>
+              <FormGroup header={tf.step2}>
+                <FormRow label={tf.code} last>
                   <TextInput
                     inputMode="numeric"
                     autoComplete="one-time-code"
@@ -226,18 +177,18 @@ export function TwoFactorSheet({ open, onClose }: { open: boolean; onClose: () =
             </p>
           )}
 
-          <FormGroup
-            header="Cómo configurarla"
-            footer="Funciona con cualquier gestor de contraseñas o app que genere códigos TOTP de 6 dígitos (Microsoft Authenticator, 1Password, Bitwarden…)."
-          >
-            {GUIDES.map((g) => (
-              <Disclosure key={g.id} title={g.title} open={guide === g.id} onToggle={() => setGuide(guide === g.id ? null : g.id)}>
-                <p className="text-subhead text-pretty text-label-2">{g.app}</p>
-                <div className="mt-3">
-                  <NumberedSteps steps={g.steps} />
-                </div>
-              </Disclosure>
-            ))}
+          <FormGroup header={tf.howTo} footer={tf.howToFooter}>
+            {GUIDE_IDS.map((id) => {
+              const g = tf.guides[id];
+              return (
+                <Disclosure key={id} title={g.title} open={guide === id} onToggle={() => setGuide(guide === id ? null : id)}>
+                  <p className="text-subhead text-pretty text-label-2">{g.app}</p>
+                  <div className="mt-3">
+                    <NumberedSteps steps={g.steps.map((s, i) => <Rich key={i} text={s} />)} />
+                  </div>
+                </Disclosure>
+              );
+            })}
           </FormGroup>
         </>
       )}

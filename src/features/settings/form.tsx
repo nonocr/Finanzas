@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 import type { ComponentProps, ReactNode } from 'react';
-import { pastedColones } from '../../lib/money';
+import { formatNumber, pastedColones } from '../../lib/money';
 
 /** Encabezado de grupo de formulario estilo iOS (nota en mayúsculas, alineada con el texto de las filas). */
 export function FormHeader({ children }: { children: ReactNode }) {
@@ -73,7 +73,7 @@ export function ColonesInput({
       inputMode="numeric"
       className="tnum"
       placeholder={placeholder}
-      value={cents === null ? '' : '₡' + new Intl.NumberFormat('es-CR').format(cents / 100).replace(/[\s  ]/g, '.')}
+      value={cents === null ? '' : '₡' + formatNumber(cents / 100)}
       onChange={(e) => {
         const digits = e.target.value.replace(/\D/g, '').slice(0, 11);
         onChange(digits ? Number(digits) * 100 : null);

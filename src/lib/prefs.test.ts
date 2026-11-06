@@ -15,6 +15,7 @@ describe('normalizePrefs', () => {
       home: { order: ['presupuestos', 'semana', 'recientes', 'categorias'], hidden: ['recientes'], showPending: false, card: 'balance' },
     });
     expect(p).toEqual({
+      lang: 'auto',
       theme: 'oro',
       discreet: true,
       home: { order: ['presupuestos', 'semana', 'recientes', 'categorias'], hidden: ['recientes'], showPending: false, card: 'balance' },

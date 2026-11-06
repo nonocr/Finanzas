@@ -50,6 +50,6 @@ export default defineConfig({
     headers: securityHeaders,
   },
   test: {
-    include: ['src/**/*.test.ts', 'supabase/tests/**/*.test.ts', 'scripts/**/*.test.mjs'],
+    include: ['src/**/*.test.{ts,tsx}', 'supabase/tests/**/*.test.ts', 'scripts/**/*.test.mjs'],
   },
 })

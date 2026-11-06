@@ -3,11 +3,13 @@ import { useMemo, useState } from 'react';
 import { CategoryGrid } from '../../components/CategoryGrid';
 import { useToast } from '../../components/Toast';
 import { Button, CategoryIcon, EmptyState, Screen, Section } from '../../components/ui';
+import { useT } from '../../i18n';
 import { useCategories, useDeleteMerchantRule, useMerchantRules, useSaveMerchantRule } from '../../lib/queries';
 import { BackLink } from './MorePage';
 import { FormGroup, FormRow, TextInput } from './form';
 
 export function RulesPage() {
+  const t = useT();
   const { data: rules = [] } = useMerchantRules();
   const { data: categories = [] } = useCategories();
   const save = useSaveMerchantRule();
@@ -23,33 +25,33 @@ export function RulesPage() {
     save.mutate({ pattern: pattern.trim().toUpperCase(), category_id: categoryId });
     setPattern('');
     setCategoryId(null);
-    toast('Regla guardada');
+    toast(t.rules.saved);
   };
 
   return (
-    <Screen title="Reglas" subtitle={<BackLink />}>
+    <Screen title={t.rules.title} subtitle={<BackLink />}>
       <p className="px-1 text-subhead text-label-2">
-        Cuando un pago de Wallet trae un comercio que contiene el texto, se le asigna la categoría automáticamente.
+        {t.rules.intro}
       </p>
 
-      <Section header="Nueva regla">
+      <Section header={t.rules.newRule}>
         <div className="p-4">
           <FormGroup>
-            <FormRow label="Comercio" last>
+            <FormRow label={t.rules.merchant} last>
               <TextInput value={pattern} maxLength={100} onChange={(e) => setPattern(e.target.value)} placeholder="AUTOMERCADO" />
             </FormRow>
           </FormGroup>
-          <p className="mt-4 mb-2 px-1 text-subhead font-semibold text-label">Asignar a</p>
+          <p className="mt-4 mb-2 px-1 text-subhead font-semibold text-label">{t.rules.assignTo}</p>
           <CategoryGrid categories={expenseCats} selected={categoryId} onSelect={setCategoryId} />
           <Button className="mt-4 w-full" disabled={!pattern.trim() || !categoryId || save.isPending} onClick={add}>
-            Guardar regla
+            {t.rules.save}
           </Button>
         </div>
       </Section>
 
-      <Section header="Reglas activas">
+      <Section header={t.rules.active}>
         {rules.length === 0 ? (
-          <EmptyState title="Aún no hay reglas" body="También puedes crearlas al confirmar un pago de Wallet." />
+          <EmptyState title={t.rules.emptyTitle} body={t.rules.emptyBody} />
         ) : (
           rules.map((r) => {
             const c = catMap.get(r.category_id);
@@ -59,12 +61,12 @@ export function RulesPage() {
                 <div className="flex min-h-11 min-w-0 flex-1 items-center gap-2 py-1.5 pr-1 shadow-[inset_0_-0.5px_0_var(--color-sep)] group-last:shadow-none">
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-body font-semibold">{r.pattern}</span>
-                    <span className="block text-subhead text-label-2">{c?.name ?? 'Categoría archivada'}</span>
+                    <span className="block text-subhead text-label-2">{c?.name ?? t.rules.archivedCategory}</span>
                   </span>
                   <button
                     type="button"
-                    aria-label={`Borrar regla ${r.pattern}`}
-                    onClick={() => confirm(`¿Borrar la regla «${r.pattern}»? Los pagos ya guardados no cambian.`) && remove.mutate(r.id)}
+                    aria-label={t.rules.deleteLabel(r.pattern)}
+                    onClick={() => confirm(t.rules.confirmDelete(r.pattern)) && remove.mutate(r.id)}
                     className="grid size-11 place-items-center text-red"
                   >
                     <Trash2 size={20} strokeWidth={2} />

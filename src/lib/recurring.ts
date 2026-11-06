@@ -4,7 +4,8 @@
 // Por eso correrlo dos veces, a medias o en dos teléfonos a la vez nunca duplica. Si borras un cobro generado, no
 // vuelve: la próxima fecha ya avanzó.
 import type { Api } from './api';
-import { addDays, crDay, crInstant, isoDate } from './dates';
+import { strings } from '../i18n';
+import { addDays, crDay, crInstant, dayMonth, isoDate, weekdayName } from './dates';
 import type { Frequency, Recurring, Transaction } from './types';
 
 /** Hora con la que se guarda un cobro fijo: temprano, para que el del día ya cuente al abrir la app. */
@@ -70,17 +71,18 @@ export function monthlyAmount(rec: Pick<Recurring, 'amount' | 'frequency'>): num
 export function scheduleLabel(rec: Pick<Recurring, 'next_date' | 'frequency' | 'anchor_day'>): string {
   const next = parseDay(rec.next_date);
   const a = rec.anchor_day ?? next.getUTCDate();
+  const t = strings().recurring.schedule;
   switch (rec.frequency) {
     case 'semanal':
-      return `Los ${new Intl.DateTimeFormat('es-CR', { weekday: 'long', timeZone: 'UTC' }).format(next)}`;
+      return t.weekly(weekdayName(next));
     case 'quincenal': {
       const [d1, d2] = quincenaDays(a);
-      return `El ${d1} y el ${d2}`;
+      return t.biweekly(d1, d2);
     }
     case 'mensual':
-      return `El ${a} de cada mes`;
+      return t.monthly(a);
     case 'anual':
-      return `Cada ${new Intl.DateTimeFormat('es-CR', { day: 'numeric', month: 'long', timeZone: 'UTC' }).format(next)}`;
+      return t.yearly(dayMonth(next));
   }
 }
 

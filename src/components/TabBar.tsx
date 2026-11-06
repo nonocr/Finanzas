@@ -2,21 +2,26 @@ import clsx from 'clsx';
 import { ChartPie, Gauge, House, List, Plus, type LucideIcon } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { useEditor } from '../features/transactions/editor';
+import { useT } from '../i18n';
 import { usePendingReview } from '../lib/queries';
 
-const TABS: { to: string; label: string; icon: LucideIcon; end?: boolean }[] = [
-  { to: '/', label: 'Resumen', icon: House, end: true },
-  { to: '/movimientos', label: 'Movimientos', icon: List },
-  { to: '/estadisticas', label: 'Estadísticas', icon: ChartPie },
-  { to: '/presupuesto', label: 'Presupuesto', icon: Gauge },
+type TabKey = 'home' | 'transactions' | 'stats' | 'budget';
+// «tab» y no «key»: React se queda con la prop key y el componente no la recibiría.
+const TABS: { to: string; tab: TabKey; icon: LucideIcon; end?: boolean }[] = [
+  { to: '/', tab: 'home', icon: House, end: true },
+  { to: '/movimientos', tab: 'transactions', icon: List },
+  { to: '/estadisticas', tab: 'stats', icon: ChartPie },
+  { to: '/presupuesto', tab: 'budget', icon: Gauge },
 ];
 
-function Tab({ to, label, icon: Icon, end, badge = 0 }: (typeof TABS)[number] & { badge?: number }) {
+function Tab({ to, tab: tabKey, icon: Icon, end, badge = 0 }: (typeof TABS)[number] & { badge?: number }) {
+  const t = useT();
+  const label = t.nav.tabs[tabKey];
   return (
     <NavLink
       to={to}
       end={end}
-      aria-label={badge ? `${label}, ${badge} por revisar` : undefined}
+      aria-label={badge ? t.nav.toReview(label, badge) : undefined}
       className={({ isActive }) =>
         clsx(
           'flex min-h-12 flex-1 flex-col items-center justify-center gap-0.5 text-[11px] transition-colors',
@@ -43,12 +48,13 @@ function Tab({ to, label, icon: Icon, end, badge = 0 }: (typeof TABS)[number] & 
 }
 
 export function TabBar() {
+  const t = useT();
   const { openNew } = useEditor();
   const { data: pending = [] } = usePendingReview();
   return (
     <nav
       className="tabbar fixed inset-x-0 bottom-0 z-40 pb-[var(--safe-bottom)]"
-      aria-label="Secciones"
+      aria-label={t.nav.sections}
     >
       <div className="mx-auto flex h-14 max-w-xl items-center px-2">
         <Tab {...TABS[0]} />
@@ -57,7 +63,7 @@ export function TabBar() {
           <button
             type="button"
             onClick={() => openNew()}
-            aria-label="Agregar movimiento"
+            aria-label={t.nav.addTransaction}
             className="press metal-disc grid size-[52px] place-items-center rounded-full"
           >
             <Plus size={26} strokeWidth={2.5} />

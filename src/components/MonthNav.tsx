@@ -1,8 +1,10 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useT } from '../i18n';
 import { addMonths, crDay, monthName, startOfMonth } from '../lib/dates';
 import { SoftText } from './motion';
 
 export function MonthNav({ month, onChange }: { month: Date; onChange: (m: Date) => void }) {
+  const t = useT(); // también redibuja el nombre del mes al cambiar de idioma
   const current = startOfMonth(crDay());
   const isCurrent = month.getTime() >= current.getTime();
   const label = `${monthName(month)} ${month.getUTCFullYear()}`;
@@ -10,7 +12,7 @@ export function MonthNav({ month, onChange }: { month: Date; onChange: (m: Date)
     <div className="machined flex items-center justify-between rounded-card bg-card px-1">
       <button
         type="button"
-        aria-label="Mes anterior"
+        aria-label={t.nav.previousMonth}
         className="press grid size-11 place-items-center text-accent"
         onClick={() => onChange(addMonths(month, -1))}
       >
@@ -21,7 +23,7 @@ export function MonthNav({ month, onChange }: { month: Date; onChange: (m: Date)
       </span>
       <button
         type="button"
-        aria-label="Mes siguiente"
+        aria-label={t.nav.nextMonth}
         className="press grid size-11 place-items-center text-accent disabled:text-label-3"
         disabled={isCurrent}
         onClick={() => onChange(addMonths(month, 1))}

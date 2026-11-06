@@ -1,4 +1,4 @@
-import { ChevronLeft, CreditCard, Download, EyeOff, FileText, KeyRound, LayoutList, LogOut, Palette, Repeat, RotateCcw, ShieldCheck, Smartphone, Tags, Trash2, Wand2 } from 'lucide-react';
+import { ChevronLeft, CreditCard, Download, EyeOff, FileText, KeyRound, Languages, LayoutList, LogOut, Palette, Repeat, RotateCcw, ShieldCheck, Smartphone, Tags, Trash2, Wand2 } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useToast } from '../../components/Toast';
@@ -10,6 +10,7 @@ import { resetDemo } from '../../lib/demoApi';
 import { clearOfflineCache } from '../../lib/offline';
 import { useAccounts, useLookups } from '../../lib/queries';
 import { markPartialSignOut, supabase } from '../../lib/supabase';
+import { useT } from '../../i18n';
 import { useTheme } from '../../lib/theme';
 import { usePrefs, useSavePrefs } from '../../lib/usePrefs';
 import { Toggle } from '../transactions/TransactionSheet';
@@ -18,10 +19,11 @@ import { DeleteAccountSheet } from './DeleteAccountSheet';
 import { TwoFactorSheet } from './TwoFactorSheet';
 
 export function BackLink() {
+  const t = useT();
   return (
     <Link to="/mas" className="-ml-1 inline-flex min-h-11 items-center gap-0.5 text-body font-normal text-accent normal-case">
       <ChevronLeft size={22} strokeWidth={2.25} />
-      Ajustes
+      {t.common.settings}
     </Link>
   );
 }
@@ -31,6 +33,7 @@ export function MorePage() {
   const { catMap, accMap } = useLookups();
   const { data: accounts = [] } = useAccounts();
   const toast = useToast();
+  const t = useT();
   const theme = useTheme();
   const prefs = usePrefs();
   const savePrefs = useSavePrefs();
@@ -46,7 +49,7 @@ export function MorePage() {
     const acc = new Map([...accMap].map(([id, a]) => [id, a.name]));
     const cat = new Map([...catMap].map(([id, c]) => [id, c.name]));
     const rows = [
-      ['fecha', 'tipo', 'monto', 'cuenta', 'hacia', 'categoria', 'comercio', 'nota', 'origen', 'estado', 'monto_usd', 'tipo_cambio'],
+      t.more.csvHeader,
       ...txs.map((t) => [
         isoDate(crDayOf(t.occurred_at)),
         t.type,
@@ -63,7 +66,7 @@ export function MorePage() {
       ]),
     ];
     const csv = '﻿' + rows.map(csvRow).join('\n');
-    const file = new File([csv], `movimientos-${isoDate(new Date())}.csv`, { type: 'text/csv' });
+    const file = new File([csv], t.more.csvFile(isoDate(new Date())), { type: 'text/csv' });
     // En iPhone, compartir abre la hoja de iOS (Guardar en Archivos, AirDrop…).
     if (navigator.canShare?.({ files: [file] })) {
       try {
@@ -79,48 +82,55 @@ export function MorePage() {
     a.download = file.name;
     a.click();
     URL.revokeObjectURL(url);
-    toast(`${txs.length} movimientos exportados`);
+    toast(t.more.exported(txs.length));
   };
 
   return (
-    <Screen title="Ajustes">
+    <Screen title={t.common.settings}>
       <Section>
-        <Row to="/mas/cuentas" leading={<IconTile icon={CreditCard} color="var(--color-label-2)" />} title="Cuentas y tarjetas" trailing={accounts.length} chevron />
-        <Row to="/mas/categorias" leading={<IconTile icon={Tags} color="var(--color-label-2)" />} title="Categorías" chevron />
-        <Row to="/mas/reglas" leading={<IconTile icon={Wand2} color="var(--color-label-2)" />} title="Reglas de comercios" chevron />
+        <Row to="/mas/cuentas" leading={<IconTile icon={CreditCard} color="var(--color-label-2)" />} title={t.more.accounts} trailing={accounts.length} chevron />
+        <Row to="/mas/categorias" leading={<IconTile icon={Tags} color="var(--color-label-2)" />} title={t.more.categories} chevron />
+        <Row to="/mas/reglas" leading={<IconTile icon={Wand2} color="var(--color-label-2)" />} title={t.more.rules} chevron />
       </Section>
 
-      <Section header="Apariencia">
-        <Row to="/mas/tema" leading={<IconTile icon={Palette} color="var(--color-label-2)" />} title="Tema" trailing={theme.name} chevron />
-        <Row to="/mas/resumen" leading={<IconTile icon={LayoutList} color="var(--color-label-2)" />} title="Resumen" subtitle="Qué ver y en qué orden" chevron />
+      <Section header={t.more.appearance}>
+        <Row to="/mas/tema" leading={<IconTile icon={Palette} color="var(--color-label-2)" />} title={t.more.theme} trailing={t.appearance.themes[theme.id]} chevron />
+        <Row
+          to="/mas/idioma"
+          leading={<IconTile icon={Languages} color="var(--color-label-2)" />}
+          title={t.language.row}
+          trailing={prefs.lang === 'auto' ? t.language.auto : t.language.names[prefs.lang]}
+          chevron
+        />
+        <Row to="/mas/resumen" leading={<IconTile icon={LayoutList} color="var(--color-label-2)" />} title={t.more.home} subtitle={t.more.homeDetail} chevron />
         <Row
           leading={<IconTile icon={EyeOff} color="var(--color-label-2)" />}
-          title="Modo discreto"
-          subtitle="Oculta los montos hasta tocarlos"
-          trailing={<Toggle checked={prefs.discreet} onChange={(v) => savePrefs.mutate({ discreet: v })} label="Modo discreto" />}
+          title={t.more.discreet}
+          subtitle={t.more.discreetDetail}
+          trailing={<Toggle checked={prefs.discreet} onChange={(v) => savePrefs.mutate({ discreet: v })} label={t.more.discreet} />}
         />
       </Section>
 
-      <Section header="Automático">
+      <Section header={t.more.automatic}>
         <Row
           to="/mas/wallet"
           leading={<IconTile icon={Smartphone} color="var(--color-label-2)" />}
-          title="Registro automático"
-          subtitle="Pagos con tarjeta, en iPhone y Android"
+          title={t.more.wallet}
+          subtitle={t.more.walletDetail}
           chevron
         />
-        <Row to="/mas/fijos" leading={<IconTile icon={Repeat} color="var(--color-label-2)" />} title="Gastos e ingresos fijos" subtitle="Alquiler, salario, suscripciones" chevron />
+        <Row to="/mas/fijos" leading={<IconTile icon={Repeat} color="var(--color-label-2)" />} title={t.more.recurring} subtitle={t.more.recurringDetail} chevron />
       </Section>
 
       {!isDemo && (
-        <Section header="Seguridad">
+        <Section header={t.more.security}>
           <Row
             onClick={() => {
               setPasswordKey((k) => k + 1);
               setPasswordOpen(true);
             }}
             leading={<IconTile icon={KeyRound} color="var(--color-label-2)" />}
-            title="Cambiar contraseña"
+            title={t.more.changePassword}
             chevron
           />
           <Row
@@ -129,14 +139,14 @@ export function MorePage() {
               setTwoFactorOpen(true);
             }}
             leading={<IconTile icon={ShieldCheck} color="var(--color-label-2)" />}
-            title="Verificación en dos pasos"
+            title={t.more.twoFactor}
             chevron
           />
         </Section>
       )}
 
-      <Section header="Datos">
-        <Row onClick={exportCsv} leading={<IconTile icon={Download} color="var(--color-label-2)" />} title="Exportar movimientos (CSV)" />
+      <Section header={t.more.data}>
+        <Row onClick={exportCsv} leading={<IconTile icon={Download} color="var(--color-label-2)" />} title={t.more.exportCsv} />
         {isDemo ? (
           <Row
             onClick={() => {
@@ -144,7 +154,7 @@ export function MorePage() {
               location.reload();
             }}
             leading={<IconTile icon={RotateCcw} color="var(--color-label-2)" />}
-            title="Reiniciar datos de ejemplo"
+            title={t.more.resetDemo}
           />
         ) : (
           <Row
@@ -159,14 +169,14 @@ export function MorePage() {
               clearOfflineCache(); // la copia local de tus datos no se queda en el teléfono
             }}
             leading={<IconTile icon={LogOut} color="var(--color-red)" />}
-            title="Cerrar sesión"
+            title={t.more.signOut}
             destructive
           />
         )}
       </Section>
 
       <Section>
-        <Row to="/privacidad" leading={<IconTile icon={FileText} color="var(--color-label-2)" />} title="Privacidad" chevron />
+        <Row to="/privacidad" leading={<IconTile icon={FileText} color="var(--color-label-2)" />} title={t.more.privacy} chevron />
         {!isDemo && (
           <Row
             onClick={() => {
@@ -174,7 +184,7 @@ export function MorePage() {
               setDeleteOpen(true);
             }}
             leading={<IconTile icon={Trash2} color="var(--color-red)" />}
-            title="Eliminar cuenta"
+            title={t.more.deleteAccount}
             destructive
           />
         )}
@@ -184,9 +194,7 @@ export function MorePage() {
       <DeleteAccountSheet key={`del-${deleteKey}`} open={deleteOpen} onClose={() => setDeleteOpen(false)} onExport={() => void exportCsv()} />
 
       {isDemo && (
-        <p className="mt-6 px-4 text-footnote text-label-2">
-          Modo demo: los datos son de ejemplo y viven solo en este navegador. Conecta Supabase para guardar tus datos reales en la nube.
-        </p>
+        <p className="mt-6 px-4 text-footnote text-label-2">{t.more.demoNote}</p>
       )}
     </Screen>
   );

@@ -30,7 +30,7 @@ A personal, colones-first tracker whose Apple Wallet payments arrive by themselv
 - Accounts types: efectivo, débito, crédito, banco, ahorro. Credit cards have cut-off and payment days.
 - Transactions: gasto, ingreso, transferencia (including credit card payments).
 - Monthly budgets per category and in total; recurring income and expenses.
-- UI language: Spanish (Costa Rica).
+- UI language: Spanish (Costa Rica) by default, and English (added 2026-11-06). Settings → Idioma: Automatic (follows the phone), Español or English; saved to the account. Amounts and dates follow the language (₡462.445,45 / ₡462,445.45). The currency stays colones.
 - Product name: «Finanzas» (chosen by the owner, 2026-11-05).
 
 ## Brand Commitments

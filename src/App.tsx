@@ -17,6 +17,7 @@ import { RecurringPage } from './features/settings/RecurringPage';
 import { RulesPage } from './features/settings/RulesPage';
 import { ThemePage } from './features/settings/ThemePage';
 import { HomeLayoutPage } from './features/settings/HomeLayoutPage';
+import { LanguagePage } from './features/settings/LanguagePage';
 import { WalletPage } from './features/settings/WalletPage';
 import { EditorProvider } from './features/transactions/editor';
 import { TransactionsPage } from './features/transactions/TransactionsPage';
@@ -104,6 +105,7 @@ export default function App() {
           <Route path="/mas/wallet" element={<WalletPage />} />
           <Route path="/mas/tema" element={<ThemePage />} />
           <Route path="/mas/resumen" element={<HomeLayoutPage />} />
+          <Route path="/mas/idioma" element={<LanguagePage />} />
           <Route path="*" element={<HomePage />} />
         </Routes>
         <SettingsButton />

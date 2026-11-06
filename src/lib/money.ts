@@ -1,5 +1,7 @@
 import { parseAmountToCents } from '../../supabase/functions/_shared/money.ts';
 
+import { getLang, locale } from '../i18n';
+
 export { parseAmountToCents };
 
 /**
@@ -13,18 +15,36 @@ export function pastedColones(text: string): string | null {
   return colones === '0' || colones.length > 11 ? null : colones;
 }
 
-const crc = new Intl.NumberFormat('es-CR', { maximumFractionDigits: 0 });
-const crcCents = new Intl.NumberFormat('es-CR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+// Formateadores por idioma (se crean una vez). Español: punto de miles y coma decimal (convención tica; Intl usa
+// espacio fino en es-CR y se cambia por punto). Inglés: coma de miles y punto decimal.
+const formatters = new Map<string, { whole: Intl.NumberFormat; cents: Intl.NumberFormat }>();
+function numberFormats() {
+  const loc = locale();
+  let f = formatters.get(loc);
+  if (!f) {
+    f = {
+      whole: new Intl.NumberFormat(loc, { maximumFractionDigits: 0 }),
+      cents: new Intl.NumberFormat(loc, { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+    };
+    formatters.set(loc, f);
+  }
+  return f;
+}
+
+/** Número con los separadores del idioma actual (sin moneda): 12350 → "12.350" / "12,350". */
+export function formatNumber(n: number, fraction: 0 | 2 = 0): string {
+  const f = numberFormats();
+  const s = (fraction === 2 ? f.cents : f.whole).format(n);
+  return getLang() === 'es' ? s.replace(/[\s  ]/g, '.') : s;
+}
 
 /**
- * Formatea céntimos como colones: 1235000 → "₡12.350".
- * Los céntimos solo aparecen cuando no son cero. Usa punto de miles (convención tica).
+ * Formatea céntimos como colones: 1235000 → "₡12.350" (español) o "₡12,350" (inglés).
+ * Los céntimos solo aparecen cuando no son cero.
  */
 export function formatCRC(cents: number, opts: { sign?: boolean } = {}): string {
   const abs = Math.abs(cents);
-  const body = (abs % 100 === 0 ? crc.format(abs / 100) : crcCents.format(abs / 100))
-    // Intl usa espacio fino como separador de miles en es-CR; en Costa Rica se lee con punto.
-    .replace(/[\s  ]/g, '.');
+  const body = formatNumber(abs / 100, abs % 100 === 0 ? 0 : 2);
   const sign = cents < 0 ? '−' : opts.sign && cents > 0 ? '+' : '';
   return `${sign}₡${body}`;
 }

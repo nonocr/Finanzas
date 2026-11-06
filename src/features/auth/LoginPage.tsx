@@ -6,24 +6,18 @@ import { cleanCode, needsMfaCode, verifyCode } from '../../lib/mfa';
 import { isNative, platform, WEB_APP_URL } from '../../lib/native';
 import { checkPassword } from '../../lib/password';
 import { signupLinkNotice, supabase, takeAccountDeleted, takePartialSignOut } from '../../lib/supabase';
+import { getLang, useT, type Strings } from '../../i18n';
 
 // Correo + contraseña: funciona igual en la web, en la PWA instalada y en la app nativa, sin depender de que un
 // enlace por correo abra la app correcta. Cualquiera puede crear su cuenta; Supabase pide confirmar el correo antes
 // de entrar (el enlace abre el navegador, y luego se entra aquí con correo y contraseña).
 // Si olvidas la contraseña, el enlace del correo abre el navegador: ahí pones la nueva y luego entras con ella.
 
-const MESSAGES: Record<string, string> = {
-  invalid_credentials: 'Correo o contraseña incorrectos.',
-  email_not_confirmed: 'Falta confirmar el correo. Abre el enlace que te enviamos.',
-  over_email_send_rate_limit: 'Se alcanzó el límite de correos por hora. Inténtalo de nuevo en una hora.',
-  over_request_rate_limit: 'Demasiados intentos. Espera unos minutos.',
-  same_password: 'La nueva contraseña es igual a la anterior.',
-  weak_password: 'La contraseña es muy débil.',
-  signup_disabled: 'Por ahora no se pueden crear cuentas nuevas.',
-  email_address_invalid: 'Ese correo no es válido.',
-  email_address_not_authorized: 'No se pudo enviar el correo a esa dirección.',
+/** Mensaje para un error de Supabase Auth, en el idioma actual. */
+const authError = (t: Strings, code: string | undefined) => {
+  const messages: Record<string, string> = t.auth.errors;
+  return messages[code ?? ''] ?? t.common.genericError;
 };
-const GENERIC = 'No se pudo completar. Revisa tu conexión e inténtalo de nuevo.';
 
 /** A dónde vuelve el enlace de los correos: la web de producción (la app nativa no tiene dirección propia). */
 const emailRedirect = () => (isNative ? WEB_APP_URL : `${location.origin}/`);
@@ -57,11 +51,12 @@ function Field(props: ComponentProps<'input'>) {
 }
 
 function CodeField({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const t = useT();
   return (
     <Field
       inputMode="numeric"
       autoComplete="one-time-code"
-      placeholder="Código de 6 dígitos"
+      placeholder={t.auth.codePlaceholder}
       className="tnum not-money min-h-[50px] w-full bg-transparent px-4 text-body tracking-[0.2em] outline-none placeholder:tracking-normal placeholder:text-label-3"
       value={value}
       onChange={(e) => onChange(cleanCode(e.target.value))}
@@ -92,15 +87,16 @@ function Notice({ tone, children }: { tone: 'good' | 'warn'; children: ReactNode
 }
 
 /** Dónde se abre el enlace del correo, dicho según el dispositivo. */
-function whereLinkOpens() {
-  if (platform === 'ios') return 'Ábrelo en este iPhone; se abrirá en Safari.';
-  if (platform === 'android') return 'Ábrelo en este teléfono; se abrirá en el navegador.';
-  return 'Ábrelo en este dispositivo.';
+function whereLinkOpens(t: Strings) {
+  if (platform === 'ios') return t.auth.whereLinkOpens.ios;
+  if (platform === 'android') return t.auth.whereLinkOpens.android;
+  return t.auth.whereLinkOpens.other;
 }
 
 type Mode = 'login' | 'signup' | 'forgot' | 'sent' | 'check';
 
 export function LoginPage() {
+  const t = useT();
   const [mode, setMode] = useState<Mode>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -119,7 +115,7 @@ export function LoginPage() {
 
   const fail = (code: string | undefined) => {
     setErrorCode(code ?? null);
-    setError(MESSAGES[code ?? ''] ?? GENERIC);
+    setError(authError(t, code));
   };
 
   const submit = async () => {
@@ -133,7 +129,8 @@ export function LoginPage() {
     } else if (mode === 'signup') {
       // Si el correo ya tenía cuenta, Supabase responde igual que si fuera nuevo (no revela quién está registrado):
       // por eso la pantalla siguiente no afirma que la cuenta se creó.
-      const { error } = await supabase.auth.signUp({ email: address, password, options: { emailRedirectTo: emailRedirect() } });
+      // El idioma va en los datos de la cuenta: el correo de confirmación y las categorías iniciales salen en ese idioma.
+      const { error } = await supabase.auth.signUp({ email: address, password, options: { emailRedirectTo: emailRedirect(), data: { lang: getLang() } } });
       if (error) fail(error.code);
       else go('check');
     } else {
@@ -170,40 +167,25 @@ export function LoginPage() {
   if (mode === 'sent' || mode === 'check')
     return (
       <AuthLayout
-        title={mode === 'check' ? 'Confirma tu correo' : 'Revisa tu correo'}
-        subtitle={
-          mode === 'check'
-            ? `Si ${email.trim()} no tenía cuenta, te llegará un enlace para confirmarla. ${whereLinkOpens()} Después entra aquí con tu correo y contraseña.`
-            : `Si ${email.trim()} tiene cuenta, te llegará un enlace para poner una contraseña nueva. ${whereLinkOpens()}`
-        }
+        title={t.auth[mode].title}
+        subtitle={t.auth[mode].subtitle(email.trim(), whereLinkOpens(t))}
       >
-        <p className="mt-4 text-footnote text-pretty text-label-2">¿No llega? Revisa la carpeta de spam o de promociones.</p>
+        <p className="mt-4 text-footnote text-pretty text-label-2">{t.auth.noEmail}</p>
         <Button variant="tinted" className="mt-8 w-full" onClick={() => go('login')}>
-          {mode === 'check' ? 'Ya la confirmé, entrar' : 'Volver a entrar'}
+          {t.auth[mode].button}
         </Button>
       </AuthLayout>
     );
 
-  const title = { login: 'Finanzas', signup: 'Crear cuenta', forgot: 'Restablecer contraseña' }[mode];
-  const subtitle = {
-    login: 'Entra para ver tus gastos.',
-    signup: 'Tus gastos, ingresos y presupuesto en colones. Solo tú ves tus datos.',
-    forgot: 'Te enviaremos un enlace a tu correo para poner una contraseña nueva.',
-  }[mode];
+  const title = t.auth.titles[mode];
+  const subtitle = t.auth.subtitles[mode];
 
   return (
     <AuthLayout title={title} subtitle={subtitle}>
-      {mode === 'login' && signupLinkNotice === 'confirmed' && <Notice tone="good">Tu correo quedó confirmado. Ya puedes entrar.</Notice>}
-      {mode === 'login' && signupLinkNotice === 'expired' && (
-        <Notice tone="warn">El enlace venció o ya se usó. Entra con tu correo y contraseña; si falta confirmarlo, te lo reenviamos.</Notice>
-      )}
-      {mode === 'login' && accountDeleted && <Notice tone="good">Tu cuenta y todos tus datos se eliminaron.</Notice>}
-      {partialSignOut && mode === 'login' && (
-        <Notice tone="warn">
-          Cerraste sesión sin conexión, así que solo se cerró en este dispositivo. Para cerrarla en todos, entra con conexión
-          y vuelve a tocar «Cerrar sesión».
-        </Notice>
-      )}
+      {mode === 'login' && signupLinkNotice === 'confirmed' && <Notice tone="good">{t.auth.notices.confirmed}</Notice>}
+      {mode === 'login' && signupLinkNotice === 'expired' && <Notice tone="warn">{t.auth.notices.expired}</Notice>}
+      {mode === 'login' && accountDeleted && <Notice tone="good">{t.auth.notices.accountDeleted}</Notice>}
+      {partialSignOut && mode === 'login' && <Notice tone="warn">{t.auth.notices.partialSignOut}</Notice>}
       <form
         className="mt-8"
         onSubmit={(e) => {
@@ -212,60 +194,56 @@ export function LoginPage() {
         }}
       >
         <Fields>
-          <Field type="email" inputMode="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Correo" />
+          <Field type="email" inputMode="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t.auth.email} />
           {mode !== 'forgot' && (
             <Field
               type="password"
               autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Contraseña"
+              placeholder={t.auth.password}
             />
           )}
           {mode === 'signup' && (
-            <Field type="password" autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} placeholder="Repetir contraseña" />
+            <Field type="password" autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} placeholder={t.auth.repeatPassword} />
           )}
         </Fields>
         {mode === 'signup' && !error && (
           <p className="mt-2 px-4 text-footnote text-label-2">
-            {password && !strength.ok
-              ? `Le falta: ${strength.missing.join(', ')}.`
-              : confirm && password !== confirm
-                ? 'Las contraseñas no coinciden.'
-                : 'Mínimo 8 caracteres, con minúscula, mayúscula y número.'}
+            {password && !strength.ok ? t.auth.missing(strength.missing) : confirm && password !== confirm ? t.auth.mismatch : t.auth.rules}
           </p>
         )}
         <ErrorText>{error}</ErrorText>
         {errorCode === 'email_not_confirmed' && (
           <Button variant="plain" className="mt-1 w-full text-body font-normal" disabled={busy || resent} onClick={() => void resend()}>
-            {resent ? 'Te reenviamos el enlace' : 'Reenviar el correo de confirmación'}
+            {resent ? t.auth.resent : t.auth.resend}
           </Button>
         )}
         <Button type="submit" className="mt-4 w-full" disabled={busy || !valid}>
-          {{ login: 'Entrar', signup: 'Crear cuenta', forgot: 'Enviar enlace' }[mode]}
+          {t.auth.submit[mode]}
         </Button>
         {mode === 'signup' && (
           <p className="mt-3 px-4 text-center text-footnote text-pretty text-label-2">
-            Al crear tu cuenta aceptas la{' '}
+            {t.auth.privacyBefore}{' '}
             <Link to="/privacidad" className="text-accent underline underline-offset-2">
-              política de privacidad
+              {t.auth.privacyLink}
             </Link>
-            .
+            {t.auth.privacyAfter}
           </p>
         )}
       </form>
       {mode === 'login' ? (
         <div className="mt-2 flex flex-col">
           <Button variant="plain" className="w-full text-body font-normal" onClick={() => go('forgot')}>
-            ¿Olvidaste tu contraseña?
+            {t.auth.forgotLink}
           </Button>
           <Button variant="plain" className="w-full text-body font-normal" onClick={() => go('signup')}>
-            ¿No tienes cuenta? Crear una
+            {t.auth.signupLink}
           </Button>
         </div>
       ) : (
         <Button variant="plain" className="mt-2 w-full text-body font-normal" onClick={() => go('login')}>
-          Ya tengo cuenta, entrar
+          {t.auth.haveAccount}
         </Button>
       )}
     </AuthLayout>
@@ -274,6 +252,7 @@ export function LoginPage() {
 
 /** Segundo paso del inicio de sesión: el código de 6 dígitos del autenticador. */
 export function MfaPage() {
+  const t = useT();
   const [code, setCode] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -291,7 +270,7 @@ export function MfaPage() {
   };
 
   return (
-    <AuthLayout title="Verificación" subtitle="Escribe el código de 6 dígitos de tu app de autenticación.">
+    <AuthLayout title={t.auth.mfa.title} subtitle={t.auth.mfa.subtitle}>
       <form
         className="mt-8"
         onSubmit={(e) => {
@@ -304,11 +283,11 @@ export function MfaPage() {
         </Fields>
         <ErrorText>{error}</ErrorText>
         <Button type="submit" className="mt-4 w-full" disabled={busy || code.length !== 6}>
-          Verificar
+          {t.auth.mfa.verify}
         </Button>
       </form>
       <Button variant="plain" className="mt-2 w-full text-body font-normal" onClick={() => void supabase.auth.signOut({ scope: 'local' })}>
-        Cancelar
+        {t.common.cancel}
       </Button>
     </AuthLayout>
   );
@@ -316,6 +295,7 @@ export function MfaPage() {
 
 /** Llegaste desde el enlace del correo: poner una contraseña nueva (y el código, si tienes dos pasos). */
 export function ResetPasswordPage({ onSaved, onDone }: { onSaved: () => void; onDone: () => void }) {
+  const t = useT();
   const [next, setNext] = useState('');
   const [confirm, setConfirm] = useState('');
   const [code, setCode] = useState('');
@@ -348,7 +328,7 @@ export function ResetPasswordPage({ onSaved, onDone }: { onSaved: () => void; on
     if (askCode) setAskCode(false);
     const { error } = await supabase.auth.updateUser({ password: next });
     setBusy(false);
-    if (error) return setError(MESSAGES[error.code ?? ''] ?? GENERIC);
+    if (error) return setError(authError(t, error.code));
     // La sesión del enlace no se queda abierta en el navegador: se cierra aquí al terminar.
     onSaved();
     setDone(true);
@@ -357,27 +337,25 @@ export function ResetPasswordPage({ onSaved, onDone }: { onSaved: () => void; on
 
   if (done)
     return (
-      <AuthLayout
-        title="Contraseña nueva lista"
-        subtitle="Ya puedes entrar con ella en la app. Por seguridad, aquí se cerró la sesión; puedes cerrar esta página."
-      >
+      <AuthLayout title={t.auth.reset.doneTitle} subtitle={t.auth.reset.doneSubtitle}>
         <Button variant="tinted" className="mt-8 w-full" onClick={onDone}>
-          Entrar aquí
+          {t.auth.reset.signInHere}
         </Button>
       </AuthLayout>
     );
 
   return (
     <AuthLayout
-      title="Contraseña nueva"
+      title={t.auth.reset.title}
       subtitle={
         <>
           {email && (
             <>
-              Para <span className="font-semibold text-label">{email}</span>.{' '}
+              {t.auth.reset.forBefore} <span className="font-semibold text-label">{email}</span>
+              {t.auth.reset.forAfter}{' '}
             </>
           )}
-          Mínimo 8 caracteres, con minúscula, mayúscula y número.
+          {t.auth.rules}
         </>
       }
     >
@@ -389,31 +367,26 @@ export function ResetPasswordPage({ onSaved, onDone }: { onSaved: () => void; on
         }}
       >
         <Fields>
-          <Field type="password" autoComplete="new-password" value={next} onChange={(e) => setNext(e.target.value)} placeholder="Nueva contraseña" />
-          <Field type="password" autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} placeholder="Repetir contraseña" />
+          <Field type="password" autoComplete="new-password" value={next} onChange={(e) => setNext(e.target.value)} placeholder={t.auth.newPassword} />
+          <Field type="password" autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} placeholder={t.auth.repeatPassword} />
         </Fields>
         {askCode && (
           <div className="mt-4">
             <Fields>
               <CodeField value={code} onChange={setCode} />
             </Fields>
-            <p className="mt-2 px-4 text-footnote text-label-2">Tienes verificación en dos pasos: escribe el código de tu autenticador.</p>
+            <p className="mt-2 px-4 text-footnote text-label-2">{t.auth.reset.codeHint}</p>
           </div>
         )}
         <ErrorText>
-          {error ??
-            (next && !strength.ok
-              ? `Le falta: ${strength.missing.join(', ')}.`
-              : confirm && next !== confirm
-                ? 'Las contraseñas no coinciden.'
-                : null)}
+          {error ?? (next && !strength.ok ? t.auth.missing(strength.missing) : confirm && next !== confirm ? t.auth.mismatch : null)}
         </ErrorText>
         <Button type="submit" className="mt-4 w-full" disabled={busy || !valid || askCode === null}>
-          Guardar contraseña
+          {t.auth.reset.save}
         </Button>
       </form>
       <Button variant="plain" className="mt-2 w-full text-body font-normal" onClick={() => void supabase.auth.signOut({ scope: 'local' }).then(onDone)}>
-        Cancelar
+        {t.common.cancel}
       </Button>
     </AuthLayout>
   );

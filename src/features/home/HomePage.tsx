@@ -5,8 +5,9 @@ import { Donut } from '../../components/Donut';
 import { AnimatedAmount, Segmented, SoftText } from '../../components/motion';
 import { hexOf } from '../../components/palette';
 import { budgetTone, EmptyState, IconTile, ProgressBar, Screen, Section, Skeleton } from '../../components/ui';
+import { useT } from '../../i18n';
 import { isDemo } from '../../lib/api';
-import { crDay, crDayOf, isoDate, monthName, monthRange, startOfMonth, startOfWeek, weekRange, WEEKDAY_INITIALS } from '../../lib/dates';
+import { crDay, crDayOf, crShortDate, crTime, isoDate, monthName, monthRange, startOfMonth, startOfWeek, weekRange, weekdayInitials } from '../../lib/dates';
 import { formatCRC } from '../../lib/money';
 import type { HomeSection } from '../../lib/prefs';
 import { useBudgetProgress, useBudgets, useLookups, usePendingReview, useTransactions } from '../../lib/queries';
@@ -38,6 +39,7 @@ function readPeriod(): Period {
 }
 
 export function HomePage() {
+  const t = useT();
   const [period, setPeriodState] = useState<Period>(readPeriod);
   const setPeriod = (p: Period) => {
     setPeriodState(p);
@@ -60,7 +62,7 @@ export function HomePage() {
   const { data: budgets = [] } = useBudgets(month);
   const { data: progress = [] } = useBudgetProgress(month);
   const { data: pending = [] } = usePendingReview();
-  const t = totals(txs ?? []);
+  const tot = totals(txs ?? []);
   const slices = useMemo(() => spendingByCategory(txs ?? [], categories), [txs, categories]);
   const weekStart = startOfWeek(today);
   const days = spendingByDay(weekTxs ?? [], weekStart, 7);
@@ -70,7 +72,7 @@ export function HomePage() {
   // El total se adapta a las categorías (ver totalBudget).
   const total = totalBudget(budgets);
   const monthLimit = total.limit;
-  const budgetSpent = spentAgainstTotal(total, budgets, slices, t.gastos);
+  const budgetSpent = spentAgainstTotal(total, budgets, slices, tot.gastos);
   const daysInMonth = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth() + 1, 0)).getUTCDate();
   const limit =
     monthLimit === null
@@ -90,20 +92,20 @@ export function HomePage() {
   ];
 
   const recent = (txs ?? []).slice(0, 5);
-  const when = period === 'mes' ? `en ${monthName(today)}` : 'esta semana';
+  const when = period === 'mes' ? t.home.inMonth(monthName(today)) : t.home.thisWeek;
 
   // La cifra grande de la tarjeta (Ajustes → Resumen). «Lo que queda» necesita un presupuesto: sin él, lo gastado.
   const figure = layout.card === 'disponible' && left === null ? 'gastado' : layout.card;
   const card =
     figure === 'disponible'
-      ? { title: `Disponible ${when}`, cents: left!, fields: ['ingresos', 'balance'] as const }
+      ? { title: t.home.cardAvailable(when), cents: left!, fields: ['ingresos', 'balance'] as const }
       : figure === 'balance'
-        ? { title: `Balance ${when}`, cents: t.neto, fields: ['gastado', 'ingresos'] as const }
-        : { title: `Gastado ${when}`, cents: t.gastos, fields: ['ingresos', 'balance'] as const };
+        ? { title: t.home.cardBalance(when), cents: tot.neto, fields: ['gastado', 'ingresos'] as const }
+        : { title: t.home.cardSpent(when), cents: tot.gastos, fields: ['ingresos', 'balance'] as const };
   const FIELD = {
-    gastado: { label: 'GASTADO', cents: t.gastos, sign: false },
-    ingresos: { label: 'INGRESOS', cents: t.ingresos, sign: false },
-    balance: { label: 'BALANCE', cents: t.neto, sign: true },
+    gastado: { label: t.home.fieldSpent, cents: tot.gastos, sign: false },
+    ingresos: { label: t.home.fieldIncome, cents: tot.ingresos, sign: false },
+    balance: { label: t.home.fieldBalance, cents: tot.neto, sign: true },
   };
 
   // Presupuestos por categoría, los más cerca del límite primero.
@@ -116,7 +118,7 @@ export function HomePage() {
     semana: (
       <Section
         key="semana"
-        header="Esta semana"
+        header={t.home.sectionWeek}
         action={<span className="tnum text-body text-label-2">{formatCRC(days.reduce((a, b) => a + b, 0))}</span>}
       >
         <WeekBars values={days} todayIndex={todayIdx} />
@@ -125,10 +127,10 @@ export function HomePage() {
     recientes: (
       <Section
         key="recientes"
-        header="Recientes"
+        header={t.home.sectionRecent}
         action={
           <Link to="/movimientos" className="inline-flex min-h-11 items-center text-body text-accent">
-            Ver todos
+            {t.common.seeAll}
           </Link>
         }
       >
@@ -141,19 +143,19 @@ export function HomePage() {
           recent.map((tx) => <TransactionRow key={tx.id} tx={tx} categories={catMap} accounts={accMap} />)
         ) : (
           <EmptyState
-            title={period === 'semana' ? 'Sin movimientos esta semana' : 'Sin movimientos este mes'}
-            body="Toca + para registrar tu primer gasto."
+            title={period === 'semana' ? t.home.noTxWeek : t.home.noTxMonth}
+            body={t.home.firstExpense}
           />
         )}
       </Section>
     ),
     categorias: (
-      <Section key="categorias" header="Por categoría">
+      <Section key="categorias" header={t.home.sectionCategories}>
         <div className="flex items-center gap-5 p-4">
           <Donut segments={segments} size={148} thickness={18}>
-            <span className="text-caption text-label-2">Total</span>
+            <span className="text-caption text-label-2">{t.home.donutTotal}</span>
             <span className="tnum text-subhead font-semibold">
-              <SoftText text={formatCRC(t.gastos)} />
+              <SoftText text={formatCRC(tot.gastos)} />
             </span>
           </Donut>
           <ul className="min-w-0 flex-1 space-y-1.5">
@@ -162,7 +164,7 @@ export function HomePage() {
               return (
                 <li key={s.categoryId ?? 'none'} className="flex items-center gap-2 text-subhead">
                   <span className="size-2.5 shrink-0 rounded-[3px]" style={{ background: c ? hexOf(c.color) : 'var(--color-muted)' }} />
-                  <span className="min-w-0 flex-1 truncate">{c?.name ?? 'Sin categoría'}</span>
+                  <span className="min-w-0 flex-1 truncate">{c?.name ?? t.common.noCategory}</span>
                   <span className="tnum not-money text-label-2">{Math.round(s.share * 100)}%</span>
                 </li>
               );
@@ -174,10 +176,10 @@ export function HomePage() {
     presupuestos: (
       <Section
         key="presupuestos"
-        header="Presupuestos"
+        header={t.home.sectionBudgets}
         action={
           <Link to="/presupuesto" className="inline-flex min-h-11 items-center text-body text-accent">
-            Ver todos
+            {t.common.seeAll}
           </Link>
         }
       >
@@ -192,19 +194,19 @@ export function HomePage() {
             />
           ))
         ) : (
-          <EmptyState title="Sin presupuestos por categoría" body="Defínelos en Presupuesto para ver aquí cómo vas." />
+          <EmptyState title={t.home.noBudgetsTitle} body={t.home.noBudgetsBody} />
         )}
       </Section>
     ),
   };
 
   return (
-    <Screen title="Resumen">
+    <Screen title={t.nav.tabs.home}>
       {layout.showPending && pending.length > 0 && <PendingCard pending={pending} />}
       <Segmented
         options={[
-          { value: 'semana', label: 'Semana' },
-          { value: 'mes', label: 'Mes' },
+          { value: 'semana', label: t.home.week },
+          { value: 'mes', label: t.home.month },
         ]}
         value={period}
         onChange={setPeriod}
@@ -239,10 +241,10 @@ export function HomePage() {
               <SoftText
                 text={
                   figure === 'disponible'
-                    ? `Gastado ${formatCRC(budgetSpent)} de ${formatCRC(limit)}`
+                    ? t.home.spentOf(formatCRC(budgetSpent), formatCRC(limit))
                     : left >= 0
-                      ? `Quedan ${formatCRC(left)} de ${formatCRC(limit)}`
-                      : `Te pasaste ${formatCRC(-left)} de ${formatCRC(limit)}`
+                      ? t.home.leftOf(formatCRC(left), formatCRC(limit))
+                      : t.home.overOf(formatCRC(-left), formatCRC(limit))
                 }
               />
             </p>
@@ -252,7 +254,7 @@ export function HomePage() {
           </>
         ) : (
           <Link to="/presupuesto" className="mt-1 inline-flex min-h-11 items-center text-subhead font-semibold text-accent">
-            Definir un presupuesto
+            {t.home.setBudget}
           </Link>
         )}
         {/* Campos de tarjeta: etiqueta grabada pequeña y valor. */}
@@ -271,23 +273,19 @@ export function HomePage() {
       <div className="mt-6">{layout.order.filter((s) => !layout.hidden.includes(s)).map((s) => sections[s])}</div>
 
       {isDemo && (
-        <p className="mt-4 px-4 text-footnote text-label-2">
-          Datos de ejemplo. Conecta tu cuenta en Ajustes para ver tus movimientos reales.
-        </p>
+        <p className="mt-4 px-4 text-footnote text-label-2">{t.home.demoNote}</p>
       )}
     </Screen>
   );
 }
 
 const MAX_PENDING_SHOWN = 3;
-const pendingTime = new Intl.DateTimeFormat('es-CR', { hour: 'numeric', minute: '2-digit', timeZone: 'America/Costa_Rica' });
-const pendingDate = new Intl.DateTimeFormat('es-CR', { day: 'numeric', month: 'short', timeZone: 'America/Costa_Rica' });
 
 /** Hora si el pago es de hoy; si no, «ayer» o la fecha (antes solo salía la hora y un pago viejo parecía de hoy). */
-function pendingWhen(at: string) {
+function pendingWhen(at: string, yesterday: string) {
   const d = new Date(at);
   const days = Math.round((crDay().getTime() - crDayOf(at).getTime()) / 86_400_000);
-  return days === 0 ? pendingTime.format(d) : days === 1 ? 'ayer' : pendingDate.format(d);
+  return days === 0 ? crTime(d) : days === 1 ? yesterday : crShortDate(d);
 }
 
 /**
@@ -295,17 +293,16 @@ function pendingWhen(at: string) {
  * y la acción en metal. Desaparece cuando no queda ninguno.
  */
 function PendingCard({ pending }: { pending: Transaction[] }) {
+  const t = useT();
   const { openEdit } = useEditor();
   const n = pending.length;
   return (
-    <section className="machined mb-4 rounded-[18px] bg-card p-3.5 shadow-[inset_0_0_0_1px_color-mix(in_srgb,var(--color-accent)_45%,transparent)]" aria-label="Pagos por revisar">
+    <section className="machined mb-4 rounded-[18px] bg-card p-3.5 shadow-[inset_0_0_0_1px_color-mix(in_srgb,var(--color-accent)_45%,transparent)]" aria-label={t.home.pendingLabel}>
       <div className="flex items-center gap-3">
         <IconTile icon={Smartphone} color="var(--color-accent)" size={34} />
         <div className="min-w-0 flex-1">
-          <p className="text-headline font-semibold">
-            {n === 1 ? 'Tienes 1 pago por revisar' : `Tienes ${n} pagos por revisar`}
-          </p>
-          <p className="text-footnote text-label-2">Registrados automáticamente; confírmalos</p>
+          <p className="text-headline font-semibold">{t.home.pendingTitle(n)}</p>
+          <p className="text-footnote text-label-2">{t.home.pendingBody}</p>
         </div>
       </div>
       {/* Como mucho 3 pagos a la vista: con más, el resto se revisa desde el botón y la tarjeta no crece. */}
@@ -317,10 +314,10 @@ function PendingCard({ pending }: { pending: Transaction[] }) {
               onClick={() => openEdit(tx)}
               className={'press flex min-h-11 w-full items-center gap-3 px-3.5 py-1.5 text-left ' + (i ? 'shadow-[inset_0_0.5px_0_var(--color-sep)]' : '')}
             >
-              <span className="min-w-0 flex-1 truncate text-subhead">{tx.merchant ?? 'Pago de Wallet'}</span>
-              <span className="tnum not-money shrink-0 text-footnote text-label-2">{pendingWhen(tx.occurred_at)}</span>
+              <span className="min-w-0 flex-1 truncate text-subhead">{tx.merchant ?? t.home.walletPayment}</span>
+              <span className="tnum not-money shrink-0 text-footnote text-label-2">{pendingWhen(tx.occurred_at, t.home.yesterday)}</span>
               {tx.amount === 0 ? (
-                <span className="text-subhead text-label-2">Sin monto</span>
+                <span className="text-subhead text-label-2">{t.transactions.noAmount}</span>
               ) : (
                 <span className="tnum text-subhead font-semibold">{formatCRC(-tx.amount)}</span>
               )}
@@ -331,11 +328,11 @@ function PendingCard({ pending }: { pending: Transaction[] }) {
       </ul>
       {n === 1 ? (
         <button type="button" onClick={() => openEdit(pending[0])} className="press metal mt-2.5 min-h-11 w-full rounded-full text-body font-semibold">
-          Revisar ahora
+          {t.home.reviewNow}
         </button>
       ) : (
         <Link to="/movimientos?filtro=revisar" className="press metal mt-2.5 flex min-h-11 w-full items-center justify-center rounded-full text-body font-semibold">
-          Revisar los {n}
+          {t.home.reviewAll(n)}
         </Link>
       )}
     </section>
@@ -346,6 +343,7 @@ const CHART_H = 92;
 
 /** Franja de la semana: barras compactas, hoy en platino, días futuros apagados; el promedio en una línea discreta. */
 function WeekBars({ values, todayIndex }: { values: number[]; todayIndex: number }) {
+  const t = useT();
   const max = Math.max(...values, 1);
   const avg = values.slice(0, todayIndex + 1).reduce((a, b) => a + b, 0) / (todayIndex + 1);
   return (
@@ -354,7 +352,7 @@ function WeekBars({ values, todayIndex }: { values: number[]; todayIndex: number
         className="flex items-end gap-2.5"
         style={{ height: CHART_H }}
         role="img"
-        aria-label={`Gasto por día de esta semana. Promedio diario ${formatCRC(Math.round(avg / 100) * 100)}, hoy ${formatCRC(values[todayIndex] ?? 0)}`}
+        aria-label={t.home.weekChartLabel(formatCRC(Math.round(avg / 100) * 100), formatCRC(values[todayIndex] ?? 0))}
       >
         {values.map((v, i) => (
           <div key={i} className="flex-1">
@@ -370,14 +368,15 @@ function WeekBars({ values, todayIndex }: { values: number[]; todayIndex: number
         ))}
       </div>
       <div className="mt-2 flex gap-2.5">
-        {WEEKDAY_INITIALS.map((d, i) => (
-          <span key={d} className={'flex-1 text-center text-caption ' + (i === todayIndex ? 'font-semibold text-label' : 'text-label-2')}>
+        {/* En inglés se repiten letras (T, S): la clave es la posición. */}
+        {weekdayInitials().map((d, i) => (
+          <span key={i} className={'flex-1 text-center text-caption ' + (i === todayIndex ? 'font-semibold text-label' : 'text-label-2')}>
             {d}
           </span>
         ))}
       </div>
       <p className="tnum mt-3 text-footnote text-label-2">
-        Promedio diario {formatCRC(Math.round(avg / 100) * 100)} · Hoy {formatCRC(values[todayIndex] ?? 0)}
+        {t.home.weekSummary(formatCRC(Math.round(avg / 100) * 100), formatCRC(values[todayIndex] ?? 0))}
       </p>
     </div>
   );

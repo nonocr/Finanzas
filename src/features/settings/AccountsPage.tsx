@@ -6,10 +6,11 @@ import { Sheet } from '../../components/Sheet';
 import { useToast } from '../../components/Toast';
 import { Button, IconTile, Row, Screen, Section } from '../../components/ui';
 import { QuietColon } from '../../components/motion';
+import { useT, type Strings } from '../../i18n';
 import { crDay } from '../../lib/dates';
 import { formatCRC } from '../../lib/money';
 import { useAccounts, useArchivedAccounts, useBalances, useSaveAccount } from '../../lib/queries';
-import { ACCOUNT_TYPE_LABEL, type Account, type AccountType } from '../../lib/types';
+import type { Account, AccountType } from '../../lib/types';
 import { Toggle } from '../transactions/TransactionSheet';
 import { BackLink } from './MorePage';
 import { ColonesInput, DayInput, FormGroup, FormHeader, FormRow, TextInput } from './form';
@@ -34,6 +35,7 @@ function daysUntil(day: number) {
 }
 
 export function AccountsPage() {
+  const t = useT();
   const { data: accounts = [] } = useAccounts();
   const { data: archived = [] } = useArchivedAccounts();
   const { data: balances = [] } = useBalances();
@@ -51,22 +53,22 @@ export function AccountsPage() {
   const net = accounts.reduce((s, a) => s + (balanceOf.get(a.id) ?? 0), 0);
 
   return (
-    <Screen title="Cuentas" subtitle={<BackLink />}>
+    <Screen title={t.accounts.title} subtitle={<BackLink />}>
       <div className="black-card rounded-[18px] px-5 pt-5 pb-5">
-        <p className="text-headline font-semibold">Patrimonio neto</p>
+        <p className="text-headline font-semibold">{t.accounts.netWorth}</p>
         <p className={'tnum mt-3 text-[40px] leading-[46px] font-light tracking-[-0.03em] ' + (net < 0 ? 'text-red' : 'engraved')}>
           {net < 0 ? formatCRC(net) : <><QuietColon />{formatCRC(net).replace('₡', '')}</>}
         </p>
       </div>
 
-      <Section header="Efectivo y bancos">
+      <Section header={t.accounts.cashAndBanks}>
         {others.map((a) => (
           <Row
             key={a.id}
             onClick={() => openEditor(a)}
             leading={<IconTile icon={ACCOUNT_ICONS[a.type]} color={TYPE_COLOR[a.type]} />}
             title={a.name}
-            subtitle={ACCOUNT_TYPE_LABEL[a.type] + (a.last4 ? ` · •••${a.last4}` : '')}
+            subtitle={t.accounts.types[a.type] + (a.last4 ? ` · •••${a.last4}` : '')}
             trailing={<span className="tnum font-semibold text-label">{formatCRC(balanceOf.get(a.id) ?? 0)}</span>}
             chevron
           />
@@ -74,13 +76,13 @@ export function AccountsPage() {
       </Section>
 
       {cards.length > 0 && (
-        <Section header="Tarjetas de crédito">
+        <Section header={t.accounts.creditCards}>
           {cards.map((a) => {
             const debt = -(balanceOf.get(a.id) ?? 0);
             const parts = [
               a.last4 ? `•••${a.last4}` : null,
-              a.payment_day ? `Pago en ${daysUntil(a.payment_day)} días` : null,
-              a.cutoff_day ? `corte el ${a.cutoff_day}` : null,
+              a.payment_day ? t.accounts.paymentIn(daysUntil(a.payment_day)) : null,
+              a.cutoff_day ? t.accounts.cutoffOn(a.cutoff_day) : null,
             ].filter(Boolean);
             return (
               <Row
@@ -92,11 +94,11 @@ export function AccountsPage() {
                 trailing={
                   <span className="text-right">
                     <span className={'tnum block font-semibold ' + (debt > 0 ? 'text-label' : 'text-green')}>
-                      {debt > 0 ? formatCRC(debt) : 'Al día'}
+                      {debt > 0 ? formatCRC(debt) : t.accounts.upToDate}
                     </span>
                     {a.credit_limit && debt > 0 && (
                       <span className="tnum block text-footnote text-label-2">
-                        {Math.round((debt / a.credit_limit) * 100)}% del límite
+                        {t.accounts.ofLimit(Math.round((debt / a.credit_limit) * 100))}
                       </span>
                     )}
                   </span>
@@ -109,11 +111,11 @@ export function AccountsPage() {
       )}
 
       <Button variant="tinted" className="mt-6 w-full" onClick={() => openEditor({ type: 'debito' })}>
-        Agregar tarjeta o cuenta
+        {t.accounts.add}
       </Button>
 
       {archived.length > 0 && (
-        <Section header="Archivadas" footer="No aparecen al registrar movimientos ni en el patrimonio. Tócalas para reactivarlas.">
+        <Section header={t.accounts.archived} footer={t.accounts.archivedFooter}>
           {archived.map((a) => (
             <Row
               key={a.id}
@@ -124,7 +126,7 @@ export function AccountsPage() {
                 </span>
               }
               title={<span className="text-label-2">{a.name}</span>}
-              subtitle={ACCOUNT_TYPE_LABEL[a.type] + (a.last4 ? ` · •••${a.last4}` : '')}
+              subtitle={t.accounts.types[a.type] + (a.last4 ? ` · •••${a.last4}` : '')}
               chevron
             />
           ))}
@@ -145,19 +147,14 @@ export function AccountsPage() {
   );
 }
 
-const KIND_OPTIONS: { type: AccountType; label: string }[] = [
-  { type: 'debito', label: 'Tarjeta de débito' },
-  { type: 'credito', label: 'Tarjeta de crédito' },
-  { type: 'efectivo', label: 'Efectivo' },
-  { type: 'banco', label: 'Cuenta bancaria' },
-  { type: 'ahorro', label: 'Ahorro' },
-];
+/** Orden del selector de tipo; el nombre largo de cada uno sale de t.accounts.kinds. */
+const KIND_ORDER: AccountType[] = ['debito', 'credito', 'efectivo', 'banco', 'ahorro'];
 
 /** Nombre que se guarda si no se escribió uno: lo justo para distinguirla. */
-const fallbackName = (type: AccountType, last4: string | null | undefined) =>
+const fallbackName = (t: Strings, type: AccountType, last4: string | null | undefined) =>
   last4 && (type === 'debito' || type === 'credito')
-    ? `${type === 'credito' ? 'Crédito' : 'Débito'} •${last4}`
-    : ACCOUNT_TYPE_LABEL[type];
+    ? t.accounts.fallbackCardName(type === 'credito', last4)
+    : t.accounts.types[type];
 
 function AccountSheet({
   open,
@@ -173,6 +170,7 @@ function AccountSheet({
   currentBalance?: number;
   onClose: () => void;
 }) {
+  const t = useT();
   const save = useSaveAccount();
   const toast = useToast();
   const [acc, setAcc] = useState<Partial<Account>>(initial);
@@ -189,7 +187,7 @@ function AccountSheet({
   const [details, setDetails] = useState(
     Boolean(startBalance || initial.credit_limit || initial.cutoff_day || initial.payment_day || initial.wallet_name),
   );
-  const name = acc.name?.trim() || fallbackName(type, acc.last4);
+  const name = acc.name?.trim() || fallbackName(t, type, acc.last4);
   const last4Len = (acc.last4 ?? '').length;
   const sameLast4 = isCard && last4Len === 4 ? others.find((o) => o.last4 === acc.last4) : undefined;
   const sameName = others.find((o) => o.name.toLowerCase() === name.toLowerCase());
@@ -207,13 +205,13 @@ function AccountSheet({
       last4: isCard && last4Len === 4 ? acc.last4 : null,
       wallet_name: acc.wallet_name?.trim() || null,
     });
-    toast(initial.id ? 'Cuenta actualizada' : `${name} agregada`);
+    toast(initial.id ? t.accounts.updated : t.accounts.added(name));
     onClose();
   };
 
   const setArchived = async (archived: boolean) => {
     await save.mutateAsync({ id: initial.id, archived });
-    toast(archived ? 'Cuenta archivada' : 'Cuenta reactivada');
+    toast(archived ? t.accounts.archivedToast : t.accounts.reactivatedToast);
     onClose();
   };
 
@@ -222,10 +220,10 @@ function AccountSheet({
       open={open}
       onClose={onClose}
       swipeToClose
-      title={initial.id ? 'Editar cuenta' : 'Nueva cuenta'}
+      title={initial.id ? t.accounts.edit : t.accounts.new}
       leading={
         <button type="button" className="min-h-11 text-body text-accent" onClick={onClose}>
-          Cancelar
+          {t.common.cancel}
         </button>
       }
       trailing={
@@ -235,29 +233,29 @@ function AccountSheet({
           disabled={!valid || save.isPending}
           onClick={submit}
         >
-          Guardar
+          {t.common.save}
         </button>
       }
     >
       {/* Selector de tipo: una fila de cinco mosaicos con el mismo ícono y color que en la lista de cuentas. */}
-      <FormHeader>Tipo</FormHeader>
+      <FormHeader>{t.accounts.type}</FormHeader>
       <div className="grid grid-cols-5 gap-1.5">
-        {KIND_OPTIONS.map((k) => {
-          const on = k.type === type;
+        {KIND_ORDER.map((k) => {
+          const on = k === type;
           return (
             <button
-              key={k.type}
+              key={k}
               type="button"
               aria-pressed={on}
-              aria-label={k.label}
-              onClick={() => set({ type: k.type })}
+              aria-label={t.accounts.kinds[k]}
+              onClick={() => set({ type: k })}
               className={clsx(
                 'press flex min-w-0 flex-col items-center gap-2 rounded-[12px] px-0.5 pt-3 pb-2.5 text-footnote font-semibold',
                 on ? 'metal' : 'bg-card-2 text-label-2',
               )}
             >
-              <IconTile icon={ACCOUNT_ICONS[k.type]} color={TYPE_COLOR[k.type]} size={32} />
-              <span className="max-w-full truncate">{ACCOUNT_TYPE_LABEL[k.type]}</span>
+              <IconTile icon={ACCOUNT_ICONS[k]} color={TYPE_COLOR[k]} size={32} />
+              <span className="max-w-full truncate">{t.accounts.types[k]}</span>
             </button>
           );
         })}
@@ -267,27 +265,22 @@ function AccountSheet({
         footer={
           <>
             {sameName ? (
-              <p className="text-red">Ya tienes una cuenta llamada «{sameName.name}». Ponle otro nombre.</p>
+              <p className="text-red">{t.accounts.sameName(sameName.name)}</p>
             ) : sameLast4 ? (
-              <p className="text-orange">
-                «{sameLast4.name}» también termina en {sameLast4.last4}. Ponles nombres distintos para no confundirlas.
-              </p>
+              <p className="text-orange">{t.accounts.sameLast4(sameLast4.name, sameLast4.last4 ?? '')}</p>
             ) : (
               <p>
-                Se guardará como <span className="font-semibold text-label">{name}</span>.
+                {t.accounts.savedAsBefore}
+                <span className="font-semibold text-label">{name}</span>
+                {t.accounts.savedAsAfter}
               </p>
             )}
-            {isCard && (
-              <p>
-                Con los últimos 4 dígitos la distingues de tus otras tarjetas, y los pagos de Wallet llegan a la correcta. El
-                nombre es opcional.
-              </p>
-            )}
+            {isCard && <p>{t.accounts.last4Help}</p>}
           </>
         }
       >
         {isCard && (
-          <FormRow label="Últimos 4 dígitos">
+          <FormRow label={t.accounts.last4}>
             <TextInput
               inputMode="numeric"
               pattern="[0-9]*"
@@ -298,12 +291,12 @@ function AccountSheet({
             />
           </FormRow>
         )}
-        <FormRow label="Nombre" last>
+        <FormRow label={t.accounts.name} last>
           <TextInput
             value={acc.name ?? ''}
             maxLength={60}
             onChange={(e) => set({ name: e.target.value })}
-            placeholder={isCard ? 'Ej. Visa BAC' : ACCOUNT_TYPE_LABEL[type]}
+            placeholder={isCard ? t.accounts.namePlaceholder : t.accounts.types[type]}
           />
         </FormRow>
       </FormGroup>
@@ -317,47 +310,54 @@ function AccountSheet({
             className="flex min-h-11 w-full items-center gap-3 px-4 py-2.5 text-left transition-colors active:bg-card-3"
           >
             <span className="min-w-0 flex-1 truncate text-body">
-              {type === 'credito' ? 'Deuda, límite y fechas' : 'Saldo actual'}
+              {type === 'credito' ? t.accounts.creditDetails : t.accounts.currentBalance}
             </span>
-            <span className="shrink-0 text-body text-label-3">Opcional</span>
+            <span className="shrink-0 text-body text-label-3">{t.accounts.optional}</span>
             <ChevronDown size={18} strokeWidth={2.25} className="shrink-0 text-label-3" />
           </button>
         </FormGroup>
       ) : (
         <>
-          <FormGroup
-            footer={
-              type === 'credito'
-                ? 'Lo que debes hoy. Cada gasto con la tarjeta lo sube y cada pago (Entre cuentas) lo baja.'
-                : 'Lo que tiene hoy. Cada gasto lo baja y cada ingreso lo sube, también los que llegan de Wallet.'
-            }
-          >
-            <FormRow label={type === 'credito' ? (inverted ? 'Saldo a favor' : 'Deuda actual') : 'Saldo actual'}>
+          <FormGroup footer={type === 'credito' ? t.accounts.creditBalanceFooter : t.accounts.balanceFooter}>
+            <FormRow
+              label={
+                type === 'credito'
+                  ? inverted
+                    ? t.accounts.creditInFavor
+                    : t.accounts.currentDebt
+                  : t.accounts.currentBalance
+              }
+            >
               <ColonesInput cents={balance} onChange={setBalance} />
             </FormRow>
-            <FormRow label={type === 'credito' ? 'Pagaste de más (saldo a favor)' : 'En negativo (sobregiro)'} last>
+            <FormRow label={type === 'credito' ? t.accounts.overpaid : t.accounts.overdrawn} last>
               <span className="flex w-full justify-end">
                 <Toggle checked={inverted} onChange={setInverted} />
               </span>
             </FormRow>
           </FormGroup>
           {type === 'credito' && (
-            <FormGroup footer="Con las fechas te avisamos cuántos días faltan para pagar.">
-              <FormRow label="Límite">
+            <FormGroup footer={t.accounts.datesFooter}>
+              <FormRow label={t.accounts.limit}>
                 <ColonesInput cents={acc.credit_limit ?? null} onChange={(c) => set({ credit_limit: c })} />
               </FormRow>
-              <FormRow label="Día de corte">
+              <FormRow label={t.accounts.cutoffDay}>
                 <DayInput value={acc.cutoff_day ?? null} onChange={(v) => set({ cutoff_day: v })} />
               </FormRow>
-              <FormRow label="Día de pago" last>
+              <FormRow label={t.accounts.paymentDay} last>
                 <DayInput value={acc.payment_day ?? null} onChange={(v) => set({ payment_day: v })} />
               </FormRow>
             </FormGroup>
           )}
           {isCard && (
-            <FormGroup footer="Solo si en Apple Wallet la tarjeta tiene otro nombre y no muestra los últimos 4 dígitos.">
-              <FormRow label="Nombre en Wallet" last>
-                <TextInput value={acc.wallet_name ?? ''} maxLength={80} onChange={(e) => set({ wallet_name: e.target.value })} placeholder="Opcional" />
+            <FormGroup footer={t.accounts.walletNameFooter}>
+              <FormRow label={t.accounts.walletName} last>
+                <TextInput
+                  value={acc.wallet_name ?? ''}
+                  maxLength={80}
+                  onChange={(e) => set({ wallet_name: e.target.value })}
+                  placeholder={t.accounts.optional}
+                />
               </FormRow>
             </FormGroup>
           )}
@@ -367,11 +367,11 @@ function AccountSheet({
       {initial.id &&
         (initial.archived ? (
           <Button variant="tinted" className="mt-8 w-full" onClick={() => setArchived(false)}>
-            Reactivar cuenta
+            {t.accounts.reactivate}
           </Button>
         ) : (
           <Button variant="destructive" className="mt-8 w-full" onClick={() => setArchived(true)}>
-            Archivar cuenta
+            {t.accounts.archive}
           </Button>
         ))}
     </Sheet>

@@ -5,7 +5,8 @@ import { Segmented } from '../../components/motion';
 import { Sheet } from '../../components/Sheet';
 import { useToast } from '../../components/Toast';
 import { Button, CategoryIcon, EmptyState, Row, Screen, Section } from '../../components/ui';
-import { crDay, isoDate } from '../../lib/dates';
+import { useT, type Strings } from '../../i18n';
+import { crDay, isoDate, longDate, shortDate } from '../../lib/dates';
 import { formatCRC } from '../../lib/money';
 import { useAccounts, useCategories, useDeleteRecurring, useLookups, useRecurring, useSaveRecurring } from '../../lib/queries';
 import { monthlyAmount, parseDay, scheduleLabel } from '../../lib/recurring';
@@ -14,21 +15,19 @@ import { AccountChips, PICKER_INPUT, Toggle } from '../transactions/TransactionS
 import { BackLink } from './MorePage';
 import { FormGroup, FormHeader, FormRow, TextInput } from './form';
 
-const shortDate = new Intl.DateTimeFormat('es-CR', { day: 'numeric', month: 'short', timeZone: 'UTC' });
-const pillDate = new Intl.DateTimeFormat('es-CR', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
-
 /** «Hoy», «Mañana», «En 5 días» o la fecha si falta más de dos semanas. */
-function whenLabel(next: string, today: Date) {
+function whenLabel(t: Strings, next: string, today: Date) {
   const days = Math.round((parseDay(next).getTime() - today.getTime()) / 86_400_000);
-  if (days <= 0) return 'Hoy';
-  if (days === 1) return 'Mañana';
-  if (days <= 14) return `En ${days} días`;
-  return shortDate.format(parseDay(next));
+  if (days <= 0) return t.recurring.today;
+  if (days === 1) return t.recurring.tomorrow;
+  if (days <= 14) return t.recurring.inDays(days);
+  return shortDate(parseDay(next));
 }
 
 const signed = (r: Pick<Recurring, 'type' | 'amount'>) => (r.type === 'gasto' ? formatCRC(-r.amount) : formatCRC(r.amount, { sign: true }));
 
 export function RecurringPage() {
+  const t = useT();
   const { data: list = [], isLoading } = useRecurring();
   const { catMap } = useLookups();
   const [editing, setEditing] = useState<{ rec: Partial<Recurring>; key: number } | null>(null);
@@ -54,7 +53,7 @@ export function RecurringPage() {
         onClick={() => openEditor(r)}
         leading={<CategoryIcon icon={c?.icon ?? null} color={c?.color ?? null} />}
         title={r.name}
-        subtitle={`${r.active ? whenLabel(r.next_date, today) : 'En pausa'} · ${FREQ_SHORT[r.frequency]}`}
+        subtitle={`${r.active ? whenLabel(t, r.next_date, today) : t.recurring.paused} · ${t.recurring.frequency[r.frequency]}`}
         trailing={<span className={'tnum font-semibold ' + (r.type === 'ingreso' ? 'text-green' : 'text-label')}>{signed(r)}</span>}
         chevron
       />
@@ -62,41 +61,40 @@ export function RecurringPage() {
   };
 
   return (
-    <Screen title="Fijos" subtitle={<BackLink />}>
+    <Screen title={t.recurring.title} subtitle={<BackLink />}>
       <p className="px-1 text-subhead text-label-2">
-        Alquiler, salario, suscripciones: el día que tocan se registran solos al abrir la app, y cuentan en el presupuesto como
-        cualquier gasto.
+        {t.recurring.intro}
       </p>
 
       {active.length > 0 && (
         <section className="machined mt-4 rounded-card bg-card p-4">
           <dl className="grid grid-cols-2 gap-3">
             <div>
-              <dt className="text-footnote text-label-2">Gastos fijos al mes</dt>
+              <dt className="text-footnote text-label-2">{t.recurring.expensesPerMonth}</dt>
               <dd className="tnum engraved mt-1 text-title3 font-light">{formatCRC(gastos)}</dd>
             </div>
             <div>
-              <dt className="text-footnote text-label-2">Ingresos fijos al mes</dt>
+              <dt className="text-footnote text-label-2">{t.recurring.incomePerMonth}</dt>
               <dd className="tnum mt-1 text-title3 font-light text-green">{formatCRC(ingresos)}</dd>
             </div>
           </dl>
         </section>
       )}
 
-      <Section header="Próximos">
+      <Section header={t.recurring.upcoming}>
         {isLoading ? null : active.length === 0 ? (
-          <EmptyState title="Aún no hay fijos" body="Agrega lo que pagas o recibes siempre igual, como el alquiler o el salario." />
+          <EmptyState title={t.recurring.emptyTitle} body={t.recurring.emptyBody} />
         ) : (
           active.map(row)
         )}
       </Section>
 
       <Button variant="tinted" className="mt-6 w-full" onClick={() => openEditor({ type: 'gasto', frequency: 'mensual', active: true })}>
-        Agregar gasto o ingreso fijo
+        {t.recurring.add}
       </Button>
 
       {paused.length > 0 && (
-        <Section header="En pausa" footer="No se registran hasta que los reactives.">
+        <Section header={t.recurring.paused} footer={t.recurring.pausedFooter}>
           {paused.map(row)}
         </Section>
       )}
@@ -106,16 +104,10 @@ export function RecurringPage() {
   );
 }
 
-const FREQ_SHORT: Record<Frequency, string> = { semanal: 'Semanal', quincenal: 'Quincenal', mensual: 'Mensual', anual: 'Anual' };
-
-const FREQ_OPTIONS: { value: Frequency; label: string }[] = [
-  { value: 'semanal', label: 'Semana' },
-  { value: 'quincenal', label: 'Quincena' },
-  { value: 'mensual', label: 'Mes' },
-  { value: 'anual', label: 'Año' },
-];
+const FREQUENCIES: Frequency[] = ['semanal', 'quincenal', 'mensual', 'anual'];
 
 function RecurringSheet({ open, initial, onClose }: { open: boolean; initial: Partial<Recurring>; onClose: () => void }) {
+  const t = useT();
   const { data: accounts = [] } = useAccounts();
   const { data: categories = [] } = useCategories();
   const { accMap } = useLookups();
@@ -161,15 +153,15 @@ function RecurringSheet({ open, initial, onClose }: { open: boolean; initial: Pa
       anchor_day: anchor,
       active,
     });
-    const done = initial.id ? 'Cambios guardados' : `${name.trim()} agregado`;
-    toast(created > 0 ? `${done} · ${created === 1 ? '1 cobro registrado' : `${created} cobros registrados`}` : done);
+    const done = initial.id ? t.recurring.changesSaved : t.recurring.added(name.trim());
+    toast(created > 0 ? `${done} · ${t.recurring.charged(created)}` : done);
     onClose();
   };
 
   const destroy = async () => {
     if (!initial.id) return;
     await remove.mutateAsync(initial.id);
-    toast('Fijo eliminado');
+    toast(t.recurring.deleted);
     onClose();
   };
 
@@ -178,10 +170,10 @@ function RecurringSheet({ open, initial, onClose }: { open: boolean; initial: Pa
       open={open}
       onClose={onClose}
       swipeToClose
-      title={initial.id ? 'Editar fijo' : type === 'ingreso' ? 'Nuevo ingreso fijo' : 'Nuevo gasto fijo'}
+      title={initial.id ? t.recurring.edit : type === 'ingreso' ? t.recurring.newIncome : t.recurring.newExpense}
       leading={
         <button type="button" className="min-h-11 text-body text-accent" onClick={onClose}>
-          Cancelar
+          {t.common.cancel}
         </button>
       }
       trailing={
@@ -191,19 +183,19 @@ function RecurringSheet({ open, initial, onClose }: { open: boolean; initial: Pa
           disabled={!valid || save.isPending}
           onClick={submit}
         >
-          Guardar
+          {t.common.save}
         </button>
       }
     >
       <Segmented
         options={[
-          { value: 'gasto', label: 'Gasto' },
-          { value: 'ingreso', label: 'Ingreso' },
+          { value: 'gasto', label: t.recurring.expense },
+          { value: 'ingreso', label: t.recurring.income },
         ]}
         value={type}
-        onChange={(t) => {
-          if (t !== type) setCategoryId(null); // las categorías de gasto e ingreso son distintas
-          setType(t);
+        onChange={(k) => {
+          if (k !== type) setCategoryId(null); // las categorías de gasto e ingreso son distintas
+          setType(k);
         }}
       />
 
@@ -212,24 +204,24 @@ function RecurringSheet({ open, initial, onClose }: { open: boolean; initial: Pa
       </div>
 
       <FormGroup className="mt-5">
-        <FormRow label="Nombre" last>
-          <TextInput value={name} maxLength={80} onChange={(e) => setName(e.target.value)} placeholder={type === 'ingreso' ? 'Salario' : 'Alquiler'} />
+        <FormRow label={t.recurring.name} last>
+          <TextInput value={name} maxLength={80} onChange={(e) => setName(e.target.value)} placeholder={type === 'ingreso' ? t.recurring.incomePlaceholder : t.recurring.expensePlaceholder} />
         </FormRow>
       </FormGroup>
 
       <div className="mt-6">
-        <FormHeader>Categoría</FormHeader>
+        <FormHeader>{t.recurring.category}</FormHeader>
         <CategoryGrid categories={cats} selected={categoryId} onSelect={setCategoryId} />
       </div>
 
       <div className="mt-6">
-        <FormHeader>{type === 'ingreso' ? 'Entra a' : 'Se paga con'}</FormHeader>
+        <FormHeader>{type === 'ingreso' ? t.recurring.depositTo : t.recurring.paidWith}</FormHeader>
         <AccountChips accounts={choices} selected={account?.id} onSelect={setAccountId} />
       </div>
 
       <div className="mt-6">
-        <FormHeader>Se repite cada</FormHeader>
-        <Segmented options={FREQ_OPTIONS} value={frequency} onChange={setFrequency} />
+        <FormHeader>{t.recurring.repeatsEvery}</FormHeader>
+        <Segmented options={FREQUENCIES.map((f) => ({ value: f, label: t.recurring.every[f] }))} value={frequency} onChange={setFrequency} />
       </div>
 
       <FormGroup
@@ -237,24 +229,24 @@ function RecurringSheet({ open, initial, onClose }: { open: boolean; initial: Pa
           <>
             <p>{scheduleLabel({ next_date: date, frequency, anchor_day: anchor })}.</p>
             {past ? (
-              <p className="text-orange">La fecha ya pasó: al guardar se registran también los cobros desde entonces hasta hoy.</p>
+              <p className="text-orange">{t.recurring.pastDate}</p>
             ) : (
-              !initial.id && <p>Si este mes ya lo registraste a mano, elige la fecha del próximo cobro.</p>
+              !initial.id && <p>{t.recurring.alreadyThisMonth}</p>
             )}
           </>
         }
       >
-        <FormRow label="Próximo cobro" last>
+        <FormRow label={t.recurring.nextCharge} last>
           <span className="relative inline-flex">
-            <span className="rounded-[8px] bg-card-3 px-3 py-1.5 text-body">{date === today ? 'Hoy' : pillDate.format(parseDay(date))}</span>
-            <input type="date" value={date} onChange={(e) => e.target.value && setDate(e.target.value)} aria-label="Próximo cobro" className={PICKER_INPUT} />
+            <span className="rounded-[8px] bg-card-3 px-3 py-1.5 text-body">{date === today ? t.recurring.today : longDate(parseDay(date))}</span>
+            <input type="date" value={date} onChange={(e) => e.target.value && setDate(e.target.value)} aria-label={t.recurring.nextCharge} className={PICKER_INPUT} />
           </span>
         </FormRow>
       </FormGroup>
 
       {initial.id && (
-        <FormGroup footer="En pausa no se registra; lo que ya se registró no cambia.">
-          <FormRow label="Activo" last>
+        <FormGroup footer={t.recurring.activeFooter}>
+          <FormRow label={t.recurring.active} last>
             <span className="flex w-full justify-end">
               <Toggle checked={active} onChange={setActive} />
             </span>
@@ -265,19 +257,19 @@ function RecurringSheet({ open, initial, onClose }: { open: boolean; initial: Pa
       {initial.id &&
         (confirmDelete ? (
           <div className="mt-6 rounded-[12px] bg-red/15 p-4">
-            <p className="text-subhead">¿Eliminar este fijo? Los movimientos que ya registró se quedan.</p>
+            <p className="text-subhead">{t.recurring.confirmDelete}</p>
             <div className="mt-3 flex gap-2">
               <Button variant="plain" className="flex-1" onClick={() => setConfirmDelete(false)}>
-                Cancelar
+                {t.common.cancel}
               </Button>
               <Button className="flex-1 !bg-red" onClick={destroy} disabled={remove.isPending}>
-                Eliminar
+                {t.common.delete}
               </Button>
             </div>
           </div>
         ) : (
           <Button variant="destructive" className="mt-6 w-full" onClick={() => setConfirmDelete(true)}>
-            Eliminar fijo
+            {t.recurring.delete}
           </Button>
         ))}
     </Sheet>

@@ -1,23 +1,14 @@
 import { useState } from 'react';
 import { Sheet } from '../../components/Sheet';
 import { useToast } from '../../components/Toast';
+import { useT } from '../../i18n';
 import { checkPassword } from '../../lib/password';
 import { supabase } from '../../lib/supabase';
 import { FormGroup, FormRow, TextInput } from './form';
 
-const ERRORS: Record<string, string> = {
-  same_password: 'La nueva contraseña es igual a la actual.',
-  weak_password: 'La contraseña es muy débil.',
-  current_password_mismatch: 'La contraseña actual no es correcta.',
-  current_password_invalid: 'La contraseña actual no es correcta.',
-  insufficient_aal: 'Vuelve a iniciar sesión con tu código de dos pasos e inténtalo de nuevo.',
-  current_password_required: 'Escribe tu contraseña actual.',
-  reauthentication_needed: 'Vuelve a iniciar sesión e inténtalo de nuevo.',
-  over_request_rate_limit: 'Demasiados intentos. Espera unos minutos.',
-};
-
 /** Cambiar contraseña pidiendo la actual (el servidor también la exige: security_update_password_require_current_password). */
 export function ChangePasswordSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const t = useT();
   const toast = useToast();
   const [current, setCurrent] = useState('');
   const [next, setNext] = useState('');
@@ -35,10 +26,11 @@ export function ChangePasswordSheet({ open, onClose }: { open: boolean; onClose:
     const { error } = await supabase.auth.updateUser({ password: next, current_password: current });
     setBusy(false);
     if (error) {
-      setError(ERRORS[error.code ?? ''] ?? 'No se pudo cambiar la contraseña. Revisa la actual e inténtalo de nuevo.');
+      const errors: Record<string, string> = t.security.changePassword.errors;
+      setError(errors[error.code ?? ''] ?? t.security.changePassword.failed);
       return;
     }
-    toast('Contraseña actualizada');
+    toast(t.security.changePassword.updated);
     onClose();
   };
 
@@ -47,10 +39,10 @@ export function ChangePasswordSheet({ open, onClose }: { open: boolean; onClose:
       open={open}
       onClose={onClose}
       swipeToClose
-      title="Cambiar contraseña"
+      title={t.security.changePassword.title}
       leading={
         <button type="button" className="min-h-11 text-body text-accent" onClick={onClose}>
-          Cancelar
+          {t.common.cancel}
         </button>
       }
       trailing={
@@ -60,7 +52,7 @@ export function ChangePasswordSheet({ open, onClose }: { open: boolean; onClose:
           disabled={!valid || busy}
           onClick={submit}
         >
-          Guardar
+          {t.common.save}
         </button>
       }
     >
@@ -71,23 +63,19 @@ export function ChangePasswordSheet({ open, onClose }: { open: boolean; onClose:
         }}
       >
         <FormGroup>
-          <FormRow label="Actual" last>
+          <FormRow label={t.security.changePassword.current} last>
             <TextInput type="password" autoComplete="current-password" value={current} onChange={(e) => setCurrent(e.target.value)} />
           </FormRow>
         </FormGroup>
         <FormGroup
           footer={
-            next && !strength.ok
-              ? `Le falta: ${strength.missing.join(', ')}.`
-              : confirm && next !== confirm
-                ? 'Las contraseñas no coinciden.'
-                : 'Mínimo 8 caracteres, con minúscula, mayúscula y número.'
+            next && !strength.ok ? t.auth.missing(strength.missing) : confirm && next !== confirm ? t.auth.mismatch : t.auth.rules
           }
         >
-          <FormRow label="Nueva">
+          <FormRow label={t.security.changePassword.next}>
             <TextInput type="password" autoComplete="new-password" value={next} onChange={(e) => setNext(e.target.value)} />
           </FormRow>
-          <FormRow label="Repetir" last>
+          <FormRow label={t.security.changePassword.repeat} last>
             <TextInput type="password" autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} />
           </FormRow>
         </FormGroup>

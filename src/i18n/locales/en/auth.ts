@@ -1,0 +1,92 @@
+import type es from '../es/auth';
+
+const en: typeof es = {
+  errors: {
+    invalid_credentials: 'Incorrect email or password.',
+    email_not_confirmed: "Your email isn't confirmed yet. Open the link we sent you.",
+    over_email_send_rate_limit: 'The hourly email limit was reached. Try again in an hour.',
+    over_request_rate_limit: 'Too many attempts. Wait a few minutes.',
+    same_password: 'The new password is the same as the old one.',
+    weak_password: 'The password is too weak.',
+    signup_disabled: "New accounts can't be created right now.",
+    email_address_invalid: "That email isn't valid.",
+    email_address_not_authorized: "Couldn't send email to that address.",
+  },
+  whereLinkOpens: {
+    ios: "Open it on this iPhone; it'll open in Safari.",
+    android: "Open it on this phone; it'll open in the browser.",
+    other: 'Open it on this device.',
+  },
+  check: {
+    title: 'Confirm your email',
+    subtitle: (email, where) =>
+      `If ${email} didn't have an account, you'll get a link to confirm it. ${where} Then sign in here with your email and password.`,
+    button: "I've confirmed it, sign in",
+  },
+  sent: {
+    title: 'Check your email',
+    subtitle: (email, where) => `If ${email} has an account, you'll get a link to set a new password. ${where}`,
+    button: 'Back to sign in',
+  },
+  noEmail: "Didn't get it? Check your spam or promotions folder.",
+  titles: { login: 'Finanzas', signup: 'Create account', forgot: 'Reset password' },
+  subtitles: {
+    login: 'Sign in to see your spending.',
+    signup: 'Your spending, income, and budget in colones. Only you can see your data.',
+    forgot: "We'll email you a link to set a new password.",
+  },
+  submit: { login: 'Sign in', signup: 'Create account', forgot: 'Send link' },
+  notices: {
+    confirmed: 'Your email is confirmed. You can sign in now.',
+    expired: "The link expired or was already used. Sign in with your email and password; if it still needs confirming, we'll resend it.",
+    accountDeleted: 'Your account and all your data were deleted.',
+    partialSignOut:
+      'You signed out while offline, so you were only signed out on this device. To sign out everywhere, sign in while online and tap "Sign out" again.',
+  },
+  email: 'Email',
+  password: 'Password',
+  newPassword: 'New password',
+  repeatPassword: 'Repeat password',
+  missing: (items) => `Missing: ${items.join(', ')}.`,
+  mismatch: "The passwords don't match.",
+  rules: 'At least 8 characters, with a lowercase letter, an uppercase letter, and a number.',
+  resend: 'Resend the confirmation email',
+  resent: 'We resent the link',
+  privacyBefore: 'By creating your account you accept the',
+  privacyLink: 'privacy policy',
+  privacyAfter: '.',
+  forgotLink: 'Forgot your password?',
+  signupLink: "Don't have an account? Create one",
+  haveAccount: 'I already have an account, sign in',
+  codePlaceholder: '6-digit code',
+  mfa: {
+    title: 'Verification',
+    subtitle: 'Enter the 6-digit code from your authenticator app.',
+    verify: 'Verify',
+  },
+  reset: {
+    title: 'New password',
+    forBefore: 'For',
+    forAfter: '.',
+    codeHint: 'You have two-step verification: enter the code from your authenticator.',
+    save: 'Save password',
+    doneTitle: 'New password set',
+    doneSubtitle: "You can now sign in with it in the app. For security, you've been signed out here; you can close this page.",
+    signInHere: 'Sign in here',
+  },
+  passwordRules: {
+    length: '8 characters',
+    lower: 'a lowercase letter',
+    upper: 'an uppercase letter',
+    digit: 'a number',
+    max: 'at most 72 characters',
+  },
+  mfaErrors: {
+    mfa_verification_failed: 'Wrong or expired code. Try the next one.',
+    mfa_challenge_expired: 'The code expired. Try the next one.',
+    over_request_rate_limit: 'Too many attempts. Wait a few minutes.',
+  },
+  mfaNoFactor: "Two-step verification isn't turned on.",
+  mfaVerifyFailed: "Couldn't verify. Check your connection and try again.",
+};
+export default en;

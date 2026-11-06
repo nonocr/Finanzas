@@ -9,7 +9,8 @@ import { ACCOUNT_ICONS } from '../../components/palette';
 import { Sheet } from '../../components/Sheet';
 import { useToast } from '../../components/Toast';
 import { Button } from '../../components/ui';
-import { crDay, crDayOf, crInstant, crTimeOf, isoDate } from '../../lib/dates';
+import { getLang, useT } from '../../i18n';
+import { clockTime, crDay, crDayOf, crInstant, crTimeOf, isoDate, longDate } from '../../lib/dates';
 import {
   centsToUsdInput,
   formatRate,
@@ -31,9 +32,10 @@ import {
 } from '../../lib/queries';
 import type { Account, Transaction, TxType } from '../../lib/types';
 
+/** Tipo de cambio para el campo, con el separador decimal del idioma (454,41 / 454.41); parseRateInput lee los dos. */
+const rateToText = (rate: number) => (getLang() === 'es' ? String(rate).replace('.', ',') : String(rate));
+
 const LAST_ACCOUNT_KEY = 'finanzas-last-account';
-const pillDate = new Intl.DateTimeFormat('es-CR', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
-const pillTime = new Intl.DateTimeFormat('es-CR', { hour: 'numeric', minute: '2-digit', timeZone: 'UTC' });
 export const PICKER_INPUT =
   'absolute inset-0 opacity-0 [color-scheme:dark] [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:size-full';
 const readLastAccount = () => {
@@ -43,12 +45,6 @@ const readLastAccount = () => {
     return null;
   }
 };
-
-const TYPE_OPTIONS: { value: TxType; label: string }[] = [
-  { value: 'gasto', label: 'Gasto' },
-  { value: 'ingreso', label: 'Ingreso' },
-  { value: 'transferencia', label: 'Entre cuentas' },
-];
 
 export function TransactionSheet({
   open,
@@ -61,6 +57,12 @@ export function TransactionSheet({
   initialType: TxType;
   onClose: () => void;
 }) {
+  const t = useT();
+  const typeOptions: { value: TxType; label: string }[] = [
+    { value: 'gasto', label: t.transactions.types.expense },
+    { value: 'ingreso', label: t.transactions.types.income },
+    { value: 'transferencia', label: t.transactions.types.transfer },
+  ];
   const { data: accounts = [] } = useAccounts();
   const { data: categories = [] } = useCategories();
   const save = useSaveTransaction();
@@ -79,7 +81,7 @@ export function TransactionSheet({
   const [currency, setCurrency] = useState<'CRC' | 'USD'>(savedUsd || rawUsd ? 'USD' : 'CRC');
   const [usdText, setUsdText] = useState(savedUsd || rawUsd ? centsToUsdInput((savedUsd ?? rawUsd)!) : '');
   // null = sin tocar: se usa el tipo de cambio guardado con el movimiento o, si es nuevo, el del día.
-  const [rateText, setRateText] = useState<string | null>(savedUsd && tx?.fx_rate ? String(tx.fx_rate).replace('.', ',') : null);
+  const [rateText, setRateText] = useState<string | null>(savedUsd && tx?.fx_rate ? rateToText(tx.fx_rate) : null);
   const [categoryId, setCategoryId] = useState<string | null>(tx?.category_id ?? null);
   const [accountId, setAccountId] = useState<string | null>(tx?.account_id ?? readLastAccount());
   const [toAccountId, setToAccountId] = useState<string | null>(tx?.to_account_id ?? null);
@@ -105,7 +107,7 @@ export function TransactionSheet({
   const isTransfer = type === 'transferencia';
   const inUsd = currency === 'USD' && !isTransfer;
   const { data: liveRate, isFetching: fetchingRate } = useUsdRate(inUsd && rateText === null);
-  const rateShown = rateText ?? (liveRate ? String(liveRate.rate).replace('.', ',') : '');
+  const rateShown = rateText ?? (liveRate ? rateToText(liveRate.rate) : '');
   const rate = parseRateInput(rateShown);
   const rateOk = rate !== null && isSaneRate(rate);
   const usdCents = usdInputToCents(usdText);
@@ -153,33 +155,33 @@ export function TransactionSheet({
     }
     const done = tx
       ? pending
-        ? 'Pago confirmado'
-        : 'Cambios guardados'
+        ? t.transactions.toastConfirmed
+        : t.transactions.toastChanges
       : type === 'ingreso'
-        ? 'Ingreso guardado'
+        ? t.transactions.toastIncome
         : isTransfer
-          ? 'Movimiento guardado'
-          : 'Gasto guardado';
-    toast(onlineManager.isOnline() ? done : `${done} · se sube al volver la señal`);
+          ? t.transactions.toastTransfer
+          : t.transactions.toastExpense;
+    toast(onlineManager.isOnline() ? done : t.transactions.toastOffline(done));
     onClose();
   };
 
   const destroy = () => {
     if (!tx) return;
     remove.mutate(tx.id);
-    toast(onlineManager.isOnline() ? 'Movimiento eliminado' : 'Eliminado · se sincroniza al volver la señal');
+    toast(onlineManager.isOnline() ? t.transactions.toastDeleted : t.transactions.toastDeletedOffline);
     onClose();
   };
 
   const title = pending
-    ? 'Revisar pago'
+    ? t.transactions.titleReview
     : tx
-      ? 'Editar'
+      ? t.common.edit
       : type === 'ingreso'
-        ? 'Nuevo ingreso'
+        ? t.transactions.titleNewIncome
         : isTransfer
-          ? 'Entre cuentas'
-          : 'Nuevo gasto';
+          ? t.transactions.types.transfer
+          : t.transactions.titleNewExpense;
 
   return (
     <Sheet
@@ -189,7 +191,7 @@ export function TransactionSheet({
       title={title}
       leading={
         <button type="button" className="min-h-11 text-body text-accent" onClick={onClose}>
-          Cancelar
+          {t.common.cancel}
         </button>
       }
       trailing={
@@ -199,7 +201,7 @@ export function TransactionSheet({
           disabled={!valid || save.isPending}
           onClick={submit}
         >
-          {pending ? 'Confirmar' : 'Guardar'}
+          {pending ? t.transactions.confirm : t.common.save}
         </button>
       }
     >
@@ -207,39 +209,33 @@ export function TransactionSheet({
         <div className="mb-4 flex items-center gap-3 rounded-[12px] bg-accent/12 px-3.5 py-3 text-subhead text-label">
           <Smartphone size={20} strokeWidth={2} className="shrink-0 text-accent" />
           <span>
-            Llegó de Apple Wallet{tx?.note ? ` (${tx.note.replace(/^Wallet · /, '')})` : ''}
-            {savedUsd || rawUsd ? (
-              <>
-                {' '}en dólares{savedUsd && tx?.fx_rate ? `, convertido a ${formatRate(tx.fx_rate)} por dólar` : ''}. Revisa el tipo de
-                cambio, elige la categoría y confírmalo.
-              </>
-            ) : missingAmount ? (
-              <>
-                {tx?.amount_raw ? ` con un monto que no se pudo leer («${tx.amount_raw}»)` : ' sin el monto (el datáfono no lo mandó)'}.
-                Escribe el monto, elige la categoría y confírmalo.
-              </>
-            ) : (
-              '. Elige la categoría y confírmalo.'
-            )}
+            {t.transactions.walletArrived}
+            {tx?.note ? ` (${tx.note.replace(/^Wallet · /, '')})` : ''}
+            {savedUsd || rawUsd
+              ? t.transactions.walletUsd(savedUsd && tx?.fx_rate ? formatRate(tx.fx_rate) : null)
+              : missingAmount
+                ? tx?.amount_raw
+                  ? t.transactions.walletUnreadable(tx.amount_raw)
+                  : t.transactions.walletNoAmount
+                : t.transactions.walletPickCategory}
           </span>
         </div>
       )}
 
       {!tx && (
         <Segmented
-          options={TYPE_OPTIONS}
+          options={typeOptions}
           value={type}
-          onChange={(t) => {
+          onChange={(next) => {
             // La categoría elegida es de gastos o de ingresos: al cambiar de tipo deja de valer y quedaría escondida.
-            if ((t === 'ingreso') !== (type === 'ingreso')) setCategoryId(null);
-            setType(t);
+            if ((next === 'ingreso') !== (type === 'ingreso')) setCategoryId(null);
+            setType(next);
           }}
         />
       )}
       {isTransfer && (
         <p className="mt-2 px-1 text-footnote text-label-2">
-          Para mover plata entre tus cuentas: pagar la tarjeta, sacar efectivo del cajero o pasar a ahorros. No cuenta como gasto ni
-          como ingreso.
+          {t.transactions.transferHint}
         </p>
       )}
 
@@ -261,8 +257,8 @@ export function TransactionSheet({
         <div className="mx-auto mt-3 w-56">
           <Segmented
             options={[
-              { value: 'CRC', label: 'Colones' },
-              { value: 'USD', label: 'Dólares' },
+              { value: 'CRC', label: t.transactions.colones },
+              { value: 'USD', label: t.transactions.dollars },
             ]}
             value={currency}
             onChange={setCurrency}
@@ -273,47 +269,47 @@ export function TransactionSheet({
       {inUsd && (
         <>
           <div className="mt-4 overflow-hidden rounded-[12px] bg-card-2">
-            <Field label="Tipo de cambio">
+            <Field label={t.transactions.exchangeRate}>
               <input
                 inputMode="decimal"
                 value={rateShown}
                 onChange={(e) => setRateText(e.target.value.replace(/[^\d.,]/g, '').slice(0, 9))}
-                placeholder={fetchingRate ? 'Buscando…' : '₡0,00'}
-                aria-label="Tipo de cambio, colones por dólar"
+                placeholder={fetchingRate ? t.transactions.searching : getLang() === 'es' ? '₡0,00' : '₡0.00'}
+                aria-label={t.transactions.exchangeRateLabel}
                 className="tnum w-full bg-transparent text-right text-body outline-none placeholder:text-label-3"
                 autoComplete="off"
               />
             </Field>
-            <Field label="En colones" last>
+            <Field label={t.transactions.inColones} last>
               <span className="tnum text-body font-semibold">{cents > 0 ? formatCRC(cents) : '—'}</span>
             </Field>
           </div>
           <p className="mt-2 px-4 text-footnote text-pretty text-label-2">
             {rateShown && !rateOk
-              ? 'Ese tipo de cambio no parece correcto: escribe cuántos colones vale un dólar.'
+              ? t.transactions.rateInvalid
               : rateText !== null || savedUsd
-                ? 'Tu banco puede cobrar unos colones distinto. Si tienes el monto exacto, corrige el tipo de cambio.'
+                ? t.transactions.rateBankNote
                 : liveRate
-                  ? `Tipo de cambio de venta del BCCR (${liveRate.date.split('-').reverse().join('/')}). Tu banco puede cobrar unos colones distinto.`
+                  ? t.transactions.rateBccr(liveRate.date)
                   : fetchingRate
-                    ? 'Buscando el tipo de cambio del BCCR…'
-                    : 'No se pudo obtener el tipo de cambio. Escríbelo a mano.'}
+                    ? t.transactions.rateFetching
+                    : t.transactions.rateFailed}
           </p>
         </>
       )}
 
       {!isTransfer && (
-        <Group label="Categoría">
+        <Group label={t.transactions.category}>
           <CategoryGrid categories={cats} selected={categoryId} onSelect={setCategoryId} />
         </Group>
       )}
 
-      <Group label={isTransfer ? 'Desde' : type === 'ingreso' ? 'Entra a' : 'Pagado con'}>
+      <Group label={isTransfer ? t.transactions.from : type === 'ingreso' ? t.transactions.incomeTo : t.transactions.paidWith}>
         <AccountChips accounts={choices} selected={account?.id} onSelect={setAccountId} />
       </Group>
 
       {isTransfer && (
-        <Group label="Hacia" icon={<ArrowRight size={14} strokeWidth={2.25} />}>
+        <Group label={t.transactions.to} icon={<ArrowRight size={14} strokeWidth={2.25} />}>
           <AccountChips
             accounts={choices.filter((a) => a.id !== account?.id)}
             selected={toAccountId ?? undefined}
@@ -323,50 +319,50 @@ export function TransactionSheet({
       )}
 
       <div className="mt-5 overflow-hidden rounded-[12px] bg-card-2">
-        <Field label={isTransfer ? 'Descripción' : type === 'ingreso' ? 'Origen' : 'Comercio'}>
+        <Field label={isTransfer ? t.transactions.description : type === 'ingreso' ? t.transactions.source : t.transactions.merchant}>
           <input
             value={merchant}
             maxLength={200}
             onChange={(e) => setMerchant(e.target.value)}
-            placeholder={isTransfer ? 'Pago de tarjeta' : type === 'ingreso' ? 'Salario' : 'Automercado'}
+            placeholder={isTransfer ? t.transactions.placeholderTransfer : type === 'ingreso' ? t.transactions.placeholderIncome : t.transactions.placeholderExpense}
             className="w-full bg-transparent text-right text-body outline-none placeholder:text-label-3"
             autoComplete="off"
           />
         </Field>
-        <Field label="Fecha">
+        <Field label={t.transactions.date}>
           {/* Pastilla de fecha al estilo iOS; el input nativo queda encima, transparente, para abrir el selector. */}
           <span className="relative inline-flex">
             <span className="rounded-[8px] bg-card-3 px-3 py-1.5 text-body">
-              {date === today ? 'Hoy' : pillDate.format(new Date(date + 'T00:00:00Z'))}
+              {date === today ? t.transactions.today : longDate(new Date(date + 'T00:00:00Z'))}
             </span>
             <input
               type="date"
               value={date}
               max={today}
               onChange={(e) => e.target.value && setDate(e.target.value)}
-              aria-label="Fecha"
+              aria-label={t.transactions.date}
               className={PICKER_INPUT}
             />
           </span>
         </Field>
-        <Field label="Hora">
+        <Field label={t.transactions.time}>
           <span className="relative inline-flex">
-            <span className="tnum rounded-[8px] bg-card-3 px-3 py-1.5 text-body">{pillTime.format(new Date(`1970-01-01T${time}:00Z`))}</span>
+            <span className="tnum rounded-[8px] bg-card-3 px-3 py-1.5 text-body">{clockTime(time)}</span>
             <input
               type="time"
               value={time}
               onChange={(e) => e.target.value && setTime(e.target.value.slice(0, 5))}
-              aria-label="Hora"
+              aria-label={t.transactions.time}
               className={PICKER_INPUT}
             />
           </span>
         </Field>
-        <Field label="Nota" last>
+        <Field label={t.transactions.note} last>
           <input
             value={note}
             maxLength={500}
             onChange={(e) => setNote(e.target.value)}
-            placeholder="Opcional"
+            placeholder={t.transactions.optional}
             className="w-full bg-transparent text-right text-body outline-none placeholder:text-label-3"
             autoComplete="off"
           />
@@ -376,7 +372,7 @@ export function TransactionSheet({
       {pending && tx?.merchant && (
         <label className="mt-3 flex min-h-11 items-center justify-between gap-3 rounded-[12px] bg-card-2 px-4 py-2.5">
           <span className="text-body">
-            Usar siempre esta categoría para <span className="font-semibold">{tx.merchant}</span>
+            {t.transactions.rememberRule} <span className="font-semibold">{tx.merchant}</span>
           </span>
           <Toggle checked={remember} onChange={setRemember} />
         </label>
@@ -385,19 +381,19 @@ export function TransactionSheet({
       {tx &&
         (confirmDelete ? (
           <div className="mt-6 rounded-[12px] bg-red/15 p-4">
-            <p className="text-subhead">¿Eliminar este movimiento? Esto no se puede deshacer.</p>
+            <p className="text-subhead">{t.transactions.confirmDelete}</p>
             <div className="mt-3 flex gap-2">
               <Button variant="plain" className="flex-1" onClick={() => setConfirmDelete(false)}>
-                Cancelar
+                {t.common.cancel}
               </Button>
               <Button className="flex-1 !bg-red" onClick={destroy} disabled={remove.isPending}>
-                Eliminar
+                {t.common.delete}
               </Button>
             </div>
           </div>
         ) : (
           <Button variant="destructive" className="mt-6 w-full" onClick={() => setConfirmDelete(true)}>
-            Eliminar movimiento
+            {t.transactions.deleteTransaction}
           </Button>
         ))}
     </Sheet>

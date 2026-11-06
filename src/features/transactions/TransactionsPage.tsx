@@ -2,6 +2,7 @@ import { Search, Smartphone, Store, X } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { MonthNav } from '../../components/MonthNav';
+import { useT } from '../../i18n';
 import { Segmented } from '../../components/motion';
 import { CategoryIcon, EmptyState, IconTile, Screen, Section, Skeleton } from '../../components/ui';
 import { crDay, crDayOf, dayLabel, isoDate, monthRange, startOfMonth } from '../../lib/dates';
@@ -16,6 +17,7 @@ type Filter = 'todos' | 'gastos' | 'ingresos' | 'revisar';
 const norm = (s: string) => s.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
 
 export function TransactionsPage() {
+  const t = useT();
   const [params, setParams] = useSearchParams();
   const filter = (params.get('filtro') as Filter) || 'todos';
   // Cambiar de pestaña no borra la categoría o el comercio que se tocó en Estadísticas.
@@ -73,7 +75,7 @@ export function TransactionsPage() {
   }, [visible]);
 
   return (
-    <Screen title="Movimientos">
+    <Screen title={t.nav.tabs.transactions}>
       <div className="space-y-3">
         {filter !== 'revisar' && <MonthNav month={month} onChange={setMonth} />}
         {drill && (
@@ -91,21 +93,21 @@ export function TransactionsPage() {
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Buscar comercio, categoría o nota"
+            placeholder={t.transactions.searchPlaceholder}
             className="min-w-0 flex-1 bg-transparent text-body outline-none placeholder:text-label-2 [&::-webkit-search-cancel-button]:hidden"
           />
           {query && (
-            <button type="button" aria-label="Borrar búsqueda" onClick={() => setQuery('')} className="grid size-8 place-items-center text-label-2">
+            <button type="button" aria-label={t.transactions.clearSearch} onClick={() => setQuery('')} className="grid size-8 place-items-center text-label-2">
               <X size={16} strokeWidth={2.5} />
             </button>
           )}
         </label>
         <Segmented
           options={[
-            { value: 'todos', label: 'Todos' },
-            { value: 'gastos', label: 'Gastos' },
-            { value: 'ingresos', label: 'Ingresos' },
-            { value: 'revisar', label: pending.length ? `Revisar (${pending.length})` : 'Revisar' },
+            { value: 'todos', label: t.transactions.filterAll },
+            { value: 'gastos', label: t.transactions.filterExpenses },
+            { value: 'ingresos', label: t.transactions.filterIncome },
+            { value: 'revisar', label: t.transactions.filterReview(pending.length) },
           ]}
           value={filter}
           onChange={setFilter}
@@ -118,13 +120,13 @@ export function TransactionsPage() {
           >
             <Smartphone size={20} strokeWidth={2} className="shrink-0 text-accent" />
             <span className="min-w-0 flex-1 text-body">
-              {pending.length === 1 ? '1 pago de Wallet espera revisión' : `${pending.length} pagos de Wallet esperan revisión`}
+              {t.transactions.walletWaiting(pending.length)}
             </span>
-            <span className="text-body font-semibold text-accent">Revisar</span>
+            <span className="text-body font-semibold text-accent">{t.transactions.review}</span>
           </button>
         )}
         {filter === 'revisar' && pending.length > 0 && (
-          <p className="px-1 text-subhead text-label-2">Toca cada pago, elige su categoría y confírmalo. Si alguno llegó sin monto, escríbelo ahí mismo.</p>
+          <p className="px-1 text-subhead text-label-2">{t.transactions.reviewHint}</p>
         )}
       </div>
 
@@ -139,21 +141,21 @@ export function TransactionsPage() {
           <EmptyState
             title={
               query
-                ? 'Nada coincide con tu búsqueda'
+                ? t.transactions.emptySearchTitle
                 : filter === 'revisar'
-                  ? 'Todo al día'
+                  ? t.transactions.emptyReviewTitle
                   : drill
-                    ? 'Nada aquí este mes'
-                    : 'Sin movimientos este mes'
+                    ? t.transactions.emptyDrillTitle
+                    : t.transactions.emptyMonthTitle
             }
             body={
               query
-                ? 'Prueba con otro nombre o cambia el filtro.'
+                ? t.transactions.emptySearchBody
                 : drill && filter !== 'revisar'
-                  ? 'Cambia de mes o quita el filtro para ver todo.'
+                  ? t.transactions.emptyDrillBody
                   : filter === 'revisar'
-                  ? 'Los pagos que lleguen de Apple Wallet sin categoría aparecerán aquí.'
-                  : 'Toca + para registrar un gasto o ingreso.'
+                  ? t.transactions.emptyReviewBody
+                  : t.transactions.emptyMonthBody
             }
           />
         </div>
@@ -191,7 +193,8 @@ function DrillChip({
   count: number;
   onClear: () => void;
 }) {
-  const name = drill.kind === 'comercio' ? drill.merchant : (category?.name ?? 'Sin categoría');
+  const t = useT();
+  const name = drill.kind === 'comercio' ? drill.merchant : (category?.name ?? t.common.noCategory);
   return (
     <div className="machined flex min-h-14 items-center gap-3 rounded-[12px] bg-card py-2 pr-1 pl-3">
       {drill.kind === 'comercio' ? (
@@ -202,11 +205,11 @@ function DrillChip({
       <div className="min-w-0 flex-1">
         <p className="truncate text-body font-semibold">{name}</p>
         <p className="tnum text-footnote text-label-2">
-          {count === 1 ? '1 movimiento' : `${count} movimientos`}
+          {t.transactions.count(count)}
           {spent > 0 && ` · ${formatCRC(-spent)}`}
         </p>
       </div>
-      <button type="button" aria-label={`Quitar el filtro ${name}`} onClick={onClear} className="press grid size-11 shrink-0 place-items-center text-label-2">
+      <button type="button" aria-label={t.transactions.removeFilter(name)} onClick={onClear} className="press grid size-11 shrink-0 place-items-center text-label-2">
         <X size={18} strokeWidth={2.25} />
       </button>
     </div>

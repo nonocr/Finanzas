@@ -1,4 +1,5 @@
 import clsx from 'clsx';
+import { useLang } from '../i18n';
 import type { Category } from '../lib/types';
 import { colorOf, iconOf } from './palette';
 
@@ -12,6 +13,7 @@ export function CategoryGrid({
   selected: string | null;
   onSelect: (id: string | null) => void;
 }) {
+  const lang = useLang();
   return (
     <div className="grid grid-cols-4 gap-x-1 gap-y-2">
       {categories.map((c) => {
@@ -40,8 +42,9 @@ export function CategoryGrid({
               <Icon size={21} strokeWidth={1.9} />
             </span>
             <span
-              lang="es"
-              // Nombres largos («Entretenimiento») se parten con guion en dos líneas en vez de cortarse.
+              lang={lang === 'es' ? 'es' : 'en'}
+              // Nombres largos («Entretenimiento», «Entertainment») se parten con guion en dos líneas en vez de cortarse; el
+              // guion sigue las reglas del idioma de la app, que es el más probable de los nombres.
               className={clsx('line-clamp-2 w-full px-0.5 text-center text-caption hyphens-auto', on ? 'font-semibold text-label' : 'text-label-2')}
             >
               {c.name}

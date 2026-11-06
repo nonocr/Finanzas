@@ -1,0 +1,32 @@
+// Textos en español del área «more». Fuente de verdad: el inglés (locales/en/more.ts) tiene el mismo tipo.
+export default {
+  accounts: 'Cuentas y tarjetas',
+  categories: 'Categorías',
+  rules: 'Reglas de comercios',
+  appearance: 'Apariencia',
+  theme: 'Tema',
+  home: 'Resumen',
+  homeDetail: 'Qué ver y en qué orden',
+  discreet: 'Modo discreto',
+  discreetDetail: 'Oculta los montos hasta tocarlos',
+  automatic: 'Automático',
+  wallet: 'Registro automático',
+  walletDetail: 'Pagos con tarjeta, en iPhone y Android',
+  recurring: 'Gastos e ingresos fijos',
+  recurringDetail: 'Alquiler, salario, suscripciones',
+  security: 'Seguridad',
+  changePassword: 'Cambiar contraseña',
+  twoFactor: 'Verificación en dos pasos',
+  data: 'Datos',
+  exportCsv: 'Exportar movimientos (CSV)',
+  resetDemo: 'Reiniciar datos de ejemplo',
+  signOut: 'Cerrar sesión',
+  privacy: 'Privacidad',
+  deleteAccount: 'Eliminar cuenta',
+  demoNote:
+    'Modo demo: los datos son de ejemplo y viven solo en este navegador. Conecta Supabase para guardar tus datos reales en la nube.',
+  exported: (n: number) => `${n} movimientos exportados`,
+  /** Encabezados de las columnas del CSV, en el orden en que se escriben. */
+  csvHeader: ['fecha', 'tipo', 'monto', 'cuenta', 'hacia', 'categoria', 'comercio', 'nota', 'origen', 'estado', 'monto_usd', 'tipo_cambio'],
+  csvFile: (date: string) => `movimientos-${date}.csv`,
+};

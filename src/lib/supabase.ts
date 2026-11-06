@@ -64,6 +64,17 @@ export function takePartialSignOut(): boolean {
   }
 }
 
+/**
+ * Guarda el idioma en los datos de la cuenta (user_metadata.lang): con él, los correos de Supabase (confirmar, contraseña
+ * nueva…) salen en ese idioma. Solo escribe si cambió.
+ */
+export async function syncAuthLang(lang: 'es' | 'en') {
+  const { data } = await supabase.auth.getSession();
+  const user = data.session?.user;
+  if (!user || user.user_metadata?.lang === lang) return;
+  await supabase.auth.updateUser({ data: { lang } });
+}
+
 const ACCOUNT_DELETED = 'finanzas-cuenta-borrada';
 /** Borra la cuenta y todos sus datos (función delete_my_account en la base). Pide la contraseña otra vez. */
 export async function deleteMyAccount(password: string): Promise<'deleted' | 'wrong_password' | 'rate_limited' | 'mfa_required' | 'error'> {

@@ -14,7 +14,7 @@ const SUPABASE_BASELINE = `
   create role service_role nologin bypassrls;
   create schema auth;
   create schema extensions;
-  create table auth.users (id uuid primary key default gen_random_uuid(), email text, encrypted_password text);
+  create table auth.users (id uuid primary key default gen_random_uuid(), email text, encrypted_password text, raw_user_meta_data jsonb);
   create function auth.uid() returns uuid language sql stable as
     $$ select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid $$;
   create function auth.jwt() returns jsonb language sql stable as
@@ -39,9 +39,9 @@ export async function createDb(opts: { upTo?: string } = {}) {
     .filter((f) => !opts.upTo || f <= opts.upTo);
   for (const f of files) await db.exec(readFileSync(join(MIGRATIONS, f), 'utf8'));
 
-  /** Crea un usuario como lo haría Supabase Auth (dispara handle_new_user). */
-  async function createUser(email: string) {
-    const r = await db.query<{ id: string }>('insert into auth.users (email) values ($1) returning id', [email]);
+  /** Crea un usuario como lo haría Supabase Auth (dispara handle_new_user). meta = datos del registro (p. ej. lang). */
+  async function createUser(email: string, meta: Record<string, unknown> = {}) {
+    const r = await db.query<{ id: string }>('insert into auth.users (email, raw_user_meta_data) values ($1, $2) returning id', [email, JSON.stringify(meta)]);
     return r.rows[0].id;
   }
 

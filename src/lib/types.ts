@@ -1,4 +1,5 @@
 // Tipos de las tablas de supabase/migrations. Montos en céntimos.
+import { strings } from '../i18n';
 
 export type AccountType = 'efectivo' | 'debito' | 'credito' | 'banco' | 'ahorro';
 export type CategoryKind = 'gasto' | 'ingreso';
@@ -113,10 +114,24 @@ export interface ApiToken {
   last_used_at: string | null;
 }
 
-export const ACCOUNT_TYPE_LABEL: Record<AccountType, string> = {
-  efectivo: 'Efectivo',
-  debito: 'Débito',
-  credito: 'Crédito',
-  banco: 'Banco',
-  ahorro: 'Ahorro',
+/** Etiqueta del tipo de cuenta en el idioma actual (los textos viven en src/i18n/locales/<idioma>/accounts.ts). */
+export const accountTypeLabel = (type: AccountType): string => strings().accounts.types[type];
+
+/** Lo mismo como objeto, por compatibilidad: cada lectura sale del idioma actual. */
+export const ACCOUNT_TYPE_LABEL: Readonly<Record<AccountType, string>> = {
+  get efectivo() {
+    return accountTypeLabel('efectivo');
+  },
+  get debito() {
+    return accountTypeLabel('debito');
+  },
+  get credito() {
+    return accountTypeLabel('credito');
+  },
+  get banco() {
+    return accountTypeLabel('banco');
+  },
+  get ahorro() {
+    return accountTypeLabel('ahorro');
+  },
 };

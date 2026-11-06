@@ -2,6 +2,7 @@ import clsx from 'clsx';
 import { Check } from 'lucide-react';
 import type { CSSProperties } from 'react';
 import { Screen } from '../../components/ui';
+import { useT } from '../../i18n';
 import { isNative, platform } from '../../lib/native';
 import { useTheme } from '../../lib/theme';
 import { useSavePrefs } from '../../lib/usePrefs';
@@ -22,6 +23,7 @@ function Mark({ theme }: { theme: Theme }) {
 
 /** Cada tema es una tarjeta en miniatura pintada con sus propios colores (las variables viven en el botón). */
 function ThemeCard({ theme, selected, onPick }: { theme: Theme; selected: boolean; onPick: () => void }) {
+  const t = useT();
   return (
     <button
       type="button"
@@ -37,7 +39,7 @@ function ThemeCard({ theme, selected, onPick }: { theme: Theme; selected: boolea
       <Mark theme={theme} />
       {/* El chip de la tarjeta, en el metal de la acción de ese tema. */}
       <span className="metal block h-[20px] w-[28px] rounded-[5px]" aria-hidden="true" />
-      <span className="engraved text-[12px] leading-4 font-semibold tracking-[0.12em] uppercase">{theme.name}</span>
+      <span className="engraved text-[12px] leading-4 font-semibold tracking-[0.12em] uppercase">{t.appearance.themes[theme.id]}</span>
       {selected && (
         <span className="metal absolute top-2.5 right-2.5 grid size-[22px] place-items-center rounded-full" aria-hidden="true">
           <Check size={13} strokeWidth={3} />
@@ -48,23 +50,20 @@ function ThemeCard({ theme, selected, onPick }: { theme: Theme; selected: boolea
 }
 
 export function ThemePage() {
+  const t = useT();
   const current = useTheme();
   const save = useSavePrefs();
-  const iconNote = !isNative
-    ? ''
-    : platform === 'ios'
-      ? ' El ícono de la app cambia con la tarjeta; el iPhone te lo confirma con un aviso.'
-      : ' El ícono de la app cambia con la tarjeta al salir de la app.';
+  const iconNote = !isNative ? '' : platform === 'ios' ? t.appearance.iconNoteIos : t.appearance.iconNoteAndroid;
 
   return (
-    <Screen title="Tema" subtitle={<BackLink />}>
-      <div role="radiogroup" aria-label="Tarjeta" className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-        {THEMES.map((t) => (
-          <ThemeCard key={t.id} theme={t} selected={t.id === current.id} onPick={() => save.mutate({ theme: t.id })} />
+    <Screen title={t.appearance.themeTitle} subtitle={<BackLink />}>
+      <div role="radiogroup" aria-label={t.appearance.card} className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        {THEMES.map((th) => (
+          <ThemeCard key={th.id} theme={th} selected={th.id === current.id} onPick={() => save.mutate({ theme: th.id })} />
         ))}
       </div>
       <p className="mt-4 px-1 text-footnote text-label-2">
-        Cambia los grises y el metal de los botones. Los colores del presupuesto, los ingresos y las categorías no cambian.
+        {t.appearance.themeNote}
         {iconNote}
       </p>
     </Screen>

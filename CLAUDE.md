@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-App de finanzas personales en colones (web/PWA, y en camino a App Store y Google Play): gastos, ingresos, presupuesto y estadísticas, con registro automático de pagos de Apple Wallet en iPhone. Abierta a cualquiera: cada persona crea su cuenta y solo ve sus datos. La interfaz va en español de Costa Rica.
+App de finanzas personales en colones (web/PWA, y en camino a App Store y Google Play): gastos, ingresos, presupuesto y estadísticas, con registro automático de pagos de Apple Wallet en iPhone. Abierta a cualquiera: cada persona crea su cuenta y solo ve sus datos. La interfaz va en español de Costa Rica y en inglés.
 
 ## Comandos
 
@@ -46,6 +46,12 @@ En esta máquina (Windows), git no está en el PATH de PowerShell. Antepón `$en
   - El `appId` (`com.nonocr.finanzas`) es provisional hasta la primera subida a una tienda.
   - Compilación en la nube: `.github/workflows/apps.yml` (APK de prueba y build de simulador iOS, sin firmar). En Windows no hay Xcode ni JDK: no se compila local.
 - **Proyecto Supabase:** `qdrkbocandltwfvofngt` («Finanzas»), en una cuenta distinta a la de los proyectos de trabajo. **No uses el login global de la CLI**: está en la cuenta de trabajo. Usa el token de `supabase/.env.cli` (git lo ignora): `$env:SUPABASE_ACCESS_TOKEN=...` más `--project-ref`. Las migraciones se aplicaron con la Management API (`POST /v1/projects/{ref}/database/query`) y se registraron en `supabase_migrations.schema_migrations`.
+
+## Idiomas
+
+- **Ningún texto visible va escrito en un componente.** Cada texto vive en `src/i18n/locales/es/<área>.ts` (la fuente) y su traducción en `src/i18n/locales/en/<área>.ts`, con el mismo tipo: si falta una traducción, no compila. En componentes `const t = useT()` (antes de cualquier `return`); fuera de React `strings()`. Plurales y valores: funciones (`(n: number) => …`). Texto con formato: `<Rich text={…} />` con `**negrita**`, ` código ` y `[enlace](https://…)`.
+- Fechas y montos con los helpers de `src/lib/dates.ts` y `src/lib/money.ts` (`formatCRC`, `formatNumber`), que siguen el idioma; nunca `new Intl.*('es-CR')` fijo. Fuera de esos helpers, `locale()` dentro del render.
+- El idioma es una preferencia (`prefs.lang`: `auto` | `es` | `en`; Ajustes → Idioma) y se copia a `user_metadata.lang` (`syncAuthLang`): con él, los correos (plantillas con `{{ if eq (printf "%v" .Data.lang) "en" }}`) y las categorías iniciales de una cuenta nueva (`handle_new_user`, migración `20261108000000_idioma`) salen en ese idioma. Las pruebas corren en español.
 
 ## Diseño
 

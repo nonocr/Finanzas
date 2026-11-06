@@ -1,12 +1,11 @@
 import clsx from 'clsx';
 import { useEffect, useRef } from 'react';
 import { centsToUsdInput, sanitizeUsdInput } from '../lib/fx';
-import { parseAmountToCents, pastedColones } from '../lib/money';
+import { useLang, useT } from '../i18n';
+import { formatNumber, parseAmountToCents, pastedColones } from '../lib/money';
 
-const groups = new Intl.NumberFormat('es-CR');
-
-/** Colones enteros → "12.500" (punto de miles, como se lee en Costa Rica). */
-const pretty = (colones: string) => (colones ? groups.format(Number(colones)).replace(/[\s  ]/g, '.') : '');
+/** Colones enteros → "12.500" (punto de miles, como se lee en Costa Rica; en inglés "12,500"). */
+const pretty = (colones: string) => (colones ? formatNumber(Number(colones)) : '');
 
 /**
  * Monto grande que se escribe con el teclado numérico del teléfono (o el de la computadora).
@@ -17,7 +16,7 @@ export function AmountInput({
   onChange,
   autoFocus,
   tone,
-  label = 'Monto',
+  label: labelProp,
   currency = 'CRC',
 }: {
   value: string;
@@ -28,18 +27,22 @@ export function AmountInput({
   /** En dólares el valor lleva coma decimal ("12,99"); en colones son colones enteros. */
   currency?: 'CRC' | 'USD';
 }) {
+  const t = useT();
+  const lang = useLang();
+  const label = labelProp ?? t.transactions.amount;
   const usd = currency === 'USD';
   const input = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     // Espera a que termine de subir la hoja; en iPhone el foco abre el teclado si viene del toque.
     if (!autoFocus) return;
-    const t = window.setTimeout(() => input.current?.focus({ preventScroll: true }), 60);
-    return () => clearTimeout(t);
+    const timer = window.setTimeout(() => input.current?.focus({ preventScroll: true }), 60);
+    return () => clearTimeout(timer);
   }, [autoFocus]);
 
   const empty = value === '';
-  const shown = usd ? value : pretty(value);
+  // En dólares el valor guarda coma decimal; en inglés se muestra con punto (al escribir, el punto se toma como la coma).
+  const shown = usd ? (lang === 'es' ? value : value.replace(',', '.')) : pretty(value);
   return (
     <label
       className={clsx(
@@ -52,7 +55,7 @@ export function AmountInput({
       </span>
       <input
         ref={input}
-        aria-label={usd ? `${label} en dólares` : label}
+        aria-label={usd ? t.transactions.amountInDollars(label) : label}
         inputMode={usd ? 'decimal' : 'numeric'}
         pattern={usd ? undefined : '[0-9]*'}
         autoComplete="off"

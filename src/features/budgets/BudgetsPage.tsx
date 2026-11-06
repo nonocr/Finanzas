@@ -6,6 +6,7 @@ import { AnimatedAmount } from '../../components/motion';
 import { hexOf } from '../../components/palette';
 import { useToast } from '../../components/Toast';
 import { budgetTone, Button, CategoryIcon, ProgressBar, Screen, Section } from '../../components/ui';
+import { useT } from '../../i18n';
 import { addMonths, crDay, isoDate, monthName, monthRange, startOfMonth } from '../../lib/dates';
 import { formatCRC } from '../../lib/money';
 import {
@@ -24,6 +25,7 @@ import type { Category } from '../../lib/types';
 type Editing = { categoryId: string | null; name: string; cents: number; budgetId?: string; key: number } | null;
 
 export function BudgetsPage() {
+  const t = useT();
   const [month, setMonth] = useState(() => startOfMonth(crDay()));
   const monthIso = isoDate(month);
   const { data: progress = [] } = useBudgetProgress(monthIso);
@@ -62,52 +64,50 @@ export function BudgetsPage() {
   const onSave = async (cents: number) => {
     if (!editing) return;
     await save.mutateAsync({ category_id: editing.categoryId, month: monthIso, amount: cents });
-    toast('Presupuesto guardado');
+    toast(t.budgets.saved);
     setOpen(false);
   };
 
   const onDelete = async () => {
     if (!editing?.budgetId) return;
     await remove.mutateAsync(editing.budgetId);
-    toast('Presupuesto quitado');
+    toast(t.budgets.removed);
     setOpen(false);
   };
 
   const onCopy = async () => {
     const n = await copy.mutateAsync({ from: isoDate(prevMonth), to: monthIso });
-    toast(
-      n === 1 ? 'Se copió 1 presupuesto' : n ? `Se copiaron ${n} presupuestos` : `No había presupuestos en ${monthName(prevMonth)}`,
-    );
+    toast(t.budgets.copied(n, monthName(prevMonth)));
   };
 
   return (
-    <Screen title="Presupuesto">
+    <Screen title={t.budgets.title}>
       <MonthNav month={month} onChange={setMonth} />
 
-      <button type="button" onClick={() => edit(null, 'Total del mes')} className="press black-card mt-4 block w-full rounded-[18px] px-5 pt-5 pb-4 text-left">
-        <p className="text-headline font-semibold">Total del mes</p>
+      <button type="button" onClick={() => edit(null, t.budgets.monthTotal)} className="press black-card mt-4 block w-full rounded-[18px] px-5 pt-5 pb-4 text-left">
+        <p className="text-headline font-semibold">{t.budgets.monthTotal}</p>
         {total.limit ? (
           <>
             <p className="mt-3 flex flex-wrap items-baseline gap-x-2">
               <AnimatedAmount quietCurrency cents={spent} className="engraved text-[40px] leading-[46px] font-light tracking-[-0.03em]" />
-              <span className="tnum text-subhead text-label-2">de {formatCRC(total.limit)}</span>
+              <span className="tnum text-subhead text-label-2">{t.budgets.of(formatCRC(total.limit))}</span>
             </p>
             <div className="mt-3">
               <ProgressBar value={spent / total.limit} />
             </div>
             <p className={'tnum mt-2 text-subhead font-semibold ' + budgetTone(spent / total.limit)}>
-              {spent > total.limit ? `Te pasaste ${formatCRC(spent - total.limit)}` : `Quedan ${formatCRC(total.limit - spent)}`}
+              {spent > total.limit ? t.budgets.over(formatCRC(spent - total.limit)) : t.budgets.left(formatCRC(total.limit - spent))}
             </p>
             <p className="mt-1 text-footnote text-label-2">
               {total.source === 'suma'
-                ? 'Es la suma de tus categorías y cuenta solo lo gastado en ellas. Toca para definir un total propio.'
+                ? t.budgets.sourceSum
                 : total.source === 'ajustado'
-                  ? `Subió a la suma de tus categorías; habías definido ${formatCRC(total.manual!)}.`
-                  : 'Definido por ti. Toca para cambiarlo.'}
+                  ? t.budgets.sourceAdjusted(formatCRC(total.manual!))
+                  : t.budgets.sourceManual}
             </p>
           </>
         ) : (
-          <p className="mt-1 text-body text-accent">Definir el total del mes</p>
+          <p className="mt-1 text-body text-accent">{t.budgets.setTotal}</p>
         )}
       </button>
 
@@ -122,10 +122,10 @@ export function BudgetsPage() {
 
       {withBudget.length > 0 && (
         <Section
-          header="Por categoría"
+          header={t.budgets.byCategory}
           footer={
             total.source === 'manual' && total.manual! > total.sum
-              ? `Sin asignar a categorías: ${formatCRC(total.manual! - total.sum)}.`
+              ? t.budgets.unassigned(formatCRC(total.manual! - total.sum))
               : undefined
           }
         >
@@ -136,7 +136,7 @@ export function BudgetsPage() {
       )}
 
       {without.length > 0 && (
-        <Section header="Sin presupuesto">
+        <Section header={t.budgets.noBudget}>
           {without.map((c) => (
             <button
               key={c.id}
@@ -156,7 +156,7 @@ export function BudgetsPage() {
 
       {budgets.length === 0 && (
         <Button variant="tinted" className="mt-6 w-full" onClick={onCopy} disabled={copy.isPending}>
-          Copiar presupuestos de {monthName(prevMonth)}
+          {t.budgets.copyFrom(monthName(prevMonth))}
         </Button>
       )}
 
@@ -177,6 +177,7 @@ export function BudgetsPage() {
 
 /** Una categoría con su presupuesto: también la usa la sección «Presupuestos» del Resumen. */
 export function BudgetRow({ cat, spent, limit, onClick }: { cat: Category; spent: number; limit: number; onClick: () => void }) {
+  const t = useT();
   const ratio = spent / limit;
   return (
     <button type="button" onClick={onClick} className="group flex w-full items-center gap-3 pl-4 text-left active:bg-card-2">
@@ -193,10 +194,10 @@ export function BudgetRow({ cat, spent, limit, onClick }: { cat: Category; spent
         </span>
         <span className={'tnum mt-1 block text-footnote ' + (ratio >= 1 ? 'text-red' : ratio >= 0.8 ? 'text-orange' : 'text-label-2')}>
           {spent > limit
-            ? `Te pasaste ${formatCRC(spent - limit)}`
+            ? t.budgets.over(formatCRC(spent - limit))
             : spent === limit
-              ? 'Llegaste al límite'
-              : `Quedan ${formatCRC(limit - spent)} · ${Math.round(ratio * 100)}%`}
+              ? t.budgets.atLimit
+              : t.budgets.leftPct(formatCRC(limit - spent), Math.round(ratio * 100))}
         </span>
       </span>
     </button>

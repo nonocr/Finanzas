@@ -1,26 +1,16 @@
 // Preferencias de la persona (Ajustes): se guardan en su cuenta (tabla user_settings) para que la app se vea igual en
 // cualquier dispositivo, y con una copia en este teléfono para aplicarlas antes del primer pintado (el tema y el modo
 // discreto no pueden esperar a la red: los montos no deben verse ni un instante si el modo discreto está activo).
+import { resolveLang, setLang, type LangPref } from '../i18n';
 import { DEFAULT_THEME, themeById, type ThemeId } from './themes';
 
 /** Secciones del Resumen que se pueden ordenar y ocultar (la tarjeta del periodo va siempre arriba). */
 export const HOME_SECTIONS = ['semana', 'recientes', 'categorias', 'presupuestos'] as const;
 export type HomeSection = (typeof HOME_SECTIONS)[number];
 
-export const HOME_SECTION_LABEL: Record<HomeSection, string> = {
-  semana: 'Esta semana',
-  recientes: 'Recientes',
-  categorias: 'Por categoría',
-  presupuestos: 'Presupuestos',
-};
-
-/** Qué cifra lleva en grande la tarjeta del Resumen. */
-export type CardFigure = 'gastado' | 'disponible' | 'balance';
-export const CARD_FIGURE_LABEL: Record<CardFigure, string> = {
-  gastado: 'Lo gastado',
-  disponible: 'Lo que queda del presupuesto',
-  balance: 'El balance (ingresos menos gastos)',
-};
+/** Qué cifra lleva en grande la tarjeta del Resumen. Sus nombres están en el área «appearance» del idioma. */
+export const CARD_FIGURES = ['gastado', 'disponible', 'balance'] as const;
+export type CardFigure = (typeof CARD_FIGURES)[number];
 
 export type HomeLayout = {
   /** Orden de todas las secciones; las ocultas siguen aquí para recordar su lugar. */
@@ -32,6 +22,8 @@ export type HomeLayout = {
 };
 
 export type Prefs = {
+  /** Idioma: «auto» sigue al teléfono. */
+  lang: LangPref;
   theme: ThemeId;
   /** Montos difuminados hasta tocarlos. */
   discreet: boolean;
@@ -39,6 +31,7 @@ export type Prefs = {
 };
 
 export const DEFAULT_PREFS: Prefs = {
+  lang: 'auto',
   theme: DEFAULT_THEME,
   discreet: false,
   home: { order: [...HOME_SECTIONS], hidden: ['presupuestos'], showPending: true, card: 'gastado' },
@@ -58,6 +51,7 @@ export function normalizePrefs(raw: unknown): Prefs {
   const hidden = Array.isArray(h.hidden) ? [...new Set(h.hidden.filter(isSection))] : DEFAULT_PREFS.home.hidden;
   const card = h.card === 'disponible' || h.card === 'balance' ? h.card : 'gastado';
   return {
+    lang: r.lang === 'es' || r.lang === 'en' ? r.lang : 'auto',
     theme: themeById(typeof r.theme === 'string' ? r.theme : null).id,
     discreet: r.discreet === true,
     home: { order, hidden, showPending: h.showPending !== false, card },
@@ -132,8 +126,10 @@ function listenForReveal() {
   });
 }
 
-/** Antes de montar React: modo discreto según la copia local (el tema lo aplica theme.ts). */
+/** Antes de montar React: idioma y modo discreto según la copia local (el tema lo aplica theme.ts). */
 export function startPrefs() {
-  applyDiscreet(readLocalPrefs().discreet);
+  const local = readLocalPrefs();
+  setLang(resolveLang(local.lang));
+  applyDiscreet(local.discreet);
   listenForReveal();
 }

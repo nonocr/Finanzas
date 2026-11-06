@@ -1,11 +1,11 @@
 import { ArrowLeftRight, CircleDot } from 'lucide-react';
 import { CategoryIcon, IconTile, Row, Stamp } from '../../components/ui';
+import { useT } from '../../i18n';
+import { crTime } from '../../lib/dates';
 import { formatUSD } from '../../lib/fx';
 import { formatCRC } from '../../lib/money';
 import type { Account, Category, Transaction } from '../../lib/types';
 import { useEditor } from './editor';
-
-const timeFmt = new Intl.DateTimeFormat('es-CR', { hour: 'numeric', minute: '2-digit', timeZone: 'America/Costa_Rica' });
 
 export function TransactionRow({
   tx,
@@ -18,6 +18,7 @@ export function TransactionRow({
   accounts: Map<string, Account>;
   showTime?: boolean;
 }) {
+  const t = useT();
   const { openEdit } = useEditor();
   const cat = tx.category_id ? categories.get(tx.category_id) : undefined;
   const acc = accounts.get(tx.account_id);
@@ -26,13 +27,13 @@ export function TransactionRow({
 
   const title =
     tx.type === 'transferencia'
-      ? (tx.merchant ?? tx.note ?? `${acc?.name ?? 'Cuenta'} → ${to?.name ?? 'Cuenta'}`)
-      : (tx.merchant ?? cat?.name ?? (tx.type === 'ingreso' ? 'Ingreso' : 'Gasto'));
+      ? (tx.merchant ?? tx.note ?? `${acc?.name ?? t.transactions.account} → ${to?.name ?? t.transactions.account}`)
+      : (tx.merchant ?? cat?.name ?? (tx.type === 'ingreso' ? t.transactions.types.income : t.transactions.types.expense));
 
   const meta = [
     // Con el sello «Revisar» no cabe todo: se queda la hora (identifica el cobro) y la tarjeta se ve al abrirlo.
     tx.type === 'transferencia' ? `${acc?.name ?? ''} → ${to?.name ?? ''}` : pending ? null : acc?.name,
-    showTime ? timeFmt.format(new Date(tx.occurred_at)) : null,
+    showTime ? crTime(new Date(tx.occurred_at)) : null,
   ]
     .filter(Boolean)
     .join(' · ');
@@ -53,7 +54,7 @@ export function TransactionRow({
       subtitle={
         pending ? (
           <>
-            <Stamp>Revisar</Stamp>
+            <Stamp>{t.transactions.reviewStamp}</Stamp>
             {meta}
           </>
         ) : (
@@ -63,7 +64,7 @@ export function TransactionRow({
       trailing={
         // Pago de Wallet que llegó sin monto: se completa al revisarlo.
         tx.amount === 0 ? (
-          <span className="text-subhead text-label-2">Sin monto</span>
+          <span className="text-subhead text-label-2">{t.transactions.noAmount}</span>
         ) : (
         <span className="block text-right">
           <span
