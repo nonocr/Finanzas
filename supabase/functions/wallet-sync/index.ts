@@ -1,4 +1,5 @@
-// Recibe la cola de pagos de Wallet que el Atajo guardó en un archivo del iPhone (respaldo sin señal).
+// Recibe la cola de pagos de Wallet que el Atajo guardó en un archivo del iPhone (respaldo sin señal), y en Android
+// (?formato=notificacion) el texto de una notificación de compra que reenvía MacroDroid.
 // POST con header `Authorization: Bearer <token personal>`. El cuerpo es el archivo tal cual:
 // un pago por línea, cada línea un diccionario JSON del Atajo:
 //   {"amount":"₡12.500,00","merchant":"AUTOMERCADO","card":"Visa BAC","name":"...","at":"2026-10-29T14:01:00-06:00"}
@@ -11,6 +12,7 @@
 
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { authorizeWebhook, ingestPayment, walletSavedSince, type WalletPayment } from '../_shared/ingest.ts';
+import { parseNotification } from '../_shared/notification.ts';
 import { json, readBody, secretKey } from '../_shared/security.ts';
 
 const MAX_BODY_BYTES = 256 * 1024;
@@ -64,6 +66,28 @@ Deno.serve(async (req) => {
   // Por token: un envío por pago más reenvíos al conectarse a Wi‑Fi; 20 por minuto sobra.
   const auth = await authorizeWebhook(supabase, req, { perTokenPerMinute: 20 });
   if (auth instanceof Response) return auth;
+
+  // Android (MacroDroid): ?formato=notificacion y el cuerpo es el texto de UNA notificación (título en la primera
+  // línea). Texto plano a propósito: armar JSON en MacroDroid se rompe con las comillas del texto.
+  if (new URL(req.url).searchParams.get('formato') === 'notificacion') {
+    const text = await readBody(req, 8 * 1024);
+    if (text === null) return json({ error: 'payload_too_large' }, 413);
+    const parsed = parseNotification(text);
+    // No es una compra (código, promoción, dinero recibido…): ok, no hay nada que guardar ni que reintentar.
+    if (!parsed.ok) return json({ ok: true, ignored: parsed.reason });
+    const saved = await walletSavedSince(supabase, auth.userId, new Date(Date.now() - 86_400_000));
+    if (saved === null) return json({ ok: false, error: 'unavailable' }, 503);
+    if (saved >= DAILY_MAX_SAVED) return json({ ok: false, error: 'daily_limit' }, 429, { 'Retry-After': '3600' });
+    await supabase.from('api_tokens').update({ last_used_at: new Date().toISOString() }).eq('id', auth.tokenId);
+    const r = await ingestPayment(
+      supabase,
+      auth.userId,
+      { amount: parsed.amount, merchant: parsed.merchant, card: parsed.card, at: new Date().toISOString() },
+      { fromNotification: true },
+    );
+    if (!r.ok) return json({ ok: false, error: r.error }, r.error === 'no_accounts' ? 409 : r.error === 'insert_failed' ? 500 : 422);
+    return json({ ok: true, saved: r.duplicate ? 0 : 1, duplicates: r.duplicate ? 1 : 0 });
+  }
 
   const raw = await readBody(req, MAX_BODY_BYTES);
   if (raw === null) return json({ error: 'payload_too_large' }, 413);

@@ -2,6 +2,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { describe, expect, it } from 'vitest';
 import { ingestPayment, notAColonCharge, paymentFingerprint, paymentTime, walletSavedSince } from '../functions/_shared/ingest';
+import { parseNotification } from '../functions/_shared/notification';
 import { cleanText, clientIp, readBody, secretKey, withinLimit } from '../functions/_shared/security';
 
 describe('cleanText', () => {
@@ -157,12 +158,15 @@ describe('ingestPayment', () => {
     let seq = 0;
     const from = (table: string) => {
       const filters: [string, unknown][] = [];
+      const atLeast: [string, string][] = [];
       let toInsert: Row | null = null;
-      const rows = () => tables[table].filter((r) => filters.every(([c, v]) => r[c] === v));
+      const rows = () =>
+        tables[table].filter((r) => filters.every(([c, v]) => r[c] === v) && atLeast.every(([c, v]) => String(r[c]) >= v));
       const b = {
         select: () => b,
         order: () => b,
         eq: (c: string, v: unknown) => (filters.push([c, v]), b),
+        gte: (c: string, v: string) => (atLeast.push([c, v]), b),
         insert: (row: Row) => ((toInsert = row), b),
         maybeSingle: async () => ({ data: rows()[0] ?? null, error: null }),
         single: async () => {
@@ -258,6 +262,37 @@ describe('ingestPayment', () => {
     expect(await ingestPayment(fakeDb({ accounts: [] }).client, 'u', { amount: '₡900', merchant: 'BUS' })).toEqual({
       ok: false,
       error: 'no_accounts',
+    });
+  });
+  describe('desde una notificación de Android', () => {
+    const T0 = Date.parse('2026-11-06T15:00:00Z');
+    const notify = async (client: SupabaseClient, body: string, minutesLater = 0) => {
+      const p = parseNotification(body);
+      if (!p.ok) throw new Error(p.reason);
+      const now = T0 + minutesLater * 60_000;
+      return ingestPayment(client, 'u', { amount: p.amount, merchant: p.merchant, card: p.card, at: new Date(now).toISOString() }, { fromNotification: true, now });
+    };
+    const BAC = 'BAC\nCompra aprobada en AUTOMERCADO ESCAZU por CRC 12,500.00 con su tarjeta VISA ****4321';
+
+    it('queda por revisar aunque la tarjeta y la regla empaten (el texto es interpretado)', async () => {
+      const { client, tables } = fakeDb({ accounts: ACCOUNTS, merchant_rules: RULES });
+      expect(await notify(client, BAC)).toMatchObject({ ok: true, status: 'por_revisar' });
+      expect(tables.transactions[0]).toMatchObject({ amount: 1_250_000, account_id: 'bac', category_id: 'super', note: 'Notificación · Visa •••• 4321' });
+    });
+
+    it('el mismo monto y tarjeta en pocos minutos es el mismo pago (banco + Google Wallet, o doble disparo)', async () => {
+      const { client, tables } = fakeDb({ accounts: ACCOUNTS, merchant_rules: RULES });
+      await notify(client, BAC);
+      expect(await notify(client, 'AUTOMERCADO\n₡12.500,00 con Visa ••4321', 2)).toMatchObject({ ok: true, duplicate: true });
+      expect(tables.transactions).toHaveLength(1);
+    });
+
+    it('la misma compra otro rato, u otra tarjeta, sí es un pago nuevo (el café de todos los días no se pierde)', async () => {
+      const { client, tables } = fakeDb({ accounts: ACCOUNTS, merchant_rules: RULES });
+      await notify(client, BAC);
+      await notify(client, BAC, 6);
+      await notify(client, BAC.replace('4321', '9999'), 7);
+      expect(tables.transactions).toHaveLength(3);
     });
   });
 });

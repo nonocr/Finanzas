@@ -8,7 +8,6 @@ import { csvRow } from '../../lib/csv';
 import { crDayOf, isoDate } from '../../lib/dates';
 import { resetDemo } from '../../lib/demoApi';
 import { clearOfflineCache } from '../../lib/offline';
-import { isAppleMobile } from '../../lib/native';
 import { useAccounts, useLookups } from '../../lib/queries';
 import { markPartialSignOut, supabase } from '../../lib/supabase';
 import { useTheme } from '../../lib/theme';
@@ -103,10 +102,13 @@ export function MorePage() {
       </Section>
 
       <Section header="Automático">
-        {/* La automatización de Wallet con Atajos solo existe en iPhone y iPad. */}
-        {isAppleMobile && (
-          <Row to="/mas/wallet" leading={<IconTile icon={Smartphone} color="var(--color-label-2)" />} title="Apple Wallet" subtitle="Registrar pagos con Atajos" chevron />
-        )}
+        <Row
+          to="/mas/wallet"
+          leading={<IconTile icon={Smartphone} color="var(--color-label-2)" />}
+          title="Registro automático"
+          subtitle="Pagos con tarjeta, en iPhone y Android"
+          chevron
+        />
         <Row to="/mas/fijos" leading={<IconTile icon={Repeat} color="var(--color-label-2)" />} title="Gastos e ingresos fijos" subtitle="Alquiler, salario, suscripciones" chevron />
       </Section>
 

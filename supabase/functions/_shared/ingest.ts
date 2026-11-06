@@ -128,7 +128,18 @@ export function cachedUsdRate(now = Date.now()): Promise<UsdRate | null> {
 export interface IngestOptions {
   /** Tipo de cambio para pagos en dólares (inyectable en pruebas). */
   usdRate?: () => Promise<UsdRate | null>;
+  /**
+   * El pago viene de una notificación de Android (texto interpretado, ver notification.ts): queda siempre por revisar y
+   * un repetido se reconoce por monto y tarjeta en una ventana corta (el banco y Google Wallet pueden avisar del mismo
+   * pago, o MacroDroid disparar dos veces), no por la huella exacta.
+   */
+  fromNotification?: boolean;
+  /** Ahora (inyectable en pruebas). */
+  now?: number;
 }
+
+/** Minutos dentro de los cuales una notificación con el mismo monto y tarjeta es el mismo pago. */
+export const NOTIFICATION_DUPLICATE_MINUTES = 5;
 
 export async function ingestPayment(
   supabase: SupabaseClient,
@@ -157,7 +168,7 @@ export async function ingestPayment(
     if (!merchant && !card) return { ok: false, error: 'invalid_amount' };
   }
   const amount = readable ? (parsed ?? 0) : 0;
-  const time = paymentTime(p.at);
+  const time = paymentTime(p.at, opts.now);
   const occurred = time.date;
 
   // Cada pago de la cola tiene un id estable (el del Atajo o su huella): reenviarlo no duplica. En dólares la huella
@@ -172,6 +183,23 @@ export async function ingestPayment(
     .eq('external_id', externalId)
     .maybeSingle();
   if (existing) return { ok: true, id: existing.id, status: existing.status, duplicate: true };
+
+  if (opts.fromNotification && amount > 0) {
+    const since = new Date(occurred.getTime() - NOTIFICATION_DUPLICATE_MINUTES * 60_000).toISOString();
+    const { data: recent } = await supabase
+      .from('transactions')
+      .select('id, status, note')
+      .eq('user_id', userId)
+      .eq('source', 'wallet')
+      .eq('amount', amount)
+      .gte('occurred_at', since);
+    const last4 = /(\d{4})\s*$/.exec(card)?.[1] ?? null;
+    const same = (recent ?? []).find((r: { note: string | null }) => {
+      const other = /(\d{4})\s*$/.exec(r.note ?? '')?.[1] ?? null;
+      return !last4 || !other || other === last4;
+    });
+    if (same) return { ok: true, id: same.id, status: same.status, duplicate: true };
+  }
 
   const { data: accounts } = await supabase
     .from('accounts')
@@ -212,9 +240,9 @@ export async function ingestPayment(
       account_id: account.id,
       category_id: categoryId,
       merchant,
-      note: card ? `Wallet · ${card}` : 'Wallet',
+      note: `${opts.fromNotification ? 'Notificación' : 'Wallet'}${card ? ` · ${card}` : ''}`,
       source: 'wallet',
-      status: readable && categoryId && matched ? 'confirmada' : 'por_revisar',
+      status: !opts.fromNotification && readable && categoryId && matched ? 'confirmada' : 'por_revisar',
       occurred_at: occurred.toISOString(),
       external_id: externalId,
       amount_raw: amountRaw,

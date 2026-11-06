@@ -44,6 +44,11 @@ export function PrivacyPage() {
           <strong>Si usas el Atajo de Apple Wallet:</strong> el monto, el comercio y la tarjeta de cada pago que el
           Atajo envía, y una clave personal para el Atajo, guardada cifrada.
         </p>
+        <p>
+          <strong>Si usas el registro automático en Android:</strong> el texto de las notificaciones que MacroDroid envía,
+          solo de las apps que tú elijas (tu banco, Google Wallet). De cada notificación de compra se guardan el monto, el
+          comercio y los últimos 4 dígitos de la tarjeta; las que no son compras se descartan sin guardarse.
+        </p>
         <p>Nunca se guardan números completos de tarjeta, PIN ni claves de tu banco.</p>
       </Block>
 

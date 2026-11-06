@@ -1,6 +1,6 @@
-import clsx from 'clsx';
-import { ChevronRight, Copy } from 'lucide-react';
+import { Copy } from 'lucide-react';
 import { useEffect, useState, type ReactNode } from 'react';
+import { Disclosure, NumberedSteps } from '../../components/Disclosure';
 import { Sheet } from '../../components/Sheet';
 import { useToast } from '../../components/Toast';
 import { cleanCode, MFA_ERRORS } from '../../lib/mfa';
@@ -60,55 +60,6 @@ const GUIDES: { id: 'ios' | 'android'; title: string; app: string; steps: ReactN
     ],
   },
 ];
-
-/** Uno de los dos instructivos: fila que se despliega con sus pasos. */
-function Guide({ guide, open, onToggle }: { guide: (typeof GUIDES)[number]; open: boolean; onToggle: () => void }) {
-  const id = `guia-${guide.id}`;
-  return (
-    <div className="group">
-      <button
-        type="button"
-        aria-expanded={open}
-        aria-controls={id}
-        onClick={onToggle}
-        className="flex w-full items-center gap-3 pl-4 text-left transition-colors active:bg-card"
-      >
-        <span className="flex min-h-11 min-w-0 flex-1 items-center gap-3 py-2.5 pr-4 shadow-[inset_0_-0.5px_0_var(--color-sep)] group-last:shadow-none">
-          <span className="min-w-0 flex-1 text-body">{guide.title}</span>
-          <ChevronRight
-            size={18}
-            strokeWidth={2.25}
-            className={clsx('shrink-0 text-label-3 transition-transform duration-250 motion-reduce:transition-none', open && 'rotate-90')}
-          />
-        </span>
-      </button>
-      {/* Se despliega con grid-rows (0fr → 1fr): la altura se anima sin medirla. */}
-      <div
-        id={id}
-        className={clsx(
-          'grid transition-[grid-template-rows] duration-350 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none',
-          open ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]',
-        )}
-      >
-        <div className="overflow-hidden">
-          <div className="px-4 pt-1 pb-4 shadow-[inset_0_-0.5px_0_var(--color-sep)] group-last:shadow-none">
-            <p className="text-subhead text-pretty text-label-2">{guide.app}</p>
-            <ol className="mt-3 space-y-2.5">
-              {guide.steps.map((s, i) => (
-                <li key={i} className="flex gap-3 text-subhead text-pretty [&_b]:font-semibold [&_b]:text-label">
-                  <span className="tnum not-money grid size-6 shrink-0 place-items-center rounded-full bg-card-3 text-footnote font-semibold text-label">
-                    {i + 1}
-                  </span>
-                  <span className="pt-0.5 text-label-2">{s}</span>
-                </li>
-              ))}
-            </ol>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 /**
  * Verificación en dos pasos con un código de 6 dígitos (TOTP). Un interruptor la activa o desactiva; debajo, los
@@ -280,7 +231,12 @@ export function TwoFactorSheet({ open, onClose }: { open: boolean; onClose: () =
             footer="Funciona con cualquier gestor de contraseñas o app que genere códigos TOTP de 6 dígitos (Microsoft Authenticator, 1Password, Bitwarden…)."
           >
             {GUIDES.map((g) => (
-              <Guide key={g.id} guide={g} open={guide === g.id} onToggle={() => setGuide(guide === g.id ? null : g.id)} />
+              <Disclosure key={g.id} title={g.title} open={guide === g.id} onToggle={() => setGuide(guide === g.id ? null : g.id)}>
+                <p className="text-subhead text-pretty text-label-2">{g.app}</p>
+                <div className="mt-3">
+                  <NumberedSteps steps={g.steps} />
+                </div>
+              </Disclosure>
             ))}
           </FormGroup>
         </>

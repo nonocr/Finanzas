@@ -79,7 +79,7 @@ export function HomeLayoutPage() {
         })}
       </Section>
 
-      <Section footer="Cuando entra un pago de Apple Wallet sin categoría, aparece arriba de todo para revisarlo.">
+      <Section footer="Los pagos que llegan solos (Apple Wallet o notificaciones del banco) y falta confirmar aparecen arriba de todo.">
         <Row
           title="Pagos por revisar"
           trailing={<Toggle checked={layout.showPending} onChange={(v) => update({ showPending: v })} label="Mostrar pagos por revisar" />}

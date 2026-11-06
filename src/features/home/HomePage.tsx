@@ -305,7 +305,7 @@ function PendingCard({ pending }: { pending: Transaction[] }) {
           <p className="text-headline font-semibold">
             {n === 1 ? 'Tienes 1 pago por revisar' : `Tienes ${n} pagos por revisar`}
           </p>
-          <p className="text-footnote text-label-2">De Apple Wallet, sin categoría</p>
+          <p className="text-footnote text-label-2">Registrados automáticamente; confírmalos</p>
         </div>
       </div>
       {/* Como mucho 3 pagos a la vista: con más, el resto se revisa desde el botón y la tarjeta no crece. */}
