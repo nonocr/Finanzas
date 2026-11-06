@@ -49,3 +49,6 @@ supabase/.env.cli
 
 # Material de consulta local para Claude (no se sube al repo)
 leyes/
+# Grafo del código (graphify), se regenera en local
+graphify-out/
+.graphifyignore
